@@ -33,3 +33,4 @@
 
 # vsc
 .vscode/*
+build/*
