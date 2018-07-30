@@ -27,6 +27,7 @@ class JPEGDecoder
     void ParseFrameHeader(unsigned char *file_content, int *index);
     void ParseHuffmanTableSpecification(unsigned char *file_content, int *index);
     void ParseScanHeader(unsigned char *file_content, int *index);
+    void ParseComment(unsigned char *file_content, int *index);
     bool GetFileInformation(unsigned char *file_content, int *index);
     void ProcessData(unsigned char *file_content, int *index);
 

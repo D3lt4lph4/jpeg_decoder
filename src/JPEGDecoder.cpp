@@ -38,6 +38,9 @@ cv::Mat JPEGDecoder::Decode(std::string filename, int level)
 
         switch (*marker)
         {
+        case COMMENT:
+          this->ParseComment(file_content, &current_index);
+          break;
         case DEFINE_QUANTIZATION_TABLE:
           this->ParseQuantizationTable(file_content, &current_index);
           std::cout << "quantization table parsed" << std::endl;
@@ -376,4 +379,20 @@ void JPEGDecoder::ParseScanHeader(unsigned char *file_content, int *index)
   se = file_content[*index + 1];
   ah = (file_content[*index + 2] & mask_td) >> 4;
   al = file_content[*index + 2] & mask_ta;
+}
+
+void JPEGDecoder::ParseComment(unsigned char *file_content, int *index)
+{
+  unsigned int comment_length;
+
+  comment_length = (unsigned int)(file_content[*index] << 8 | file_content[*index + 1]);
+
+  std::cout << "Comment in the file : ";
+
+  for (size_t i = 0; i < comment_length - 2; i++)
+  {
+    std::cout << file_content[*index + 2 + i];
+  }
+
+  *index += comment_length;
 }
