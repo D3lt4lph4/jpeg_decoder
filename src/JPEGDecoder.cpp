@@ -51,7 +51,8 @@ cv::Mat JPEGDecoder::Decode(std::string filename, int level)
           std::cout << "huffman table specification parsed" << std::endl;
           break;
         case START_OF_SCAN:
-
+          this->ParseScanHeader(file_content, &current_index);
+          std::cout << "Scan header parsed" << std::endl;
           break;
         case END_OF_IMAGE:
           std::cout << "end of image." << std::endl;
@@ -308,7 +309,7 @@ void JPEGDecoder::ParseFrameHeader(unsigned char *file_content, int *index)
   for (size_t i = 0; i < nf; i++)
   {
     c = file_content[*index];
-    h = (file_content[*index + 1] & mask_h) > 4;
+    h = (file_content[*index + 1] & mask_h) >> 4;
     v = file_content[*index + 1] & mask_v;
     tq = file_content[*index + 2];
     *index += 3;
@@ -328,7 +329,7 @@ void JPEGDecoder::ParseHuffmanTableSpecification(unsigned char *file_content, in
   while (lh > 0)
   {
     sum_l = 0;
-    tc = (file_content[*index + 1] & mask_tc) > 4;
+    tc = (file_content[*index + 1] & mask_tc) >> 4;
     th = file_content[*index + 1] & mask_th;
     *index += 1;
     for (size_t i = 0; i < 16; i++)
@@ -351,4 +352,28 @@ void JPEGDecoder::ParseHuffmanTableSpecification(unsigned char *file_content, in
     }
     lh = lh - 17 - sum_l;
   }
+}
+
+void JPEGDecoder::ParseScanHeader(unsigned char *file_content, int *index)
+{
+  unsigned int ls;
+  unsigned char ns, cs, td, ta, ss, se, ah, al, mask_td = 240, mask_ta = 15;
+
+  ls = int(file_content[*index] << 8 | file_content[*index + 1]);
+  *index += 2;
+  ns = file_content[*index];
+  *index += 1;
+
+  for (size_t i = 0; i < ns; i++)
+  {
+    cs = file_content[*index];
+    td = (file_content[*index + 1] & mask_td) >> 4;
+    ta = file_content[*index + 1] & mask_ta;
+    *index += 2;
+  }
+
+  ss = file_content[*index];
+  se = file_content[*index + 1];
+  ah = (file_content[*index + 2] & mask_td) >> 4;
+  al = file_content[*index + 2] & mask_ta;
 }
