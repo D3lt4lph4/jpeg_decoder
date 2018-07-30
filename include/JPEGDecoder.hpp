@@ -24,7 +24,7 @@ class JPEGDecoder
     unsigned char *GetMarker(unsigned char *file_content, int *index,
                              int size = 1, bool FF_expected = true);
     void ParseQuantizationTable(unsigned char *file_content, int *index);
-    void ParseFrameHeader(unsigned char *file_content, int *index);
+    void ParseFrameHeader(unsigned char *file_content, int *index, unsigned char encoding_process_type);
     void ParseHuffmanTableSpecification(unsigned char *file_content, int *index);
     void ParseScanHeader(unsigned char *file_content, int *index);
     void ParseComment(unsigned char *file_content, int *index);
@@ -37,7 +37,11 @@ class JPEGDecoder
     cv::Mat current_image_, current_thumbnail_;
     std::string current_filename_;
 
-    std::map<unsigned char, QuantizationTable *> quantization_tables_;
+    std::map<unsigned char, QuantizationTable> quantization_tables_;
+    std::map<unsigned char, HuffmanTable> huffman_tables_;
+
+    FrameHeader current_frame_header_;
+    ScanHeader current_scan_;
 };
 
 #endif

@@ -45,8 +45,12 @@ cv::Mat JPEGDecoder::Decode(std::string filename, int level)
           this->ParseQuantizationTable(file_content, &current_index);
           std::cout << "quantization table parsed" << std::endl;
           break;
+        case START_OF_FRAME_BASELINE:
+          this->ParseFrameHeader(file_content, &current_index, FRAME_TYPE_BASELINE_DTC);
+          std::cout << "frame header parsed" << std::endl;
+          break;
         case START_OF_FRAME_PROGRESSIVE:
-          this->ParseFrameHeader(file_content, &current_index);
+          this->ParseFrameHeader(file_content, &current_index, FRAME_TYPE_PROGRESSIVE);
           std::cout << "frame header parsed" << std::endl;
           break;
         case DEFINE_HUFFMAN_TABLE:
@@ -245,19 +249,18 @@ void JPEGDecoder::ParseQuantizationTable(unsigned char *file_content,
   unsigned int lq, temp;
   unsigned char pq, tq, mask_pq = 240, mask_tq = 15;
   unsigned int qk;
-  QuantizationTable *table_being_parsed, insert_res;
+  QuantizationTable table_being_parsed = {}, insert_res;
 
   lq = int(file_content[*index] << 8 | file_content[*index + 1]);
   lq -= 2;
   *index += 2;
   while (lq > 0)
   {
-    table_being_parsed = new QuantizationTable();
     pq = file_content[*index];
     tq = (pq & mask_tq) > 4;
     pq = pq & mask_pq;
 
-    table_being_parsed->pq_ = pq;
+    table_being_parsed.pq_ = pq;
 
     *index += 1;
     if (pq == 1)
@@ -266,7 +269,7 @@ void JPEGDecoder::ParseQuantizationTable(unsigned char *file_content,
       {
         qk = int(file_content[*index] << 8 | file_content[*index + 1]);
         *index += 2;
-        table_being_parsed->qks_.push_back(qk);
+        table_being_parsed.qks_.push_back(qk);
       }
     }
     else
@@ -275,18 +278,18 @@ void JPEGDecoder::ParseQuantizationTable(unsigned char *file_content,
       {
         qk = int(file_content[*index]);
         *index += 1;
-        table_being_parsed->qks_.push_back(qk);
+        table_being_parsed.qks_.push_back(qk);
       }
     }
     if (!this->quantization_tables_
-             .insert(std::pair<unsigned char, QuantizationTable *>(
+             .insert(std::pair<unsigned char, QuantizationTable>(
                  tq, table_being_parsed))
              .second)
     {
       this->quantization_tables_.erase(tq);
       this->quantization_tables_.insert(
-          std::pair<unsigned char, QuantizationTable *>(tq,
-                                                        table_being_parsed));
+          std::pair<unsigned char, QuantizationTable>(tq,
+                                                      table_being_parsed));
     }
     temp = lq;
     lq -= (65 + 64 * pq);
@@ -297,88 +300,123 @@ void JPEGDecoder::ParseQuantizationTable(unsigned char *file_content,
   }
 }
 
-void JPEGDecoder::ParseFrameHeader(unsigned char *file_content, int *index)
+void JPEGDecoder::ParseFrameHeader(unsigned char *file_content, int *index, unsigned char encoding_process_type)
 {
-  unsigned int lf, y, x;
-  unsigned char p, nf, mask_h = 240, mask_v = 15, c, h, v, tq;
+  unsigned int header_length;
+  unsigned char number_of_image_component_in_frame, mask_h = 240, mask_v = 15, c, horizontal_sampling_factor, vertical_sampling_factor, quantization_table_destination_selector;
 
-  lf = int(file_content[*index] << 8 | file_content[*index + 1]);
-  p = file_content[*index + 2];
-  lf = int(file_content[*index + 3] << 8 | file_content[*index + 4]);
-  lf = int(file_content[*index + 5] << 8 | file_content[*index + 6]);
-  nf = file_content[*index + 7];
+  this->current_frame_header_.encoding_process_type_ = encoding_process_type;
+
+  header_length = int(file_content[*index] << 8 | file_content[*index + 1]);
+  this->current_frame_header_.sample_precision_ = file_content[*index + 2];
+  this->current_frame_header_.number_of_lines_ = int(file_content[*index + 3] << 8 | file_content[*index + 4]);
+  this->current_frame_header_.number_of_samples_per_line_ = int(file_content[*index + 5] << 8 | file_content[*index + 6]);
+  number_of_image_component_in_frame = file_content[*index + 7];
   *index += 8;
 
-  for (size_t i = 0; i < nf; i++)
+  for (size_t i = 0; i < number_of_image_component_in_frame; i++)
   {
+    std::vector<unsigned char> components_vector;
     c = file_content[*index];
-    h = (file_content[*index + 1] & mask_h) >> 4;
-    v = file_content[*index + 1] & mask_v;
-    tq = file_content[*index + 2];
+    horizontal_sampling_factor = (file_content[*index + 1] & mask_h) >> 4;
+    vertical_sampling_factor = file_content[*index + 1] & mask_v;
+    quantization_table_destination_selector = file_content[*index + 2];
+    components_vector.push_back(horizontal_sampling_factor);
+    components_vector.push_back(vertical_sampling_factor);
+    components_vector.push_back(quantization_table_destination_selector);
+    this->current_frame_header_.component_signification_parameters_.insert(std::pair<unsigned char, std::vector<unsigned char>>(c, components_vector));
     *index += 3;
   }
 }
 
 void JPEGDecoder::ParseHuffmanTableSpecification(unsigned char *file_content, int *index)
 {
-  unsigned int lh, counter, temp, sum_l = 0;
-  unsigned char tc, th, mask_tc = 240, mask_th = 15, l;
-  std::vector<unsigned char> ls, vs;
+  unsigned int table_definition_length, counter, temp, sum_code_length = 0;
+  unsigned char table_destination_identifier, mask_high = 240, mask_low = 15, number_of_huffman_codes;
 
-  lh = int(file_content[*index] << 8 | file_content[*index + 1]);
-  lh -= 2;
+  HuffmanTable table_being_parsed = {};
+
+  table_definition_length = int(file_content[*index] << 8 | file_content[*index + 1]);
+  table_definition_length -= 2;
   *index += 2;
 
-  while (lh > 0)
+  while (table_definition_length > 0)
   {
-    sum_l = 0;
-    tc = (file_content[*index + 1] & mask_tc) >> 4;
-    th = file_content[*index + 1] & mask_th;
+    sum_code_length = 0;
+    table_being_parsed.table_class_ = (file_content[*index] & mask_high) >> 4;
+    table_destination_identifier = file_content[*index] & mask_low;
+
     *index += 1;
+
     for (size_t i = 0; i < 16; i++)
     {
-      l = file_content[*index];
-      ls.push_back(l);
-      sum_l += l;
+      number_of_huffman_codes = file_content[*index];
+      table_being_parsed.number_of_codes_of_length_i_.push_back(number_of_huffman_codes);
+      sum_code_length += number_of_huffman_codes;
       *index += 1;
     }
 
     for (size_t i = 0; i < 16; i++)
     {
-      counter = ls.at(i);
+      counter = table_being_parsed.number_of_codes_of_length_i_.at(i);
+      table_being_parsed.huffman_code_associated_values_.push_back(std::vector<unsigned int>());
 
       for (size_t j = 0; j < counter; j++)
       {
-        vs.push_back(file_content[*index]);
+        table_being_parsed.huffman_code_associated_values_.at(i).push_back(file_content[*index]);
         *index += 1;
       }
     }
-    lh = lh - 17 - sum_l;
+    temp = table_definition_length;
+    table_definition_length = table_definition_length - 17 - sum_code_length;
+    if (temp < table_definition_length)
+    {
+      table_definition_length = 0;
+    }
+  }
+  if (!this->huffman_tables_.insert(std::pair<unsigned char, HuffmanTable>(table_destination_identifier, table_being_parsed)).second)
+  {
+    this->quantization_tables_.erase(table_destination_identifier);
+    this->huffman_tables_.insert(std::pair<unsigned char, HuffmanTable>(table_destination_identifier, table_being_parsed));
   }
 }
 
 void JPEGDecoder::ParseScanHeader(unsigned char *file_content, int *index)
 {
-  unsigned int ls;
-  unsigned char ns, cs, td, ta, ss, se, ah, al, mask_td = 240, mask_ta = 15;
+  // unsigned int scan_header_length;
+  unsigned char image_component_in_scan, scan_component_selector, dc_table_destination_selector, ac_table_destination_selector, mask_high = 240, mask_low = 15;
+  ScanHeader current_scan = {};
 
-  ls = int(file_content[*index] << 8 | file_content[*index + 1]);
+  // To do Check on the length of the header.
+  // scan_header_length = int(file_content[*index] << 8 | file_content[*index + 1]);
   *index += 2;
-  ns = file_content[*index];
+  image_component_in_scan = file_content[*index];
   *index += 1;
 
-  for (size_t i = 0; i < ns; i++)
+  this->current_scan_.number_of_image_components_ = image_component_in_scan;
+
+  for (size_t i = 0; i < image_component_in_scan; i++)
   {
-    cs = file_content[*index];
-    td = (file_content[*index + 1] & mask_td) >> 4;
-    ta = file_content[*index + 1] & mask_ta;
+    scan_component_selector = file_content[*index];
+    dc_table_destination_selector = (file_content[*index + 1] & mask_high) >> 4;
+    ac_table_destination_selector = file_content[*index + 1] & mask_low;
     *index += 2;
+    if (!this->current_scan_.scan_components_specification_parameters_
+             .insert(std::pair<unsigned char, std::pair<unsigned char, unsigned char>>(
+                 scan_component_selector, std::pair<unsigned char, unsigned char>(dc_table_destination_selector, ac_table_destination_selector)))
+             .second)
+    {
+      this->quantization_tables_.erase(scan_component_selector);
+      this->current_scan_.scan_components_specification_parameters_
+          .insert(std::pair<unsigned char, std::pair<unsigned char, unsigned char>>(
+              scan_component_selector, std::pair<unsigned char, unsigned char>(dc_table_destination_selector, ac_table_destination_selector)));
+    }
   }
 
-  ss = file_content[*index];
-  se = file_content[*index + 1];
-  ah = (file_content[*index + 2] & mask_td) >> 4;
-  al = file_content[*index + 2] & mask_ta;
+  this->current_scan_.start_of_spectral_selection_ = file_content[*index];
+  this->current_scan_.end_of_spectral_selection_ = file_content[*index + 1];
+  this->current_scan_.approximation_high_bit_ = (file_content[*index + 2] & mask_high) >> 4;
+  this->current_scan_.approximation_low_bit_ = file_content[*index + 2] & mask_low;
 }
 
 void JPEGDecoder::ParseComment(unsigned char *file_content, int *index)
@@ -388,7 +426,6 @@ void JPEGDecoder::ParseComment(unsigned char *file_content, int *index)
   comment_length = (unsigned int)(file_content[*index] << 8 | file_content[*index + 1]);
 
   std::cout << "Comment in the file : ";
-
   for (size_t i = 0; i < comment_length - 2; i++)
   {
     std::cout << file_content[*index + 2 + i];

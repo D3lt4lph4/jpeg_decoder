@@ -11,7 +11,7 @@ int main(int argc, char const *argv[])
     JPEGDecoder decoder;
     cv::Mat image;
 
-    image = decoder.Decode("data/chat.jpg", 1);
+    image = decoder.Decode("data/private.jpg", 1);
 
     std::cout << decoder;
 
