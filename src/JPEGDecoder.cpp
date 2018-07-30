@@ -47,12 +47,18 @@ cv::Mat JPEGDecoder::Decode(std::string filename, int level)
           std::cout << "frame header parsed" << std::endl;
           break;
         case DEFINE_HUFFMAN_TABLE:
+          this->ParseHuffmanTableSpecification(file_content, &current_index);
+          std::cout << "huffman table specification parsed" << std::endl;
+          break;
+        case START_OF_SCAN:
+
           break;
         case END_OF_IMAGE:
+          std::cout << "end of image." << std::endl;
           break;
         default:
           std::cout << "I did not know how to parse the block : " << std::hex
-                    << int(file_content[current_index]) << std::endl;
+                    << int(*marker) << std::endl;
           throw std::runtime_error("Error while processing the jpeg file.");
           break;
         }
@@ -306,5 +312,43 @@ void JPEGDecoder::ParseFrameHeader(unsigned char *file_content, int *index)
     v = file_content[*index + 1] & mask_v;
     tq = file_content[*index + 2];
     *index += 3;
+  }
+}
+
+void JPEGDecoder::ParseHuffmanTableSpecification(unsigned char *file_content, int *index)
+{
+  unsigned int lh, counter, temp, sum_l = 0;
+  unsigned char tc, th, mask_tc = 240, mask_th = 15, l;
+  std::vector<unsigned char> ls, vs;
+
+  lh = int(file_content[*index] << 8 | file_content[*index + 1]);
+  lh -= 2;
+  *index += 2;
+
+  while (lh > 0)
+  {
+    sum_l = 0;
+    tc = (file_content[*index + 1] & mask_tc) > 4;
+    th = file_content[*index + 1] & mask_th;
+    *index += 1;
+    for (size_t i = 0; i < 16; i++)
+    {
+      l = file_content[*index];
+      ls.push_back(l);
+      sum_l += l;
+      *index += 1;
+    }
+
+    for (size_t i = 0; i < 16; i++)
+    {
+      counter = ls.at(i);
+
+      for (size_t j = 0; j < counter; j++)
+      {
+        vs.push_back(file_content[*index]);
+        *index += 1;
+      }
+    }
+    lh = lh - 17 - sum_l;
   }
 }

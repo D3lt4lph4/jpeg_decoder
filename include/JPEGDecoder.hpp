@@ -24,6 +24,7 @@ class JPEGDecoder {
                            int size = 1, bool FF_expected = true);
   void ParseQuantizationTable(unsigned char *file_content, int *index);
   void ParseFrameHeader(unsigned char *file_content, int *index);
+  void ParseHuffmanTableSpecification(unsigned char *file_content, int *index);
   bool GetFileInformation(unsigned char *file_content, int *index);
 
   int current_version_, current_unit_, horizontal_pixel_density_,
