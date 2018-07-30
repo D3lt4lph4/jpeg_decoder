@@ -1,6 +1,8 @@
 #ifndef __JPEG_DECODER__
 #define __JPEG_DECODER__
 
+#include <map>
+
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 

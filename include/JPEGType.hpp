@@ -21,6 +21,11 @@ struct QuantizationTable {
   std::vector<unsigned int> qks_;
 };
 
+struct FrameComponentSignification {
+  unsigned char horizontal_sampling_factor_, vertical_sampling_factor,
+      quantization_table_selector;
+};
+
 struct FrameHeader {
   unsigned char sample_precision_;
   unsigned int number_of_lines_, number_of_samples_per_line,
@@ -34,10 +39,6 @@ struct ScanHeader {
       scan_component_specification_parameters_;
 };
 
-struct FrameComponentSignification {
-  unsigned char horizontal_sampling_factor_, vertical_sampling_factor,
-      quantization_table_selector;
-};
 
 struct HuffmanTable {
   unsigned char tc_, th_;
