@@ -433,3 +433,121 @@ void JPEGDecoder::ParseComment(unsigned char *file_content, int *index)
 
   *index += comment_length;
 }
+
+char JPEGDecoder::NextBit(unsigned char *file_content, int *index)
+{
+  char current_byte = file_content[*index], bit;
+
+  if (this->next_bit_count_ == 0)
+  {
+    this->next_bit_count_ = 8;
+    if (current_byte == 0xFF)
+    {
+      if (!(file_content[*index + 1] == 0x00))
+      {
+        if (file_content[*index + 1] == DEFINE_NUMBER_OF_LINE)
+        {
+          // TODO //
+          // Should process the dnl marker
+        }
+        else
+        {
+          throw std::runtime_error("Error while parsing the file, DNL byte expected but something else found");
+        }
+      }
+      else
+      {
+        if ((this->next_bit_count_ - 1) == 0)
+        {
+          *index += 1;
+        }
+      }
+    }
+  }
+
+  bit = current_byte << (8 - this->next_bit_count_);
+  bit = bit >> 7;
+  this->next_bit_count_ -= 1;
+
+  if (this->next_bit_count_ == 0)
+  {
+    *index += 1;
+  }
+  return bit;
+}
+
+char JPEGDecoder::Decode(unsigned char *file_content, int *index, HuffmanTable used_table)
+{
+  int i = 1, j;
+  char code;
+
+  code = this->NextBit(file_content, index);
+  while (code > used_table.max_code.at(i))
+  {
+    i += 1;
+    code = (code << 1) + this->NextBit(file_content, index);
+  }
+
+  j = used_table.val_pointer.at(j);
+  j = j + code - used_table.max_code.at(i);
+  return used_table.huffman_code_associated_values_.at(j);
+}
+
+std::vector<char> JPEGDecoder::GenerateSizeTable(std::vector<char> bits)
+{
+  int k = 0, i = 1, j = 1;
+  std::vector<char> huffsize;
+
+  while (i < 16)
+  {
+    if (j > bits.at(i))
+    {
+      i += 1;
+      j = 1;
+    }
+    else
+    {
+      huffsize.push_back(i);
+      k += 1;
+      j += 1;
+    }
+  }
+  huffsize.push_back(i);
+  this->last_k_ = k;
+}
+
+std::vector<int> JPEGDecoder::GenerateCodeTable(std::vector<char> huffsize)
+{
+  bool smallest_processed;
+  int k = 0, code = 0;
+  char si = huffsize.at(0);
+  std::vector<int> huffcode(huffsize.size(), 0), min_code(16, 0), max_code(16, 0), val_pointer(16, 0);
+
+  while (true)
+  {
+    smallest_processed = false;
+    do
+    {
+      if (!smallest_processed)
+      {
+        val_pointer.at(si) = k;
+        min_code.at(si) = code;
+        smallest_processed = true;
+      }
+      huffcode.at(k) = code;
+      code += 1;
+      k += 1;
+    } while (huffsize.at(k) == si);
+    max_code.at(si) = code;
+    if (huffsize.at(k) == 0)
+    {
+      return huffcode;
+    }
+
+    do
+    {
+      code = code << 1;
+      si = si + 1;
+    } while (huffsize.at(k) != si);
+  }
+}
