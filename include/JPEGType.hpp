@@ -38,6 +38,7 @@ struct FrameComponentSignification
 
 struct JFIFHeader
 {
+  int current_version_, current_unit_, horizontal_pixel_density_, vertical_pixel_density_,thumbnail_horizontal_pixel_count_, thumbnail_vertical_pixel_count_;
 };
 
 struct FrameHeader

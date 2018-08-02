@@ -33,7 +33,6 @@ private:
   void DecodeRestartIntervalProgressive(unsigned char *file_content, int *index);
   void DecodeMCUProgressive(unsigned char *file_content, int *index);
   void DecodeRestartIntervalBaseline(unsigned char *file_content, int *index);
-  void DecodeMCUBaseline(unsigned char *file_content, int *index);
 
   // Parsing function
   void ParseQuantizationTable(unsigned char *file_content, int *index);
@@ -60,15 +59,13 @@ private:
                            int size = 1, bool FF_expected = true);
 
   unsigned int restart_interval;
-  int current_version_, current_unit_, horizontal_pixel_density_,
-      vertical_pixel_density_, thumbnail_horizontal_pixel_count_,
-      thumbnail_vertical_pixel_count_, current_define_quantization_table_, data_unit_per_mcu_;
+  int current_define_quantization_table_, data_unit_per_mcu_, decoding_level_;
   cv::Mat current_image_, current_thumbnail_;
   std::string current_filename_;
 
   // The different tables
   std::map<unsigned char, QuantizationTable> quantization_tables_;
-  std::map<unsigned char, HuffmanTable> huffman_tables_;
+  std::map<unsigned char, HuffmanTable> dc_huffman_tables_, ac_huffman_tables_;
 
   // The headers
   FrameHeader current_frame_header_;
