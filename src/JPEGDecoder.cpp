@@ -602,6 +602,7 @@ void JPEGDecoder::ParseComment(unsigned char *file_content, int *index)
   {
     std::cout << file_content[*index + 2 + i];
   }
+  std::cout << std::endl;
 
   *index += comment_length;
 }
