@@ -49,7 +49,7 @@ private:
   int ReceiveBaseline(unsigned char decoded_dc);
   int ExtendedBaseline(unsigned char diff, unsigned char decoded_dc);
   void DecodeACCoefficients(unsigned char *file_content, int *index, cv::Mat *new_block, HuffmanTable used_table);
-  void DecodeZZ(unsigned char k);
+  unsigned char DecodeZZ(unsigned char k, unsigned char ssss);
 
   std::vector<unsigned char> GenerateSizeTable(std::vector<unsigned char> bits);
   void GenerateCodeTable(HuffmanTable *table_to_fill);

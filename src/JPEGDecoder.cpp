@@ -372,7 +372,7 @@ void JPEGDecoder::DecodeRestartIntervalBaseline(unsigned char *file_content, int
   unsigned char decoded_dc, diff;
   this->ResetDecoderBaseline();
   int component_number = 0;
-  unsigned char table_index;
+  unsigned char dc_table_index, ac_table_index;
   cv::Mat new_block = cv::Mat(8, 8, 1);
 
   while (!this->IsMarker(file_content, *index))
@@ -382,17 +382,18 @@ void JPEGDecoder::DecodeRestartIntervalBaseline(unsigned char *file_content, int
       if (this->current_frame_header_.number_image_component > 1)
       {
         // Then we are interleaved.
-        table_index = this->current_scan_.scan_components_specification_parameters_.at(component_number).first;
+        dc_table_index = this->current_scan_.scan_components_specification_parameters_.at(component_number).first;
+        ac_table_index = this->current_scan_.scan_components_specification_parameters_.at(component_number).second;
 
         //We decode the DC component.
-        decoded_dc = this->DecodeBaseline(file_content, index, this->dc_huffman_tables_.at(0));
+        decoded_dc = this->DecodeBaseline(file_content, index, this->dc_huffman_tables_.at(dc_table_index));
         diff = this->ReceiveBaseline(decoded_dc);
         diff = this->ExtendedBaseline(diff, decoded_dc);
 
         new_block.at<uchar>(0, 0, 0) = diff;
 
         // We decode the ac components.
-        this->DecodeACCoefficients(file_content, index, &new_block);
+        this->DecodeACCoefficients(file_content, index, &new_block, this->ac_huffman_tables_.at(ac_table_index));
 
         if (component_number == this->current_frame_header_.number_image_component - 1)
         {
@@ -770,7 +771,7 @@ void JPEGDecoder::DecodeACCoefficients(unsigned char *file_content, int *index, 
     else
     {
       k = k + r;
-      this->DecodeZZ(k);
+      ZZ.at(k) = this->DecodeZZ(k, ssss);
       if (k == 63)
       {
         out_condition = true;
@@ -780,3 +781,17 @@ void JPEGDecoder::DecodeACCoefficients(unsigned char *file_content, int *index, 
 }
 
 void JPEGDecoder::ResetDecoderProgressive() {}
+
+/**
+ * \fn unsigned char DecodeZZ(unsigned char k, unsigned char ssss)
+ * \brief Decode the coefficient in the zigzag order.
+ * 
+ * \param[in] k The position of the coefficient.
+ * \param[in] ssss the low bit of ?
+ */
+unsigned char JPEGDecoder::DecodeZZ(unsigned char k, unsigned char ssss)
+{
+  unsigned char return_value;
+  return_value = this->ReceiveBaseline(ssss);
+  return_value = this->ExtendedBaseline(return_value, ssss);
+}
