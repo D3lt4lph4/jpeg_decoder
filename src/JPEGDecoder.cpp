@@ -28,10 +28,13 @@ cv::Mat JPEGDecoder::Decode(std::string filename, int level)
   }
 
   this->InitializeDecoder();
+  this->decoding_level_ = level;
+
   file_to_decode.open(filename, std::ios::binary);
 
   if (file_to_decode.is_open())
   {
+    // Getting the file content to be read.
     file_to_decode.seekg(0, std::ios::end);
     size = file_to_decode.tellg();
     file_to_decode.seekg(0, std::ios::beg);
@@ -101,7 +104,8 @@ void JPEGDecoder::InitializeDecoder()
 {
   // We remove all elements from the maps of tables if any.
   this->quantization_tables_.clear();
-  this->huffman_tables_.clear();
+  this->dc_huffman_tables_.clear();
+  this->ac_huffman_tables_.clear();
 
   // We reset all the current header if required.
 }
@@ -114,6 +118,7 @@ void JPEGDecoder::DecoderSetup()
 void JPEGDecoder::ParseJFIFSegment(unsigned char *file_content, int *index)
 {
   unsigned char *marker;
+  this->current_jfif_header = JFIFHeader();
 
   // Getting JFIF marker
   marker = this->GetMarker(file_content, index, 2, false);
@@ -125,31 +130,31 @@ void JPEGDecoder::ParseJFIFSegment(unsigned char *file_content, int *index)
 
   // Getting the version of the encoding.
   marker = this->GetMarker(file_content, index, 2, false);
-  this->current_version_ = int(marker[0] << 8 | marker[1]);
+  this->current_jfif_header.current_version_ = int(marker[0] << 8 | marker[1]);
 
   // Getting the units.
   marker = this->GetMarker(file_content, index, 1, false);
-  this->current_unit_ = int(marker[0]);
+  this->current_jfif_header.current_unit_ = int(marker[0]);
 
   // Getting the Horizontal Pixel Density
   marker = this->GetMarker(file_content, index, 2, false);
-  this->horizontal_pixel_density_ = int(marker[0] << 8 | marker[1]);
+  this->current_jfif_header.horizontal_pixel_density_ = int(marker[0] << 8 | marker[1]);
 
   // Getting the Vertical Pixel Density
   marker = this->GetMarker(file_content, index, 2, false);
-  this->vertical_pixel_density_ = int(marker[0] << 8 | marker[1]);
+  this->current_jfif_header.vertical_pixel_density_ = int(marker[0] << 8 | marker[1]);
 
   // Getting the Thumbnail Horizontal Pixel Count
   marker = this->GetMarker(file_content, index, 1, false);
-  this->thumbnail_horizontal_pixel_count_ = int(marker[0]);
+  this->current_jfif_header.thumbnail_horizontal_pixel_count_ = int(marker[0]);
 
   // Getting the Thumbnail Vertical Pixel Count
   marker = this->GetMarker(file_content, index, 1, false);
-  this->thumbnail_vertical_pixel_count_ = int(marker[0]);
+  this->current_jfif_header.thumbnail_vertical_pixel_count_ = int(marker[0]);
 
   // If we have thumbnail count, we get the image.
-  if (this->thumbnail_horizontal_pixel_count_ != 0 &&
-      this->thumbnail_vertical_pixel_count_ != 0)
+  if (this->current_jfif_header.thumbnail_horizontal_pixel_count_ != 0 &&
+      this->current_jfif_header.thumbnail_vertical_pixel_count_ != 0)
   {
     std::cout << "TODO" << std::endl;
   }
@@ -187,9 +192,9 @@ unsigned char *JPEGDecoder::GetMarker(unsigned char *file_content, int *index,
 std::ostream &operator<<(std::ostream &out, const JPEGDecoder &decoder)
 {
   out << "Format: JFIF\n";
-  out << "Version : " << decoder.current_version_ << "\n";
+  out << "Version : " << decoder.current_jfif_header.current_version_ << "\n";
 
-  switch (decoder.current_unit_)
+  switch (decoder.current_jfif_header.current_unit_)
   {
   case 0:
     out << "Unit : 0, no units\n";
@@ -207,13 +212,13 @@ std::ostream &operator<<(std::ostream &out, const JPEGDecoder &decoder)
     break;
   }
 
-  out << "Horizontal pixel density : " << decoder.horizontal_pixel_density_
+  out << "Horizontal pixel density : " << decoder.current_jfif_header.horizontal_pixel_density_
       << "\n";
-  out << "Vertical pixel density : " << decoder.vertical_pixel_density_ << "\n";
+  out << "Vertical pixel density : " << decoder.current_jfif_header.vertical_pixel_density_ << "\n";
   out << "Thumbnail horizontal pixel count : "
-      << decoder.thumbnail_horizontal_pixel_count_ << "\n";
+      << decoder.current_jfif_header.thumbnail_horizontal_pixel_count_ << "\n";
   out << "Thumbnail vertical pixel count : "
-      << decoder.thumbnail_vertical_pixel_count_ << "\n";
+      << decoder.current_jfif_header.thumbnail_vertical_pixel_count_ << "\n";
   return out;
 }
 
@@ -340,27 +345,20 @@ void JPEGDecoder::DecodeScan(unsigned char *file_content, int *index, unsigned c
 
 void JPEGDecoder::DecodeRestartIntervalBaseline(unsigned char *file_content, int *index)
 {
-  bool mcu = true; // To define
+  int n = 0;
+  unsigned char decoded_dc, diff;
   this->ResetDecoderBaseline();
 
   while (!this->IsMarker(file_content, *index))
   {
-    this->DecodeMCUBaseline(file_content, index);
-  }
-}
+    while (n < this->data_unit_per_mcu_)
+    {
+      decoded_dc = this->DecodeBaseline(file_content, index, this->dc_huffman_tables_.at(0));
+      diff = this->ReceiveBaseline(decoded_dc);
+      diff = this->ExtendedBaseline(diff, decoded_dc);
 
-void JPEGDecoder::DecodeMCUBaseline(unsigned char *file_content, int *index)
-{
-  int n = 0;
-  unsigned char decoded_dc, diff;
-
-  while (n < this->data_unit_per_mcu_)
-  {
-    decoded_dc = this->DecodeBaseline(file_content, index, this->huffman_tables_.at(0));
-    diff = this->ReceiveBaseline(decoded_dc);
-    diff = this->ExtendedBaseline(diff, decoded_dc);
-
-    this->DecodeACCoefficients(file_content, index);
+      this->DecodeACCoefficients(file_content, index);
+    }
   }
 }
 
@@ -443,7 +441,7 @@ void JPEGDecoder::InterpretFrameHeader(unsigned char *file_content, int *index, 
 void JPEGDecoder::ParseHuffmanTableSpecification(unsigned char *file_content, int *index)
 {
   unsigned int table_definition_length, counter, temp, sum_code_length = 0;
-  unsigned char table_destination_identifier, mask_high = 240, mask_low = 15, number_of_huffman_codes;
+  unsigned char table_destination_identifier, table_class, mask_high = 240, mask_low = 15, number_of_huffman_codes;
 
   HuffmanTable table_being_parsed = {};
 
@@ -454,7 +452,7 @@ void JPEGDecoder::ParseHuffmanTableSpecification(unsigned char *file_content, in
   while (table_definition_length > 0)
   {
     sum_code_length = 0;
-    table_being_parsed.table_class_ = (file_content[*index] & mask_high) >> 4;
+    table_class = (file_content[*index] & mask_high) >> 4;
     table_destination_identifier = file_content[*index] & mask_low;
 
     *index += 1;
@@ -490,10 +488,22 @@ void JPEGDecoder::ParseHuffmanTableSpecification(unsigned char *file_content, in
   table_being_parsed.huffsize = this->GenerateSizeTable(table_being_parsed.bits);
   this->GenerateCodeTable(&table_being_parsed);
 
-  if (!this->huffman_tables_.insert(std::pair<unsigned char, HuffmanTable>(table_destination_identifier, table_being_parsed)).second)
+  // If 0, DC table, else AC.
+  if (table_class == 0)
   {
-    this->quantization_tables_.erase(table_destination_identifier);
-    this->huffman_tables_.insert(std::pair<unsigned char, HuffmanTable>(table_destination_identifier, table_being_parsed));
+    if (!this->dc_huffman_tables_.insert(std::pair<unsigned char, HuffmanTable>(table_destination_identifier, table_being_parsed)).second)
+    {
+      this->dc_huffman_tables_.erase(table_destination_identifier);
+      this->dc_huffman_tables_.insert(std::pair<unsigned char, HuffmanTable>(table_destination_identifier, table_being_parsed));
+    }
+  }
+  else
+  {
+    if (!this->ac_huffman_tables_.insert(std::pair<unsigned char, HuffmanTable>(table_destination_identifier, table_being_parsed)).second)
+    {
+      this->ac_huffman_tables_.erase(table_destination_identifier);
+      this->ac_huffman_tables_.insert(std::pair<unsigned char, HuffmanTable>(table_destination_identifier, table_being_parsed));
+    }
   }
 }
 
