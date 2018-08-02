@@ -13,7 +13,9 @@ int main(int argc, char const *argv[])
 
     image = decoder.Decode("data/private.jpg", 1);
 
-    std::cout << decoder;
+    cv::namedWindow("Decoded image.", cv::WINDOW_AUTOSIZE);
+    cv::imshow("Decoded image.", image);
+    cv::waitKey(0);
 
     return 0;
 }
