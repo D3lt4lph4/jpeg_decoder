@@ -8,17 +8,26 @@
 #include "JPEGDecoder.hpp"
 #include "JPEGException.hpp"
 
+/**
+ * \fn cv::Mat JPEGDecoder::Decode(std::string filename, int level)
+ * \brief Take a JPEG compress file as entry and output the decoded matrix.
+ * 
+ * \param[in] filename The file to be decoded.
+ * \param[in] level The required level of decoding. 
+ */
 cv::Mat JPEGDecoder::Decode(std::string filename, int level)
 {
   std::ifstream file_to_decode;
   int size, current_index = 0;
   unsigned char *file_content, *marker;
+
   // If the filename is the same, we assume to have the same image.
   if (filename.compare(this->current_filename_) == 0)
   {
     return this->current_image_.clone();
   }
 
+  this->InitializeDecoder();
   file_to_decode.open(filename, std::ios::binary);
 
   if (file_to_decode.is_open())
@@ -82,6 +91,15 @@ cv::Mat JPEGDecoder::Decode(std::string filename, int level)
   }
 
   return cv::Mat(300, 300, 25);
+}
+
+/**
+ * \fn void JPEGDecoder::InitializeDecoder()
+ * \brief Initialize all the values in the decoder for a new image to decode.
+ */
+void JPEGDecoder::InitializeDecoder() {
+  // Reset the different tables.
+  
 }
 
 void JPEGDecoder::DecoderSetup()
@@ -334,7 +352,7 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned char *file_content, int *index)
 
   while (n < this->data_unit_per_mcu_)
   {
-    decoded_dc = this->DecodeBaseline(file_content, index);
+    decoded_dc = this->DecodeBaseline(file_content, index, this->huffman_tables_.at(0));
     diff = this->ReceiveBaseline(decoded_dc);
     diff = this->ExtendedBaseline(diff, decoded_dc);
 
@@ -349,7 +367,7 @@ int JPEGDecoder::ReceiveBaseline(unsigned char decoded_dc)
   while (i != decoded_dc)
   {
     i += i;
-    value = (value << 1) + this->NextBit(this->current_file_content_);
+    value = (value << 1) + this->NextBit(this->current_file_content_, &i);
   }
 
   return value;
@@ -528,7 +546,7 @@ void JPEGDecoder::ParseComment(unsigned char *file_content, int *index)
   *index += comment_length;
 }
 
-char JPEGDecoder::NextBit(unsigned char *file_content, int *index)
+unsigned char JPEGDecoder::NextBit(unsigned char *file_content, int *index)
 {
   char current_byte = file_content[*index], bit;
 
@@ -570,7 +588,7 @@ char JPEGDecoder::NextBit(unsigned char *file_content, int *index)
   return bit;
 }
 
-char JPEGDecoder::DecodeBaseline(unsigned char *file_content, int *index, HuffmanTable used_table)
+unsigned char JPEGDecoder::DecodeBaseline(unsigned char *file_content, int *index, HuffmanTable used_table)
 {
   int i = 1, j;
   char code;
@@ -584,7 +602,7 @@ char JPEGDecoder::DecodeBaseline(unsigned char *file_content, int *index, Huffma
 
   j = used_table.val_pointer.at(j);
   j = j + code - used_table.max_code.at(i);
-  return used_table.huffvals.at(j);
+  return used_table.huffvals.at(i).at(j);
 }
 
 std::vector<unsigned char> JPEGDecoder::GenerateSizeTable(std::vector<unsigned char> bits)
@@ -649,3 +667,18 @@ void JPEGDecoder::GenerateCodeTable(HuffmanTable *table_to_fill)
     } while (table_to_fill->huffsize.at(k) != si);
   }
 }
+
+void JPEGDecoder::ResetDecoderBaseline()
+{
+}
+
+bool JPEGDecoder::IsMarker(unsigned char *file_content, int index)
+{
+  return true;
+}
+
+void JPEGDecoder::DecodeACCoefficients(unsigned char *file_content, int *index)
+{
+}
+
+void JPEGDecoder::ResetDecoderProgressive() {}

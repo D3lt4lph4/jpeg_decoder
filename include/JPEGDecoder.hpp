@@ -22,6 +22,7 @@ private:
   void InverseDirectCosineTransform();
 
   // Setup Functions
+  void InitializeDecoder();
   void DecoderSetup();
   void ResetDecoderProgressive();
   void ResetDecoderBaseline();
