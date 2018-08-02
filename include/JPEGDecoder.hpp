@@ -66,12 +66,16 @@ private:
   cv::Mat current_image_, current_thumbnail_;
   std::string current_filename_;
 
+  // The different tables
   std::map<unsigned char, QuantizationTable> quantization_tables_;
   std::map<unsigned char, HuffmanTable> huffman_tables_;
 
+  // The headers
   FrameHeader current_frame_header_;
   ScanHeader current_scan_;
+  JFIFHeader current_jfif_header;
 
+  // File crossing variable.
   unsigned char *current_file_content_;
   int current_index_;
 

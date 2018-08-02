@@ -97,9 +97,13 @@ cv::Mat JPEGDecoder::Decode(std::string filename, int level)
  * \fn void JPEGDecoder::InitializeDecoder()
  * \brief Initialize all the values in the decoder for a new image to decode.
  */
-void JPEGDecoder::InitializeDecoder() {
-  // Reset the different tables.
-  
+void JPEGDecoder::InitializeDecoder()
+{
+  // We remove all elements from the maps of tables if any.
+  this->quantization_tables_.clear();
+  this->huffman_tables_.clear();
+
+  // We reset all the current header if required.
 }
 
 void JPEGDecoder::DecoderSetup()

@@ -27,12 +27,17 @@ struct QuantizationTable
 {
   unsigned char pq_;
   std::vector<unsigned int> qks_;
+  void Reset() {}
 };
 
 struct FrameComponentSignification
 {
   unsigned char horizontal_sampling_factor_, vertical_sampling_factor,
       quantization_table_selector;
+};
+
+struct JFIFHeader
+{
 };
 
 struct FrameHeader
@@ -55,5 +60,6 @@ struct HuffmanTable
   std::vector<unsigned char> bits, huffsize;
   std::vector<std::vector<unsigned char>> huffvals;
   std::vector<int> huffcode, min_code, max_code, val_pointer;
+  void Reset() {}
 };
 #endif
