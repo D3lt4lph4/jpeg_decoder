@@ -348,16 +348,40 @@ void JPEGDecoder::DecodeRestartIntervalBaseline(unsigned char *file_content, int
   int n = 0;
   unsigned char decoded_dc, diff;
   this->ResetDecoderBaseline();
+  int component_number = 0;
+  unsigned char table_index;
+  cv::Mat new_block = cv::Mat(8, 8, 1);
 
   while (!this->IsMarker(file_content, *index))
   {
     while (n < this->data_unit_per_mcu_)
     {
-      decoded_dc = this->DecodeBaseline(file_content, index, this->dc_huffman_tables_.at(0));
-      diff = this->ReceiveBaseline(decoded_dc);
-      diff = this->ExtendedBaseline(diff, decoded_dc);
+      if (this->current_frame_header_.number_image_component > 1)
+      {
+        // Then we are interleaved.
+        table_index = this->current_scan_.scan_components_specification_parameters_.at(component_number).first;
 
-      this->DecodeACCoefficients(file_content, index);
+        //We decode the DC component.
+        decoded_dc = this->DecodeBaseline(file_content, index, this->dc_huffman_tables_.at(0));
+        diff = this->ReceiveBaseline(decoded_dc);
+        diff = this->ExtendedBaseline(diff, decoded_dc);
+
+        new_block.at<uchar>(0, 0, 0) = diff;
+
+        // We decode the ac components.
+        this->DecodeACCoefficients(file_content, index, &new_block);
+
+        
+
+        if (component_number == this->current_frame_header_.number_image_component - 1)
+        {
+          component_number = 0;
+        }
+        else
+        {
+          component_number += 1;
+        }
+      }
     }
   }
 }
@@ -691,7 +715,7 @@ bool JPEGDecoder::IsMarker(unsigned char *file_content, int index)
   return true;
 }
 
-void JPEGDecoder::DecodeACCoefficients(unsigned char *file_content, int *index)
+void JPEGDecoder::DecodeACCoefficients(unsigned char *file_content, int *index, cv::Mat *new_block)
 {
 }
 
