@@ -45,7 +45,7 @@ struct FrameHeader
 {
   unsigned char encoding_process_type_, sample_precision_;
   unsigned int number_of_lines_, number_of_samples_per_line_,
-      number_image_component;
+      number_of_image_component;
   std::map<unsigned char, std::vector<unsigned char>> component_signification_parameters_;
 };
 

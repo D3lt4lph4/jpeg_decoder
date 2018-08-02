@@ -178,6 +178,7 @@ unsigned char *JPEGDecoder::GetMarker(unsigned char *file_content, int *index,
     }
     else
     {
+      std::cout << *index << std::endl;
       error << "Error while reading marker, 0xFF expected, but " << std::hex
             << (int)file_content[*index] << " found.";
       throw std::runtime_error(error.str());
@@ -290,6 +291,7 @@ void JPEGDecoder::DecodeFrame(unsigned char *file_content, int *index, unsigned 
     marker = this->GetMarker(file_content, index, 2);
     if (*marker == START_OF_SCAN)
     {
+
       this->DecodeScan(file_content, index, encoding_process_type);
     }
     else
@@ -308,7 +310,7 @@ void JPEGDecoder::DecodeFrame(unsigned char *file_content, int *index, unsigned 
         break;
       case DEFINE_HUFFMAN_TABLE:
         this->ParseHuffmanTableSpecification(file_content, index);
-        std::cout << "huffman table specification parsed" << std::endl;
+        std::cout << "huffman table specification parsed_1" << std::endl;
         break;
       case END_OF_IMAGE:
         break;
@@ -371,19 +373,21 @@ void JPEGDecoder::DecodeRestartIntervalBaseline(unsigned char *file_content, int
   int n = 0;
   unsigned char decoded_dc, diff;
   this->ResetDecoderBaseline();
-  int component_number = 0;
+  unsigned int component_number = 1;
   unsigned char dc_table_index, ac_table_index;
+  this->data_unit_per_mcu_ = 3;
   cv::Mat new_block = cv::Mat(8, 8, 1);
 
   while (!this->IsMarker(file_content, *index))
   {
+    n = 0;
     while (n < this->data_unit_per_mcu_)
     {
-      if (this->current_frame_header_.number_image_component > 1)
+      if (this->current_frame_header_.number_of_image_component > 1)
       {
         // Then we are interleaved.
-        dc_table_index = this->current_scan_.scan_components_specification_parameters_.at(component_number).first;
-        ac_table_index = this->current_scan_.scan_components_specification_parameters_.at(component_number).second;
+        dc_table_index = this->current_scan_.scan_components_specification_parameters_.at((unsigned char)component_number).first;
+        ac_table_index = this->current_scan_.scan_components_specification_parameters_.at((unsigned char)component_number).second;
 
         //We decode the DC component.
         decoded_dc = this->DecodeBaseline(file_content, index, this->dc_huffman_tables_.at(dc_table_index));
@@ -395,15 +399,16 @@ void JPEGDecoder::DecodeRestartIntervalBaseline(unsigned char *file_content, int
         // We decode the ac components.
         this->DecodeACCoefficients(file_content, index, &new_block, this->ac_huffman_tables_.at(ac_table_index));
 
-        if (component_number == this->current_frame_header_.number_image_component - 1)
+        if (component_number == this->current_frame_header_.number_of_image_component)
         {
-          component_number = 0;
+          component_number = 1;
         }
         else
         {
           component_number += 1;
         }
       }
+      n += 1;
     }
   }
 }
@@ -436,7 +441,6 @@ int JPEGDecoder::ExtendedBaseline(unsigned char diff, unsigned char decoded_dc)
 
 void JPEGDecoder::DecodeRestartIntervalProgressive(unsigned char *file_content, int *index)
 {
-  bool mcu = true; // To define
   this->ResetDecoderProgressive();
 
   while (!this->IsMarker(file_content, *index))
@@ -457,19 +461,20 @@ void JPEGDecoder::DecodeMCUProgressive(unsigned char *file_content, int *index)
 
 void JPEGDecoder::InterpretFrameHeader(unsigned char *file_content, int *index, unsigned char encoding_process_type)
 {
-  unsigned int header_length;
+  // unsigned int header_length;
   unsigned char number_of_image_component_in_frame, mask_h = 240, mask_v = 15, c, horizontal_sampling_factor, vertical_sampling_factor, quantization_table_destination_selector;
 
   this->current_frame_header_.encoding_process_type_ = encoding_process_type;
 
-  header_length = int(file_content[*index] << 8 | file_content[*index + 1]);
+  // To use to check header size.
+  // header_length = int(file_content[*index] << 8 | file_content[*index + 1]);
   this->current_frame_header_.sample_precision_ = file_content[*index + 2];
   this->current_frame_header_.number_of_lines_ = int(file_content[*index + 3] << 8 | file_content[*index + 4]);
   this->current_frame_header_.number_of_samples_per_line_ = int(file_content[*index + 5] << 8 | file_content[*index + 6]);
-  number_of_image_component_in_frame = file_content[*index + 7];
+  this->current_frame_header_.number_of_image_component = file_content[*index + 7];
   *index += 8;
 
-  for (size_t i = 0; i < number_of_image_component_in_frame; i++)
+  for (size_t i = 0; i < this->current_frame_header_.number_of_image_component; i++)
   {
     std::vector<unsigned char> components_vector;
     c = file_content[*index];
@@ -609,7 +614,7 @@ void JPEGDecoder::ParseComment(unsigned char *file_content, int *index)
 
 unsigned char JPEGDecoder::NextBit(unsigned char *file_content, int *index)
 {
-  char current_byte = file_content[*index], bit;
+  unsigned char current_byte = file_content[*index], bit;
 
   if (this->next_bit_count_ == 0)
   {
@@ -661,9 +666,9 @@ unsigned char JPEGDecoder::DecodeBaseline(unsigned char *file_content, int *inde
     code = (code << 1) + this->NextBit(file_content, index);
   }
 
-  j = used_table.val_pointer.at(j);
-  j = j + code - used_table.max_code.at(i);
-  return used_table.huffvals.at(i).at(j);
+  j = used_table.val_pointer.at(i - 1);
+  j = j + code - used_table.max_code.at(i - 1);
+  return used_table.huffvals.at(i - 1).at(j);
 }
 
 std::vector<unsigned char> JPEGDecoder::GenerateSizeTable(std::vector<unsigned char> bits)
@@ -673,7 +678,7 @@ std::vector<unsigned char> JPEGDecoder::GenerateSizeTable(std::vector<unsigned c
 
   while (i < 16)
   {
-    if (j > bits.at(i))
+    if (j > bits.at(i - 1))
     {
       i += 1;
       j = 1;
@@ -685,8 +690,9 @@ std::vector<unsigned char> JPEGDecoder::GenerateSizeTable(std::vector<unsigned c
       j += 1;
     }
   }
-  huffsize.push_back(i);
+  huffsize.push_back(0);
   this->last_k_ = k;
+  return huffsize;
 }
 
 void JPEGDecoder::GenerateCodeTable(HuffmanTable *table_to_fill)
@@ -735,7 +741,19 @@ void JPEGDecoder::ResetDecoderBaseline()
 
 bool JPEGDecoder::IsMarker(unsigned char *file_content, int index)
 {
-  return true;
+
+  if (file_content[index] == 0xFF)
+  {
+    if (file_content[index + 1] == 0xFF)
+    {
+      return false;
+    }
+    return true;
+  }
+  else
+  {
+    return false;
+  }
 }
 
 /**
@@ -772,7 +790,7 @@ void JPEGDecoder::DecodeACCoefficients(unsigned char *file_content, int *index, 
     else
     {
       k = k + r;
-      ZZ.at(k) = this->DecodeZZ(k, ssss);
+      ZZ.at(k) = this->DecodeZZ(ssss);
       if (k == 63)
       {
         out_condition = true;
@@ -790,9 +808,10 @@ void JPEGDecoder::ResetDecoderProgressive() {}
  * \param[in] k The position of the coefficient.
  * \param[in] ssss the low bit of ?
  */
-unsigned char JPEGDecoder::DecodeZZ(unsigned char k, unsigned char ssss)
+unsigned char JPEGDecoder::DecodeZZ(unsigned char ssss)
 {
   unsigned char return_value;
   return_value = this->ReceiveBaseline(ssss);
   return_value = this->ExtendedBaseline(return_value, ssss);
+  return return_value;
 }
