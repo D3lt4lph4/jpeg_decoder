@@ -8,14 +8,21 @@
 
 int main(int argc, char const *argv[])
 {
-    JPEGDecoder decoder;
-    cv::Mat image;
+    if (argc == 2)
+    {
+        JPEGDecoder decoder;
+        cv::Mat image;
 
-    image = decoder.Decode("data/private.jpg", 1);
+        image = decoder.Decode(argv[1], 1);
 
-    cv::namedWindow("Decoded image.", cv::WINDOW_AUTOSIZE);
-    cv::imshow("Decoded image.", image);
-    cv::waitKey(0);
+        cv::namedWindow("Decoded image.", cv::WINDOW_AUTOSIZE);
+        cv::imshow("Decoded image.", image);
+        cv::waitKey(0);
+    }
+    else
+    {
+        std::cout << "Please enter one image to decode." << std::endl;
+    }
 
     return 0;
 }
