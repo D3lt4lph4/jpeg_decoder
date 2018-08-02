@@ -736,8 +736,47 @@ bool JPEGDecoder::IsMarker(unsigned char *file_content, int index)
   return true;
 }
 
-void JPEGDecoder::DecodeACCoefficients(unsigned char *file_content, int *index, cv::Mat *new_block)
+/**
+ * \fn void JPEGDecoder::DecodeACCoefficients(unsigned char *file_content, int *index, cv::Mat *new_block)
+ * \brief Decode the AC coefficients for the baseline procedure and store them in the new_block.
+ * 
+ * \param[in] file_content Pointer to the file being parsed.
+ * \param[in, out] index, Pointer to the position of the cursor in the file being parsed.
+ * \param[in, out] new_block Pointer to the block of data to contain the decoded values.
+ */
+void JPEGDecoder::DecodeACCoefficients(unsigned char *file_content, int *index, cv::Mat *new_block, HuffmanTable used_table)
 {
+  unsigned char k = 1, rs = 0, ssss = 0, rrrr = 0, r = 0;
+  std::vector<unsigned char> ZZ(63, 0);
+  bool out_condition = false;
+
+  do
+  {
+    rs = this->DecodeBaseline(file_content, index, used_table);
+    ssss = rs % 16;
+    rrrr = rs >> rs;
+    r = rrrr;
+    if (ssss == 0)
+    {
+      if (r != 15)
+      {
+        k = k + 16;
+      }
+      else
+      {
+        out_condition = true;
+      }
+    }
+    else
+    {
+      k = k + r;
+      this->DecodeZZ(k);
+      if (k == 63)
+      {
+        out_condition = true;
+      }
+    }
+  } while (!out_condition);
 }
 
 void JPEGDecoder::ResetDecoderProgressive() {}
