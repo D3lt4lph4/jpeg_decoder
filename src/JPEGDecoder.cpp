@@ -320,6 +320,29 @@ void JPEGDecoder::DecodeFrame(unsigned char *file_content, int *index, unsigned 
       }
     }
   } while (*marker != END_OF_IMAGE);
+
+  // Now that the whole frame is huffman decoded, depending on the selected level, we keep extracting or stop here
+
+  switch (this->decoding_level_)
+  {
+  case 1:
+    // One is huffman level, not de-quantized, so we do nothing.
+    break;
+  case 2:
+    // Two is de-quantized huffman decoded values.
+    break;
+  case 3:
+    // Three is IDCT coded image.
+    break;
+  case 4:
+    // Four is YCbCr image.
+    break;
+  case 5:
+    // Five is normal image.
+  default:
+    throw std::runtime_error("Unexpected level of decoding, exiting.");
+    break;
+  }
 }
 
 void JPEGDecoder::DecodeScan(unsigned char *file_content, int *index, unsigned char encoding_process_type)
@@ -370,8 +393,6 @@ void JPEGDecoder::DecodeRestartIntervalBaseline(unsigned char *file_content, int
 
         // We decode the ac components.
         this->DecodeACCoefficients(file_content, index, &new_block);
-
-        
 
         if (component_number == this->current_frame_header_.number_image_component - 1)
         {
