@@ -38,7 +38,7 @@ struct FrameComponentSignification
 
 struct JFIFHeader
 {
-  int current_version_, current_unit_, horizontal_pixel_density_, vertical_pixel_density_,thumbnail_horizontal_pixel_count_, thumbnail_vertical_pixel_count_;
+  int current_version_, current_unit_, horizontal_pixel_density_, vertical_pixel_density_, thumbnail_horizontal_pixel_count_, thumbnail_vertical_pixel_count_;
 };
 
 struct FrameHeader
@@ -60,7 +60,8 @@ struct HuffmanTable
   unsigned char table_class_;
   std::vector<unsigned char> bits, huffsize;
   std::vector<std::vector<unsigned char>> huffvals;
-  std::vector<int> huffcode, min_code, max_code, val_pointer;
+  std::vector<unsigned short> huffcode;
+  std::vector<int> min_code, max_code, val_pointer;
   void Reset() {}
 };
 #endif

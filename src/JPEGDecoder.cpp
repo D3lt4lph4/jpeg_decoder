@@ -413,27 +413,40 @@ void JPEGDecoder::DecodeRestartIntervalBaseline(unsigned char *file_content, int
   }
 }
 
-int JPEGDecoder::ReceiveBaseline(unsigned char decoded_dc)
+/**
+ * \fn int JPEGDecoder::ReceiveBaseline(unsigned char number_of_bits)
+ * \brief This function returns number_of_bits bits from the stream. The information is encoded as signed int.
+ * 
+ * \param[in] numebr_of_bits The number of bits to retrieve from the stream.
+ */
+int JPEGDecoder::ReceiveBaseline(unsigned char number_of_bits)
 {
   int value = 0, i = 0;
 
-  while (i != decoded_dc)
+  while (i != number_of_bits)
   {
     i += i;
-    value = (value << 1) + this->NextBit(this->current_file_content_, &i);
+    value = (value << 1) + this->NextBit();
   }
 
   return value;
 }
 
-int JPEGDecoder::ExtendedBaseline(unsigned char diff, unsigned char decoded_dc)
+/**
+ * \fn int JPEGDecoder::ExtendedBaseline(unsigned char diff, unsigned char decoded_dc)
+ * \brief The extend function returns the value that was encoded taking into account the range of encoding.
+ * 
+ * \param[in] difference The semi-encoded difference (depending on its sign).
+ * \param[in] ssss The range of the encoded difference;
+ */
+int JPEGDecoder::ExtendedBaseline(int diff, unsigned char ssss)
 {
   int value = 1;
 
-  value = value << (decoded_dc - 1);
+  value = value << (ssss - 1);
   if (diff < value)
   {
-    value = (-1 << decoded_dc) + 1;
+    value = (-1 << ssss) + 1;
     diff += value;
   }
   return value;
@@ -537,7 +550,8 @@ void JPEGDecoder::ParseHuffmanTableSpecification(unsigned char *file_content, in
 
   // Parsing the retrieved values.
   table_being_parsed.huffsize = this->GenerateSizeTable(table_being_parsed.bits);
-  this->GenerateCodeTable(&table_being_parsed);
+  table_being_parsed.huffcode = this->GenerateCodeTable(table_being_parsed.huffsize);
+  this->DecoderTables(&table_being_parsed);
 
   // If 0, DC table, else AC.
   if (table_class == 0)
@@ -612,7 +626,7 @@ void JPEGDecoder::ParseComment(unsigned char *file_content, int *index)
   *index += comment_length;
 }
 
-unsigned char JPEGDecoder::NextBit(unsigned char *file_content, int *index)
+unsigned char JPEGDecoder::NextBit()
 {
   unsigned char current_byte = file_content[*index], bit;
 
@@ -654,6 +668,14 @@ unsigned char JPEGDecoder::NextBit(unsigned char *file_content, int *index)
   return bit;
 }
 
+/**
+ * \fn unsigned char JPEGDecoder::DecodeBaseline(unsigned char *file_content, int *index, HuffmanTable used_table)
+ * \brief This function reads the huffman code in the datastream and returns the huffval associated with the huffman code.
+ * 
+ * \param[in] file_content A pointer to the bitstream.
+ * \param[in, out] index A pointer to the position of the cursor in the stream.
+ * \param[in] used_table The table used for the decoding of the huffman code.
+ */
 unsigned char JPEGDecoder::DecodeBaseline(unsigned char *file_content, int *index, HuffmanTable used_table)
 {
   int i = 1, j;
@@ -671,10 +693,18 @@ unsigned char JPEGDecoder::DecodeBaseline(unsigned char *file_content, int *inde
   return used_table.huffvals.at(i - 1).at(j);
 }
 
+/**
+ * \fn std::vector<unsigned char> JPEGDecoder::GenerateSizeTable(std::vector<unsigned char> bits)
+ * \brief Function to get the huffsize table for a huffman tree. The huffsize table contains all the size of the codes in the huffman table, i.e if we have three codes of length 3 and to of length 4, the huffsize will be [3,3,3,4,4].
+ * 
+ * \param[in] bits This is the array containing the number of code of each length, starting from 1.
+ */
 std::vector<unsigned char> JPEGDecoder::GenerateSizeTable(std::vector<unsigned char> bits)
 {
   unsigned char k = 0, i = 1, j = 1;
   std::vector<unsigned char> huffsize;
+
+  huffsize.push_back(0);
 
   while (i < 16)
   {
@@ -695,43 +725,69 @@ std::vector<unsigned char> JPEGDecoder::GenerateSizeTable(std::vector<unsigned c
   return huffsize;
 }
 
-void JPEGDecoder::GenerateCodeTable(HuffmanTable *table_to_fill)
+/**
+ * \fn void JPEGDecoder::GenerateCodeTable(HuffmanTable *table_to_fill)
+ * \brief Function to generate the code table of the huffman tree. The code are generated using the huffsize table generated from bits.
+ * 
+ * \param[in] huffsize The array containing the list of the sizes of all the codes.
+ */
+std::vector<unsigned short> JPEGDecoder::GenerateCodeTable(std::vector<unsigned char> huffsize)
 {
-  bool smallest_processed;
   int k = 0, code = 0;
-  unsigned char si = table_to_fill->huffsize.at(0);
-  std::vector<int> huffcode(table_to_fill->huffsize.size(), 0), min_code(16, 0), max_code(16, 0), val_pointer(16, 0);
+  unsigned char si = huffsize.at(0);
+  std::vector<unsigned short> huffcode(huffsize.size(), 0);
 
   while (true)
   {
-    smallest_processed = false;
     do
     {
-      if (!smallest_processed)
-      {
-        val_pointer.at(si) = k;
-        min_code.at(si) = code;
-        smallest_processed = true;
-      }
       huffcode.at(k) = code;
       code += 1;
       k += 1;
-    } while (table_to_fill->huffsize.at(k) == si);
-    max_code.at(si) = code;
-    if (table_to_fill->huffsize.at(k) == 0)
-    {
-      table_to_fill->huffcode = huffcode;
-      table_to_fill->max_code = max_code;
-      table_to_fill->min_code = min_code;
-      table_to_fill->val_pointer = val_pointer;
-      return;
-    }
+    } while (huffsize.at(k) == si);
 
+    if (huffsize.at(k) == 0)
+    {
+      return huffcode;
+    }
     do
     {
       code = code << 1;
       si = si + 1;
-    } while (table_to_fill->huffsize.at(k) != si);
+    } while (huffsize.at(k) != si);
+  }
+}
+
+/**
+ * \fn void JPEGDecoder::DecoderTables(HuffmanTable *table_processed)
+ * \brief For a given huffman table, this function creates the table MAXCODE, MINCODE and VALPTR, which respectively hold the maximum code in value for a given size, the minimum code for a given size and the pointer to these values in the other tables (huffval, huffsize). The three table generated hold 17 values to have the index starting from 1 (match the norm representation).
+ * 
+ * \param[in, out] table_processed Pointer to the huffman table being currently processed.
+ */
+void JPEGDecoder::DecoderTables(HuffmanTable *table_processed)
+{
+  int i = 0, j = 0;
+  std::vector<short> max_code(17, 0), min_code(17, 0), val_ptr(17, 0);
+
+  while (true)
+  {
+    i += 1;
+    if (i > 16)
+    {
+      return;
+    }
+    if (table_processed->bits[i - 1])
+    {
+      max_code.at(i) = -1;
+    }
+    else
+    {
+      val_ptr.at(i) = j;
+      min_code.at(i) = table_processed->huffcode.at(j);
+      j = j + table_processed->bits[i - 1] - 1;
+      max_code.at(i) = table_processed->huffcode.at(j);
+      j += 1;
+    }
   }
 }
 
