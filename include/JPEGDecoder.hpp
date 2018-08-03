@@ -16,39 +16,38 @@ public:
                                   const JPEGDecoder &decoder);
 
 private:
-  void DecodeHuffman();
-  void DecodeRunLengthEncoding();
-  void InverseQuantification();
-  void InverseDirectCosineTransform();
-
-  // Setup Functions
+  // Decoder related functions.
   void InitializeDecoder();
   void DecoderSetup();
-  void ResetDecoderProgressive();
-  void ResetDecoderBaseline();
 
   // Decoding functions
-  void DecodeFrame(unsigned char *file_content, int *index, unsigned char encoding_process_type);
-  void DecodeScan(unsigned char *file_content, int *index, unsigned char encoding_process_type);
-  void DecodeRestartIntervalProgressive(unsigned char *file_content, int *index);
-  void DecodeMCUProgressive(unsigned char *file_content, int *index);
-  void DecodeRestartIntervalBaseline(unsigned char *file_content, int *index);
+  void DecodeFrame(unsigned char encoding_process_type);
+  void DecodeScan(unsigned char encoding_process_type);
+  void DecodeRestartIntervalProgressive();
+  void DecodeMCUProgressive();
+  void DecodeRestartIntervalBaseline();
 
   // Parsing function
-  void ParseQuantizationTable(unsigned char *file_content, int *index);
-  void InterpretFrameHeader(unsigned char *file_content, int *index, unsigned char encoding_process_type);
-  void ParseHuffmanTableSpecification(unsigned char *file_content, int *index);
-  void ParseScanHeader(unsigned char *file_content, int *index);
-  void ParseComment(unsigned char *file_content, int *index);
-  void ParseJFIFSegment(unsigned char *file_content, int *index);
-  void ProcessData(unsigned char *file_content, int *index);
+  void ParseQuantizationTable();
+  void InterpretFrameHeader(unsigned char encoding_process_type);
+  void ParseHuffmanTableSpecification();
+  void ParseScanHeader();
+  void ParseComment();
+  void ParseJFIFSegment();
+  void ProcessData();
+
+  // Baseline functions
+  void ResetDecoderBaseline();
+  unsigned char DecodeBaseline(HuffmanTable used_table);
+  int ReceiveBaseline(unsigned char decoded_dc);
+  int ExtendedBaseline(int diff, unsigned char ssss);
+
+  // Progressive encoding functions
+  void ResetDecoderProgressive();
 
   // Utility function required in the norm.
   unsigned char NextBit();
-  unsigned char DecodeBaseline(unsigned char *file_content, int *index, HuffmanTable used_table);
-  int ReceiveBaseline(unsigned char decoded_dc);
-  int ExtendedBaseline(int diff, unsigned char ssss);
-  void DecodeACCoefficients(unsigned char *file_content, int *index, cv::Mat *new_block, HuffmanTable used_table);
+  void DecodeACCoefficients(cv::Mat *new_block, HuffmanTable used_table);
   unsigned char DecodeZZ(unsigned char ssss);
 
   // Functions to process the huffman table from the image stream.
@@ -57,9 +56,8 @@ private:
   void DecoderTables(HuffmanTable *table_processed);
 
   // Marker related functions
-  bool IsMarker(unsigned char *file_content, int index);
-  unsigned char *GetMarker(unsigned char *file_content, int *index,
-                           int size = 1, bool FF_expected = true);
+  bool IsMarker();
+  unsigned char *GetMarker();
 
   unsigned int restart_interval;
   int current_define_quantization_table_, data_unit_per_mcu_, decoding_level_;
