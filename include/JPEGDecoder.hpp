@@ -8,14 +8,13 @@
 
 #include "JPEGType.hpp"
 
-class JPEGDecoder
-{
-public:
+class JPEGDecoder {
+ public:
   cv::Mat Decode(std::string file_name, int level);
   friend std::ostream &operator<<(std::ostream &out,
                                   const JPEGDecoder &decoder);
 
-private:
+ private:
   // Decoder related functions.
   void InitializeDecoder();
   void DecoderSetup();
@@ -23,27 +22,26 @@ private:
   // Decoding functions
   void DecodeFrame(unsigned char encoding_process_type);
   void DecodeScan(unsigned char encoding_process_type);
-  void DecodeRestartIntervalProgressive();
-  void DecodeMCUProgressive();
-  void DecodeRestartIntervalBaseline();
 
   // Parsing function
-  void ParseQuantizationTable();
-  void InterpretFrameHeader(unsigned char encoding_process_type);
-  void ParseHuffmanTableSpecification();
-  void ParseScanHeader();
-  void ParseComment();
   void ParseJFIFSegment();
-  void ProcessData();
+  void ParseComment();
+  void ParseFrameHeader(unsigned char encoding_process_type);
+  void ParseScanHeader();
+  void ParseQuantizationTable();
+  void ParseHuffmanTableSpecification();
 
   // Baseline functions
   void ResetDecoderBaseline();
   unsigned char DecodeBaseline(HuffmanTable used_table);
   int ReceiveBaseline(unsigned char decoded_dc);
   int ExtendedBaseline(int diff, unsigned char ssss);
+  void DecodeRestartIntervalBaseline();
 
   // Progressive encoding functions
   void ResetDecoderProgressive();
+  void DecodeRestartIntervalProgressive();
+  void DecodeMCUProgressive();
 
   // Utility function required in the norm.
   unsigned char NextBit();
@@ -52,7 +50,8 @@ private:
 
   // Functions to process the huffman table from the image stream.
   std::vector<unsigned char> GenerateSizeTable(std::vector<unsigned char> bits);
-  std::vector<unsigned short> GenerateCodeTable(std::vector<unsigned char> huffsize);
+  std::vector<unsigned short> GenerateCodeTable(
+      std::vector<unsigned char> huffsize);
   void DecoderTables(HuffmanTable *table_processed);
 
   // Marker related functions
