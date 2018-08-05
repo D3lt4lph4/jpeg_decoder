@@ -1,6 +1,9 @@
 #ifndef __JPEG_TYPE__
 #define __JPEG_TYPE__
 
+#include <map>
+#include <vector>
+
 const unsigned char FRAME_TYPE_BASELINE_DTC = 0xB0;
 const unsigned char FRAME_TYPE_PROGRESSIVE = 0xB2;
 
