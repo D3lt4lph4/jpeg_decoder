@@ -88,7 +88,7 @@ DecoderTables(HuffmanTable *table_processed) {
   while (true) {
     i += 1;
     if (i > 16) {
-      return;
+      return std::make_tuple(max_code, min_code, val_ptr);
     }
     if (table_processed->bits[i - 1]) {
       max_code.at(i) = -1;
@@ -197,7 +197,7 @@ void DecodeACCoefficients(unsigned char *stream, unsigned int *index,
       }
     } else {
       k = k + r;
-      ZZ.at(k) = DecodeZZ(ssss);
+      ZZ.at(k) = DecodeZZ(stream, index, bit_index, ssss);
       if (k == 63) {
         out_condition = true;
       }

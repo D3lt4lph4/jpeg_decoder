@@ -22,6 +22,7 @@ int Extended(int diff, unsigned char number_of_bits);
 void DecodeACCoefficients(unsigned char *stream, unsigned int *index,
                           unsigned char *bit_index, cv::Mat *new_block,
                           HuffmanTable used_table);
-unsigned char DecodeZZ(unsigned char ssss);
+unsigned char DecodeZZ(unsigned char *stream, unsigned int *index,
+                       unsigned char *bit_index, unsigned char ssss);
 
 #endif

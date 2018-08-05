@@ -13,7 +13,7 @@
 class JPEGDecoder {
  public:
   JPEGDecoder();
-  cv::Mat Decode(std::string file_name, int level);
+  cv::Mat DecodeFile(std::string file_name, int level);
   friend std::ostream &operator<<(std::ostream &out,
                                   const JPEGDecoder &decoder);
 

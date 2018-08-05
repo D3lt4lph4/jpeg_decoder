@@ -280,31 +280,31 @@ ParseHuffmanTableSpecification(unsigned char* file_content,
     }
   }
 
-  // Parsing the retrieved values.
-  table_being_parsed.huffsize =
-      this->huffman_decoder_.GenerateSizeTable(table_being_parsed.bits);
-  table_being_parsed.huffcode =
-      this->huffman_decoder_.GenerateCodeTable(table_being_parsed.huffsize);
-  this->huffman_decoder_.DecoderTables(&table_being_parsed);
+  /*   // Parsing the retrieved values.
+    table_being_parsed.huffsize =
+        this->huffman_decoder_.GenerateSizeTable(table_being_parsed.bits);
+    table_being_parsed.huffcode =
+        this->huffman_decoder_.GenerateCodeTable(table_being_parsed.huffsize);
+    this->huffman_decoder_.DecoderTables(&table_being_parsed);
 
-  // If 0, DC table, else AC.
-  if (table_class == 0) {
-    if (!this->dc_huffman_tables_
-             .insert(std::pair<unsigned char, HuffmanTable>(
-                 table_destination_identifier, table_being_parsed))
-             .second) {
-      this->dc_huffman_tables_.erase(table_destination_identifier);
-      this->dc_huffman_tables_.insert(std::pair<unsigned char, HuffmanTable>(
-          table_destination_identifier, table_being_parsed));
-    }
-  } else {
-    if (!this->ac_huffman_tables_
-             .insert(std::pair<unsigned char, HuffmanTable>(
-                 table_destination_identifier, table_being_parsed))
-             .second) {
-      this->ac_huffman_tables_.erase(table_destination_identifier);
-      this->ac_huffman_tables_.insert(std::pair<unsigned char, HuffmanTable>(
-          table_destination_identifier, table_being_parsed));
-    }
-  }
+    // If 0, DC table, else AC.
+    if (table_class == 0) {
+      if (!this->dc_huffman_tables_
+               .insert(std::pair<unsigned char, HuffmanTable>(
+                   table_destination_identifier, table_being_parsed))
+               .second) {
+        this->dc_huffman_tables_.erase(table_destination_identifier);
+        this->dc_huffman_tables_.insert(std::pair<unsigned char, HuffmanTable>(
+            table_destination_identifier, table_being_parsed));
+      }
+    } else {
+      if (!this->ac_huffman_tables_
+               .insert(std::pair<unsigned char, HuffmanTable>(
+                   table_destination_identifier, table_being_parsed))
+               .second) {
+        this->ac_huffman_tables_.erase(table_destination_identifier);
+        this->ac_huffman_tables_.insert(std::pair<unsigned char, HuffmanTable>(
+            table_destination_identifier, table_being_parsed));
+      }
+    } */
 }

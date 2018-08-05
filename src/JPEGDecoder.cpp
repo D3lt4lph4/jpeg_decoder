@@ -22,7 +22,7 @@ JPEGDecoder::JPEGDecoder() {}
  * \param[in] filename The file to be decoded.
  * \param[in] level The required level of decoding.
  */
-cv::Mat JPEGDecoder::Decode(std::string filename, int level) {
+cv::Mat JPEGDecoder::DecodeFile(std::string filename, int level) {
   std::ifstream file_to_decode;
   int size, current_index = 0;
   unsigned char *marker;
@@ -239,7 +239,7 @@ void JPEGDecoder::DecodeRestartIntervalBaseline() {
   unsigned char decoded_dc, diff;
   this->ResetDecoderBaseline();
   unsigned int component_number = 1;
-  unsigned char dc_table_index, ac_table_index;
+  unsigned char dc_table_index, ac_table_index, *bit;
   this->data_unit_per_mcu_ = 3;
   cv::Mat new_block = cv::Mat::zeros(8, 8, CV_32FC1);
 
@@ -258,15 +258,17 @@ void JPEGDecoder::DecodeRestartIntervalBaseline() {
                 .second;
 
         // We decode the DC component.
-        decoded_dc =
-            DecodeBaseline(this->dc_huffman_tables_.at(dc_table_index));
-        diff = ReceiveBaseline(decoded_dc);
-        diff = ExtendedBaseline(diff, decoded_dc);
+        decoded_dc = Decode(this->current_file_content_, this->current_index_,
+                            bit, this->dc_huffman_tables_.at(dc_table_index));
+        diff = Receive(decoded_dc, this->current_file_content_,
+                       this->current_index_, bit);
+        diff = Extended(diff, decoded_dc);
 
         new_block.at<uchar>(0, 0, 0) = diff;
 
         // We decode the ac components.
-        DecodeACCoefficients(&new_block,
+        DecodeACCoefficients(this->current_file_content_, this->current_index_,
+                             bit, &new_block,
                              this->ac_huffman_tables_.at(ac_table_index));
 
         if (component_number ==

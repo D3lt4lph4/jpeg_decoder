@@ -56,7 +56,7 @@ endif()
 add_subdirectory(test)
 
 # Adding the main code executable
-add_executable(jpeg_decoder src/main.cpp src/JPEGDecoder.cpp include/JPEGDecoder.hpp)
+add_executable(jpeg_decoder src/main.cpp src/JPEGDecoder.cpp src/JPEGHuffmanDecoder.cpp src/JPEGUtility.cpp src/JPEGParser.cpp include/JPEGDecoder.hpp)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
