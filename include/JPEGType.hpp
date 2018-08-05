@@ -23,40 +23,40 @@ const unsigned char APPO = 0xE0;
 
 const unsigned char JFIF[] = {0x4a, 0x46, 0x49, 0x46, 0x00};
 
-struct QuantizationTable
-{
+struct QuantizationTable {
   unsigned char pq_;
   std::vector<unsigned int> qks_;
   void Reset() {}
 };
 
-struct FrameComponentSignification
-{
+struct FrameComponentSignification {
   unsigned char horizontal_sampling_factor_, vertical_sampling_factor,
       quantization_table_selector;
 };
 
-struct JFIFHeader
-{
-  int current_version_, current_unit_, horizontal_pixel_density_, vertical_pixel_density_, thumbnail_horizontal_pixel_count_, thumbnail_vertical_pixel_count_;
+struct JFIFHeader {
+  int current_version_, current_unit_, horizontal_pixel_density_,
+      vertical_pixel_density_, thumbnail_horizontal_pixel_count_,
+      thumbnail_vertical_pixel_count_;
 };
 
-struct FrameHeader
-{
+struct FrameHeader {
   unsigned char encoding_process_type_, sample_precision_;
   unsigned int number_of_lines_, number_of_samples_per_line_,
       number_of_image_component;
-  std::map<unsigned char, std::vector<unsigned char>> component_signification_parameters_;
+  std::map<unsigned char, std::vector<unsigned char>>
+      component_signification_parameters_;
 };
 
-struct ScanHeader
-{
-  unsigned char number_of_image_components_, start_of_spectral_selection_, end_of_spectral_selection_, approximation_high_bit_, approximation_low_bit_;
-  std::map<unsigned char, std::pair<unsigned char, unsigned char>> scan_components_specification_parameters_;
+struct ScanHeader {
+  unsigned char number_of_image_components_, start_of_spectral_selection_,
+      end_of_spectral_selection_, approximation_high_bit_,
+      approximation_low_bit_;
+  std::map<unsigned char, std::pair<unsigned char, unsigned char>>
+      scan_components_specification_parameters_;
 };
 
-struct HuffmanTable
-{
+struct HuffmanTable {
   unsigned char table_class_;
   std::vector<unsigned char> bits, huffsize;
   std::vector<std::vector<unsigned char>> huffvals;
