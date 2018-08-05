@@ -14,4 +14,5 @@ class AdditionTest : public ::testing::Test {
 TEST_F(AdditionTest, twoValues) {
   const int x = 4;
   const int y = 5;
+  ASSERT_EQ(1, 0);
 }
