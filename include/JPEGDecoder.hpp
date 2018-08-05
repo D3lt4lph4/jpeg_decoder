@@ -6,10 +6,13 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
+#include "JPEGHuffmanDecoder.hpp"
+#include "JPEGParser.hpp"
 #include "JPEGType.hpp"
 
 class JPEGDecoder {
  public:
+  JPEGDecoder();
   cv::Mat Decode(std::string file_name, int level);
   friend std::ostream &operator<<(std::ostream &out,
                                   const JPEGDecoder &decoder);
@@ -23,36 +26,9 @@ class JPEGDecoder {
   void DecodeFrame(unsigned char encoding_process_type);
   void DecodeScan(unsigned char encoding_process_type);
 
-  // Parsing function
-  void ParseJFIFSegment();
-  void ParseComment();
-  void ParseFrameHeader(unsigned char encoding_process_type);
-  void ParseScanHeader();
-  void ParseQuantizationTable();
-  void ParseHuffmanTableSpecification();
-
   // Baseline functions
   void ResetDecoderBaseline();
-  unsigned char DecodeBaseline(HuffmanTable used_table);
-  int ReceiveBaseline(unsigned char decoded_dc);
-  int ExtendedBaseline(int diff, unsigned char ssss);
   void DecodeRestartIntervalBaseline();
-
-  // Progressive encoding functions
-  void ResetDecoderProgressive();
-  void DecodeRestartIntervalProgressive();
-  void DecodeMCUProgressive();
-
-  // Utility function required in the norm.
-  unsigned char NextBit();
-  void DecodeACCoefficients(cv::Mat *new_block, HuffmanTable used_table);
-  unsigned char DecodeZZ(unsigned char ssss);
-
-  // Functions to process the huffman table from the image stream.
-  std::vector<unsigned char> GenerateSizeTable(std::vector<unsigned char> bits);
-  std::vector<unsigned short> GenerateCodeTable(
-      std::vector<unsigned char> huffsize);
-  void DecoderTables(HuffmanTable *table_processed);
 
   // Marker related functions
   bool IsMarker();
@@ -73,12 +49,8 @@ class JPEGDecoder {
   JFIFHeader current_jfif_header;
 
   // File crossing variable.
-  unsigned char *current_file_content_, bit_index;
-  int current_index_;
-
-  // Variables required for the functions in the norm
-  char next_bit_count_;
-  char last_k_;
+  unsigned char *current_file_content_, *bit_index, *last_k_;
+  unsigned int *current_index_;
 };
 
 #endif
