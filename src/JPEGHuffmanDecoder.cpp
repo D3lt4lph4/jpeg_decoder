@@ -228,6 +228,7 @@ std::vector<int> DecodeACCoefficients(unsigned char *stream,
       }
     }
   } while (!out_condition);
+  return ZZ;
 }
 
 /**
