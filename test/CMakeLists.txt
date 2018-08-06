@@ -15,6 +15,7 @@ add_executable(test_parsing test_JPEGDecoderParsing.cpp)
 target_link_libraries(test_parsing gtest_main)
 add_test(NAME all_test_parsing COMMAND test_parsing)
 
-add_executable(test_utility test_JPEGDecoderUtility.cpp)
+add_executable(test_utility test_JPEGUtility.cpp )
 target_link_libraries(test_utility gtest_main)
 add_test(NAME all_test_utility COMMAND test_utility)
+target_link_libraries(test_utility JPEGDecoder)
