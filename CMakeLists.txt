@@ -55,11 +55,14 @@ endif()
 # Adding subdirectories
 add_subdirectory(test)
 
+add_library(JPEGDecoder src/JPEGDecoder.cpp src/JPEGHuffmanDecoder.cpp src/JPEGUtility.cpp src/JPEGParser.cpp)
+
 # Adding the main code executable
-add_executable(jpeg_decoder src/main.cpp src/JPEGDecoder.cpp src/JPEGHuffmanDecoder.cpp src/JPEGUtility.cpp src/JPEGParser.cpp include/JPEGDecoder.hpp)
+add_executable(jpeg_decoder src/main.cpp)
+
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 include(CPack)
 
-target_link_libraries(jpeg_decoder ${OpenCV_LIBS})
+target_link_libraries(jpeg_decoder ${OpenCV_LIBS} JPEGDecoder)
