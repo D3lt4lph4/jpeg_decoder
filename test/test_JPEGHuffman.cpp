@@ -181,4 +181,16 @@ TEST(TestHuffmanFunctions, testExtended) {
 
 TEST(TestHuffmanFunctions, testDecodeACCoefficients) {}
 
-TEST(TestHuffmanFunctions, testDecodeZZ) {}
+TEST(TestHuffmanFunctions, testDecodeZZ) {
+  unsigned char file_content[4] = {0xDC, 0xDC, 0xAA, 0xAA}, bit_index = 8;
+  int res;
+  unsigned int index = 0;
+
+  ASSERT_EQ(DecodeZZ(file_content, &index, &bit_index, 9), 441);
+  ASSERT_EQ(bit_index, 7);
+  ASSERT_EQ(index, 1);
+
+  ASSERT_EQ(DecodeZZ(file_content, &index, &bit_index, 8), 185);
+  ASSERT_EQ(bit_index, 7);
+  ASSERT_EQ(index, 2);
+}

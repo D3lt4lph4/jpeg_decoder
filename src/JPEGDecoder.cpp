@@ -268,8 +268,7 @@ void JPEGDecoder::DecodeRestartIntervalBaseline() {
 
         // We decode the ac components.
         DecodeACCoefficients(this->current_file_content_, this->current_index_,
-                             bit, &new_block,
-                             this->ac_huffman_tables_.at(ac_table_index));
+                             bit, this->ac_huffman_tables_.at(ac_table_index));
 
         if (component_number ==
             this->current_frame_header_.number_of_image_component) {

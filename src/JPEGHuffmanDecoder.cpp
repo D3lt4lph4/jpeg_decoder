@@ -204,7 +204,6 @@ int Extended(int diff, unsigned char ssss) {
 std::vector<int> DecodeACCoefficients(unsigned char *stream,
                                       unsigned int *index,
                                       unsigned char *bit_index,
-                                      cv::Mat *new_block,
                                       HuffmanTable used_table) {
   unsigned char k = 1, rs = 0, ssss = 0, rrrr = 0, r = 0;
   std::vector<int> ZZ(63, 0);
