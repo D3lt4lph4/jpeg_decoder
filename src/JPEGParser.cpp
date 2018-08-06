@@ -266,10 +266,9 @@ ParseHuffmanTableSpecification(unsigned char* file_content,
 
     for (size_t i = 0; i < 16; i++) {
       counter = table_being_parsed.bits.at(i);
-      table_being_parsed.huffvals.push_back(std::vector<unsigned char>());
 
       for (size_t j = 0; j < counter; j++) {
-        table_being_parsed.huffvals.at(i).push_back(file_content[*index]);
+        table_being_parsed.huffvals.push_back(file_content[*index]);
         *index += 1;
       }
     }

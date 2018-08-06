@@ -22,6 +22,8 @@
  * the byte to extract the bit from. \param[in, out] bit_index The index of the
  * bit to extract. A value of 8 extract the highest bit in the byte, a value of
  * 1 extract the lowest.
+ *
+ * \return Either 0 or 1, the value of the bit.
  */
 unsigned char NextBit(unsigned char *file_content, unsigned int *index,
                       unsigned char *bit_index) {

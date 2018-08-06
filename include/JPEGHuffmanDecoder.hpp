@@ -8,10 +8,10 @@
 // Functions to parse the huffman table as found in the stream.
 std::pair<unsigned char, std::vector<unsigned char>> GenerateSizeTable(
     std::vector<unsigned char>);
-std::vector<unsigned char> GenerateCodeTable(std::vector<unsigned char>);
-std::tuple<std::vector<unsigned char>, std::vector<unsigned char>,
-           std::vector<unsigned char>>
-DecoderTables(HuffmanTable *table_being_parsed);
+std::vector<unsigned short> GenerateCodeTable(std::vector<unsigned char>);
+std::tuple<std::vector<int>, std::vector<int>, std::vector<unsigned char>>
+DecoderTables(std::vector<unsigned char> bits,
+              std::vector<unsigned short> huffcode);
 
 // Functions to process the stream
 unsigned char Decode(unsigned char *stream, unsigned int *index,

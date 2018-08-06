@@ -61,10 +61,9 @@ struct ScanHeader {
 
 struct HuffmanTable {
   unsigned char table_class_;
-  std::vector<unsigned char> bits, huffsize;
-  std::vector<std::vector<unsigned char>> huffvals;
+  std::vector<unsigned char> bits, huffsize, val_pointer;
+  std::vector<unsigned char> huffvals;
   std::vector<unsigned short> huffcode;
-  std::vector<int> min_code, max_code, val_pointer;
-  void Reset() {}
+  std::vector<int> min_code, max_code;
 };
 #endif
