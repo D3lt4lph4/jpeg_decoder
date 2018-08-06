@@ -201,20 +201,22 @@ int Extended(int diff, unsigned char ssss) {
  * being parsed. \param[in, out] new_block Pointer to the block of data to
  * contain the decoded values.
  */
-void DecodeACCoefficients(unsigned char *stream, unsigned int *index,
-                          unsigned char *bit_index, cv::Mat *new_block,
-                          HuffmanTable used_table) {
+std::vector<int> DecodeACCoefficients(unsigned char *stream,
+                                      unsigned int *index,
+                                      unsigned char *bit_index,
+                                      cv::Mat *new_block,
+                                      HuffmanTable used_table) {
   unsigned char k = 1, rs = 0, ssss = 0, rrrr = 0, r = 0;
-  std::vector<unsigned char> ZZ(63, 0);
+  std::vector<int> ZZ(63, 0);
   bool out_condition = false;
 
   do {
     rs = Decode(stream, index, bit_index, used_table);
     ssss = rs % 16;
-    rrrr = rs >> rs;
+    rrrr = rs >> 4;
     r = rrrr;
     if (ssss == 0) {
-      if (r != 15) {
+      if (r == 15) {
         k = k + 16;
       } else {
         out_condition = true;
@@ -234,7 +236,9 @@ void DecodeACCoefficients(unsigned char *stream, unsigned int *index,
  * \brief Decode the coefficient in the zigzag order.
  *
  * \param[in] k The position of the coefficient.
- * \param[in] ssss the low bit of ?
+ * \param[in] ssss The low bit of the RRRRSSSS encoding for the AC coefficients,
+ * ssss represent the range of the AC coefficient and the number of bits to
+ * follow representing the ac coefficient.
  */
 unsigned char DecodeZZ(unsigned char *stream, unsigned int *index,
                        unsigned char *bit_index, unsigned char ssss) {

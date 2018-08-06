@@ -180,5 +180,3 @@ TEST(TestHuffmanFunctions, testExtended) {
 }
 
 TEST(TestHuffmanFunctions, testDecodeACCoefficients) {}
-
-TEST(TestHuffmanFunctions, testDecodeZZ) {}

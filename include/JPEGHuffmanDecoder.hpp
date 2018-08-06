@@ -19,9 +19,10 @@ unsigned char Decode(unsigned char *stream, unsigned int *index,
 int Receive(unsigned char number_of_bits, unsigned char *stream,
             unsigned int *index, unsigned char *bit_index);
 int Extended(int diff, unsigned char number_of_bits);
-void DecodeACCoefficients(unsigned char *stream, unsigned int *index,
-                          unsigned char *bit_index, cv::Mat *new_block,
-                          HuffmanTable used_table);
+std::vector<int> DecodeACCoefficients(unsigned char *stream,
+                                      unsigned int *index,
+                                      unsigned char *bit_index,
+                                      HuffmanTable used_table);
 unsigned char DecodeZZ(unsigned char *stream, unsigned int *index,
                        unsigned char *bit_index, unsigned char ssss);
 
