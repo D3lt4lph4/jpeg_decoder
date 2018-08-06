@@ -25,7 +25,7 @@ std::pair<unsigned char, std::vector<unsigned char>> GenerateSizeTable(
   unsigned char k = 0, i = 1, j = 1;
   std::vector<unsigned char> huffsize;
 
-  while (i < 16) {
+  while (i <= 16) {
     if (j > bits.at(i - 1)) {
       i += 1;
       j = 1;

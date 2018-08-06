@@ -13,16 +13,28 @@ class AdditionTest : public ::testing::Test {
 };
 
 TEST(TestHuffmanFunctions, testGenerateSizeTable) {
-  std::vector<unsigned char> bits = {1, 0, 0, 0, 0, 0, 0, 0,
-                                     0, 0, 0, 0, 0, 0, 0, 0},
-                             bits_2 = {0, 1, 5, 1, 1, 1, 1, 1,
-                                       1, 0, 0, 0, 0, 0, 0, 0},
-                             size_table = {1, 0},
-                             size_table_2 = {2, 3, 3, 3, 3, 3, 4,
-                                             5, 6, 7, 8, 9, 0},
-                             size_table_res, size_table_res_2;
+  std::vector<unsigned char>
+      bits = {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+      bits_2 = {0, 1, 5, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0},
+      bits_3 = {0x00, 0x02, 0x01, 0x02, 0x04, 0x04, 0x03, 0x04,
+                0x07, 0x05, 0x04, 0x04, 0x00, 0x01, 0x02, 0x77},
+      size_table = {1, 0},
+      size_table_2 = {2, 3, 3, 3, 3, 3, 4, 5, 6, 7, 8, 9, 0},
+      size_table_3 = {2,  2,  3,  4,  4,  5,  5,  5,  5,  6,  6,  6,  6,  7,
+                      7,  7,  8,  8,  8,  8,  9,  9,  9,  9,  9,  9,  9,  10,
+                      10, 10, 10, 10, 11, 11, 11, 11, 12, 12, 12, 12, 14, 15,
+                      15, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
+                      16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
+                      16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
+                      16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
+                      16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
+                      16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
+                      16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
+                      16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
+                      16, 16, 16, 16, 16, 16, 16, 16, 0},
+      size_table_res, size_table_res_2, size_table_res_3;
 
-  unsigned char last_k, last_k_2;
+  unsigned char last_k, last_k_2, last_k_3;
 
   std::tie(last_k, size_table_res) = GenerateSizeTable(bits);
 
@@ -33,6 +45,11 @@ TEST(TestHuffmanFunctions, testGenerateSizeTable) {
 
   ASSERT_EQ(last_k_2, 12);
   ASSERT_THAT(size_table_res_2, ::testing::ElementsAreArray(size_table_2));
+
+  std::tie(last_k_3, size_table_res_3) = GenerateSizeTable(bits_3);
+
+  ASSERT_EQ(last_k_3, 162);
+  ASSERT_THAT(size_table_res_3, ::testing::ElementsAreArray(size_table_3));
 }
 
 TEST(TestHuffmanFunctions, testGenerateCodeTable) {
@@ -231,29 +248,22 @@ TEST(TestHuffmanFunctions, testDecodeACCoefficients) {
   first_table.val_pointer = valptr;
 
   second_table.bits = bits_2;
-  std::cout << "azer" << std::endl;
   std::tie(std::ignore, second_table.huffsize) = GenerateSizeTable(bits_2);
-  std::cout << "azer" << std::endl;
+  std::cout << second_table.huffsize.size() << std::endl;
   second_table.huffvals = huffvals_2;
-  std::cout << "azer" << std::endl;
   second_table.huffcode = GenerateCodeTable(second_table.huffsize);
-  std::cout << "qsdf" << std::endl;
   std::tie(second_table.max_code, second_table.min_code,
            second_table.val_pointer) =
       DecoderTables(bits_2, second_table.huffcode);
-  std::cout << "qsdf" << std::endl;
   // First let's test the decoding of a full 0's block.
   results = DecodeACCoefficients(file_content, &index, &bit_index, first_table);
-  std::cout << "ret" << std::endl;
   ASSERT_THAT(results, ::testing::ElementsAreArray(expected_results));
   ASSERT_EQ(index, 0);
   ASSERT_EQ(bit_index, 6);
-  std::cout << "rty" << std::endl;
   index = 0;
   bit_index = 8;
   results =
       DecodeACCoefficients(file_content, &index, &bit_index, second_table);
-  std::cout << "azer" << std::endl;
   ASSERT_THAT(results, ::testing::ElementsAreArray(expected_results));
 
   // Then we test with a block of 4 black pixels followed by 4 white, 4 black,
