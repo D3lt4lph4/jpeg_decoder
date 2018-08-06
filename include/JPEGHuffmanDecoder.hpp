@@ -23,7 +23,7 @@ std::vector<int> DecodeACCoefficients(unsigned char *stream,
                                       unsigned int *index,
                                       unsigned char *bit_index,
                                       HuffmanTable used_table);
-unsigned char DecodeZZ(unsigned char *stream, unsigned int *index,
-                       unsigned char *bit_index, unsigned char ssss);
+int DecodeZZ(unsigned char *stream, unsigned int *index,
+             unsigned char *bit_index, unsigned char ssss);
 
 #endif

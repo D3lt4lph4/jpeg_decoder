@@ -240,9 +240,9 @@ std::vector<int> DecodeACCoefficients(unsigned char *stream,
  * ssss represent the range of the AC coefficient and the number of bits to
  * follow representing the ac coefficient.
  */
-unsigned char DecodeZZ(unsigned char *stream, unsigned int *index,
-                       unsigned char *bit_index, unsigned char ssss) {
-  unsigned char return_value;
+int DecodeZZ(unsigned char *stream, unsigned int *index,
+             unsigned char *bit_index, unsigned char ssss) {
+  int return_value;
   return_value = Receive(ssss, stream, index, bit_index);
   return_value = Extended(return_value, ssss);
   return return_value;
