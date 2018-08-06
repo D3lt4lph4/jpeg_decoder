@@ -179,7 +179,12 @@ TEST(TestHuffmanFunctions, testExtended) {
   ASSERT_EQ(Extended(0, 1), -1);
 }
 
-TEST(TestHuffmanFunctions, testDecodeACCoefficients) {}
+TEST(TestHuffmanFunctions, testDecodeACCoefficients) {
+  // First let's test the decoding of a full 0's block.
+
+  // Then we test with a block of 4 black pixels followed by 4 white, 4 black,
+  // ...
+}
 
 TEST(TestHuffmanFunctions, testDecodeZZ) {
   unsigned char file_content[4] = {0xDC, 0xDC, 0xAA, 0xAA}, bit_index = 8;
