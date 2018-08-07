@@ -5,6 +5,9 @@
 #include <stdexcept>
 #include <string>
 
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
 #include "JPEGDecoder.hpp"
 #include "JPEGException.hpp"
 #include "JPEGHuffmanDecoder.hpp"
@@ -13,7 +16,10 @@
 /**
  * \fn JPEGDecoder::JPEGDecoder()
  */
-JPEGDecoder::JPEGDecoder() {}
+JPEGDecoder::JPEGDecoder() {
+  this->current_index_ = new (unsigned int);
+  this->block_index = 0;
+}
 
 /**
  * \fn cv::Mat JPEGDecoder::Decode(std::string filename, int level)
@@ -51,12 +57,13 @@ cv::Mat JPEGDecoder::DecodeFile(std::string filename, int level) {
 
     if (*(this->GetMarker()) == START_OF_IMAGE) {
       this->DecoderSetup();
-      while (this->current_file_content_[current_index] != END_OF_IMAGE) {
+      do {
         marker = this->GetMarker();
         switch (*marker) {
           case APPO:
             this->current_jfif_header = ParseJFIFSegment(
                 this->current_file_content_, this->current_index_);
+            std::cout << "JFIF segment parsed." << std::endl;
             break;
           case COMMENT:
             std::cout << ParseComment(this->current_file_content_,
@@ -77,13 +84,15 @@ cv::Mat JPEGDecoder::DecodeFile(std::string filename, int level) {
               this->quantization_tables_.insert(
                   std::make_pair(table_key, quantization_table));
             }
-
+            std::cout << "Quantization table parsed." << std::endl;
             break;
           case START_OF_FRAME_BASELINE:
             this->DecodeFrame(FRAME_TYPE_BASELINE_DTC);
+            std::cout << "Frame decoded." << std::endl;
             break;
           case START_OF_FRAME_PROGRESSIVE:
             this->DecodeFrame(FRAME_TYPE_PROGRESSIVE);
+            std::cout << "Frame decoded." << std::endl;
             break;
           case DEFINE_HUFFMAN_TABLE:
             huffman_tables = ParseHuffmanTableSpecification(
@@ -110,7 +119,9 @@ cv::Mat JPEGDecoder::DecodeFile(std::string filename, int level) {
                 }
               }
             }
-
+            std::cout << "Huffman table decoded." << std::endl;
+            break;
+          case END_OF_IMAGE:
             break;
           default:
             std::cout << "I did not know how to parse the block : " << std::hex
@@ -118,7 +129,7 @@ cv::Mat JPEGDecoder::DecodeFile(std::string filename, int level) {
             throw std::runtime_error("Error while processing the jpeg file.");
             break;
         }
-      }
+      } while (*marker != END_OF_IMAGE);
     } else {
       throw std::runtime_error(
           "Expected SOI marker, but sosmething else found, cannot parse the "
@@ -172,6 +183,8 @@ void JPEGDecoder::InitializeDecoder() {
   this->quantization_tables_.clear();
   this->dc_huffman_tables_.clear();
   this->ac_huffman_tables_.clear();
+  *(this->current_index_) = 0;
+  this->block_index = 0;
 }
 
 /**
@@ -188,14 +201,30 @@ void JPEGDecoder::DecoderSetup() { this->restart_interval = 0; }
  * \param[in] encoding_process_type The type of the frame to decode.
  */
 void JPEGDecoder::DecodeFrame(unsigned char encoding_process_type) {
-  unsigned char *marker;
+  unsigned char *marker, table_key;
+  QuantizationTable quantization_table;
+  HuffmanTable huffman_table;
+  std::vector<std::pair<unsigned char, HuffmanTable>> huffman_tables;
+  ;
 
-  ParseFrameHeader(this->current_file_content_, this->current_index_,
-                   encoding_process_type);
+  this->current_frame_header_ = ParseFrameHeader(
+      this->current_file_content_, this->current_index_, encoding_process_type);
+
+  if (this->current_frame_header_.encoding_process_type_ ==
+      FRAME_TYPE_BASELINE_DTC) {
+    this->number_of_blocks_per_column =
+        (this->current_frame_header_.number_of_lines_ + 8 - 1) / 8;
+    this->number_of_blocks_per_line =
+        (this->current_frame_header_.number_of_samples_per_line_ + 8 - 1) / 8;
+    this->current_image_ = cv::Mat(
+        this->current_frame_header_.number_of_lines_,
+        this->current_frame_header_.number_of_samples_per_line_, CV_32FC3);
+  }
 
   do {
     marker = this->GetMarker();
     if (*marker == START_OF_SCAN) {
+      std::cout << "Getting scan" << std::endl;
       this->DecodeScan(encoding_process_type);
     } else {
       switch (*marker) {
@@ -208,10 +237,33 @@ void JPEGDecoder::DecodeFrame(unsigned char encoding_process_type) {
         case DEFINE_QUANTIZATION_TABLE:
           ParseQuantizationTable(this->current_file_content_,
                                  this->current_index_);
+          std::cout << "Quantization table parsed." << std::endl;
           break;
         case DEFINE_HUFFMAN_TABLE:
-          ParseHuffmanTableSpecification(this->current_file_content_,
-                                         this->current_index_);
+          huffman_tables = ParseHuffmanTableSpecification(
+              this->current_file_content_, this->current_index_);
+          for (size_t i = 0; i < huffman_tables.size(); i++) {
+            std::tie(table_key, huffman_table) = huffman_tables.at(i);
+
+            if (huffman_table.table_class_ == 0) {
+              if (!(this->dc_huffman_tables_
+                        .insert(std::make_pair(table_key, huffman_table))
+                        .second)) {
+                this->dc_huffman_tables_.erase(table_key);
+                this->dc_huffman_tables_.insert(
+                    std::make_pair(table_key, huffman_table));
+              }
+            } else {
+              if (!(this->ac_huffman_tables_
+                        .insert(std::make_pair(table_key, huffman_table))
+                        .second)) {
+                this->ac_huffman_tables_.erase(table_key);
+                this->ac_huffman_tables_.insert(
+                    std::make_pair(table_key, huffman_table));
+              }
+            }
+          }
+          std::cout << "Huffman table parsed." << std::endl;
           break;
         case END_OF_IMAGE:
           break;
@@ -269,18 +321,24 @@ void JPEGDecoder::ResetDecoderBaseline() {}
  * differently, with more blocks or less blocks depending on the component.
  */
 void JPEGDecoder::DecodeRestartIntervalBaseline() {
-  int n = 0;
+  int n = 0, start_line, start_column;
   unsigned char decoded_dc, diff;
   this->ResetDecoderBaseline();
   unsigned int component_number = 1;
-  unsigned char dc_table_index, ac_table_index, *bit;
+  unsigned char dc_table_index, ac_table_index, bit_index = 8;
   this->data_unit_per_mcu_ = 3;
-  cv::Mat new_block = cv::Mat::zeros(8, 8, CV_32FC1);
+  cv::Mat new_block;
+  std::vector<int> AC_Coefficients;
 
   while (!this->IsMarker()) {
     n = 0;
     while (n < this->data_unit_per_mcu_) {
       if (this->current_frame_header_.number_of_image_component > 1) {
+        start_line = this->block_index / this->number_of_blocks_per_line;
+        start_column = this->block_index % this->number_of_blocks_per_line;
+        new_block = this->current_image_(
+            cv::Range(8 * start_line, 8 + 1 * start_line),
+            cv::Range(8 * start_column, 8 + 1 * start_column));
         // Then we are interleaved.
         dc_table_index =
             this->current_scan_.scan_components_specification_parameters_
@@ -292,21 +350,33 @@ void JPEGDecoder::DecodeRestartIntervalBaseline() {
                 .second;
 
         // We decode the DC component.
-        decoded_dc = Decode(this->current_file_content_, this->current_index_,
-                            bit, this->dc_huffman_tables_.at(dc_table_index));
+        decoded_dc =
+            Decode(this->current_file_content_, this->current_index_,
+                   &bit_index, this->dc_huffman_tables_.at(dc_table_index));
         diff = Receive(decoded_dc, this->current_file_content_,
-                       this->current_index_, bit);
+                       this->current_index_, &bit_index);
         diff = Extended(diff, decoded_dc);
 
-        new_block.at<uchar>(0, 0, 0) = diff;
+        new_block.at<cv::Vec3i>(0, 0)[component_number - 1] = diff;
 
         // We decode the ac components.
-        DecodeACCoefficients(this->current_file_content_, this->current_index_,
-                             bit, this->ac_huffman_tables_.at(ac_table_index));
+        AC_Coefficients = DecodeACCoefficients(
+            this->current_file_content_, this->current_index_, &bit_index,
+            this->ac_huffman_tables_.at(ac_table_index));
+
+        for (size_t i = 0; i < 8; i++) {
+          for (size_t j = 0; j < 8; j++) {
+            if (i != 0 && j != 0) {
+              new_block.at<cv::Vec3i>(i, j)[component_number - 1] =
+                  AC_Coefficients.at(i * 8 + j - 1);
+            }
+          }
+        }
 
         if (component_number ==
             this->current_frame_header_.number_of_image_component) {
           component_number = 1;
+          this->block_index += 1;
         } else {
           component_number += 1;
         }
@@ -323,7 +393,7 @@ void JPEGDecoder::DecodeRestartIntervalBaseline() {
  */
 bool JPEGDecoder::IsMarker() {
   if (this->current_file_content_[*(this->current_index_)] == 0xFF) {
-    if (this->current_file_content_[*(this->current_index_) + 1] == 0xFF) {
+    if (this->current_file_content_[*(this->current_index_) + 1] == 0x00) {
       return false;
     }
     return true;
@@ -351,7 +421,7 @@ unsigned char *JPEGDecoder::GetMarker() {
     marker = new unsigned char[1];
     std::memcpy(marker,
                 &(this->current_file_content_[*(this->current_index_) + 1]), 1);
-    this->current_index_ = this->current_index_ + 2;
+    *(this->current_index_) = *(this->current_index_) + 2;
     return marker;
   } else {
     std::cout << this->current_index_ << std::endl;

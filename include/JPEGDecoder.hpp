@@ -51,6 +51,8 @@ class JPEGDecoder {
   // File crossing variable.
   unsigned char *current_file_content_, *bit_index, *last_k_;
   unsigned int *current_index_;
+
+  int number_of_blocks_per_line, number_of_blocks_per_column, block_index;
 };
 
 #endif
