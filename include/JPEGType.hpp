@@ -28,8 +28,7 @@ const unsigned char JFIF[] = {0x4a, 0x46, 0x49, 0x46, 0x00};
 
 struct QuantizationTable {
   unsigned char pq_;
-  std::vector<unsigned int> qks_;
-  void Reset() {}
+  std::vector<unsigned short> qks_;
 };
 
 struct FrameComponentSignification {
@@ -38,7 +37,8 @@ struct FrameComponentSignification {
 };
 
 struct JFIFHeader {
-  int current_version_, current_unit_, horizontal_pixel_density_,
+  unsigned short current_version_;
+  unsigned char current_unit_, horizontal_pixel_density_,
       vertical_pixel_density_, thumbnail_horizontal_pixel_count_,
       thumbnail_vertical_pixel_count_;
 };
@@ -60,9 +60,8 @@ struct ScanHeader {
 };
 
 struct HuffmanTable {
-  unsigned char table_class_;
-  std::vector<unsigned char> bits, huffsize, val_pointer;
-  std::vector<unsigned char> huffvals;
+  unsigned char table_class_, last_k_;
+  std::vector<unsigned char> bits, huffsize, val_pointer, huffvals;
   std::vector<unsigned short> huffcode;
   std::vector<int> min_code, max_code;
 };
