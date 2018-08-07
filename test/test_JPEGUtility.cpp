@@ -1,14 +1,7 @@
 #include "JPEGUtility.hpp"
 #include "gtest/gtest.h"
 
-class UtilityTest : public ::testing::Test {
- protected:
-  virtual void SetUp() {}
-
-  virtual void TearDown() {}
-};
-
-TEST_F(UtilityTest, gettingNextBit) {
+TEST(UtilityTest, gettingNextBit) {
   unsigned char bit, file_content, bit_index;
   unsigned int index;
 
@@ -57,7 +50,7 @@ TEST_F(UtilityTest, gettingNextBit) {
   ASSERT_EQ(index, 1);
 }
 
-TEST_F(UtilityTest, incrementOnFF00) {
+TEST(UtilityTest, incrementOnFF00) {
   unsigned char bit, file_content[3] = {0xFF, 0x00, 0x23}, bit_index = 8;
   unsigned int index = 0;
 
@@ -107,7 +100,7 @@ TEST_F(UtilityTest, incrementOnFF00) {
   ASSERT_EQ(index, 2);
 }
 
-TEST_F(UtilityTest, testThrow) {
+TEST(UtilityTest, testThrow) {
   unsigned char bit, file_content[3] = {0xFF, 0x34, 0x65}, bit_index = 0;
   unsigned int index = 0;
 

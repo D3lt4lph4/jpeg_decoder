@@ -2,16 +2,6 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
-class AdditionTest : public ::testing::Test {
- protected:
-  virtual void SetUp() {}
-
-  virtual void TearDown() {
-    // Code here will be called immediately after each test
-    // (right before the destructor).
-  }
-};
-
 TEST(TestHuffmanFunctions, testGenerateSizeTable) {
   std::vector<unsigned char>
       bits = {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
