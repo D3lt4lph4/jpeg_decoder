@@ -25,7 +25,10 @@ JPEGDecoder::JPEGDecoder() {}
 cv::Mat JPEGDecoder::DecodeFile(std::string filename, int level) {
   std::ifstream file_to_decode;
   int size, current_index = 0;
-  unsigned char *marker;
+  unsigned char *marker, table_key;
+  QuantizationTable quantization_table;
+  HuffmanTable huffman_table;
+  std::vector<std::pair<unsigned char, HuffmanTable>> huffman_tables;
 
   // If the filename is the same, we assume to have the same image.
   if (filename.compare(this->current_filename_) == 0) {
@@ -50,7 +53,6 @@ cv::Mat JPEGDecoder::DecodeFile(std::string filename, int level) {
       this->DecoderSetup();
       while (this->current_file_content_[current_index] != END_OF_IMAGE) {
         marker = this->GetMarker();
-
         switch (*marker) {
           case APPO:
             this->current_jfif_header = ParseJFIFSegment(
@@ -65,8 +67,17 @@ cv::Mat JPEGDecoder::DecodeFile(std::string filename, int level) {
             // TODO
             break;
           case DEFINE_QUANTIZATION_TABLE:
-            ParseQuantizationTable(this->current_file_content_,
-                                   this->current_index_);
+            std::tie(table_key, quantization_table) = ParseQuantizationTable(
+                this->current_file_content_, this->current_index_);
+
+            if (!(this->quantization_tables_
+                      .insert(std::make_pair(table_key, quantization_table))
+                      .second)) {
+              this->quantization_tables_.erase(table_key);
+              this->quantization_tables_.insert(
+                  std::make_pair(table_key, quantization_table));
+            }
+
             break;
           case START_OF_FRAME_BASELINE:
             this->DecodeFrame(FRAME_TYPE_BASELINE_DTC);
@@ -75,8 +86,31 @@ cv::Mat JPEGDecoder::DecodeFile(std::string filename, int level) {
             this->DecodeFrame(FRAME_TYPE_PROGRESSIVE);
             break;
           case DEFINE_HUFFMAN_TABLE:
-            ParseHuffmanTableSpecification(this->current_file_content_,
-                                           this->current_index_);
+            huffman_tables = ParseHuffmanTableSpecification(
+                this->current_file_content_, this->current_index_);
+
+            for (size_t i = 0; i < huffman_tables.size(); i++) {
+              std::tie(table_key, huffman_table) = huffman_tables.at(i);
+
+              if (huffman_table.table_class_ == 0) {
+                if (!(this->dc_huffman_tables_
+                          .insert(std::make_pair(table_key, huffman_table))
+                          .second)) {
+                  this->dc_huffman_tables_.erase(table_key);
+                  this->dc_huffman_tables_.insert(
+                      std::make_pair(table_key, huffman_table));
+                }
+              } else {
+                if (!(this->ac_huffman_tables_
+                          .insert(std::make_pair(table_key, huffman_table))
+                          .second)) {
+                  this->ac_huffman_tables_.erase(table_key);
+                  this->ac_huffman_tables_.insert(
+                      std::make_pair(table_key, huffman_table));
+                }
+              }
+            }
+
             break;
           default:
             std::cout << "I did not know how to parse the block : " << std::hex
@@ -94,7 +128,7 @@ cv::Mat JPEGDecoder::DecodeFile(std::string filename, int level) {
     throw FileNotFoundException(filename);
   }
 
-  return cv::Mat(300, 300, 25);
+  return this->current_image_;
 }
 
 std::ostream &operator<<(std::ostream &out, const JPEGDecoder &decoder) {
