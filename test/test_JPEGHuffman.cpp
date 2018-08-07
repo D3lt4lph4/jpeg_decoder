@@ -198,6 +198,8 @@ TEST(TestHuffmanFunctions, testExtended) {
 
 TEST(TestHuffmanFunctions, testDecodeACCoefficients) {
   unsigned char file_content[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+                file_content_2[] = {0xFF, 0x00, 0xEF, 0xAF, 0xFE, 0x4B, 0xFF,
+                                    0x00, 0x09, 0xBF, 0x5E, 0xDD, 0x40},
                 bit_index = 8;
   unsigned int index = 0;
 
@@ -235,7 +237,12 @@ TEST(TestHuffmanFunctions, testDecodeACCoefficients) {
                                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+                                       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                   expected_results_2 = {
+                       0, 0, 0, 0, 0, 0, 0,  0, 0, 0,  0, 0, 0, 0, 10, 0,
+                       0, 0, 0, 0, 0, 0, 0,  0, 0, 0,  0, 0, 2, 0, 0,  0,
+                       0, 0, 0, 0, 0, 0, -9, 0, 0, 0,  0, 0, 0, 0, 0,  0,
+                       0, 0, 0, 1, 0, 0, 0,  0, 0, -1, 0, 0, 0, 0, 1};
 
   HuffmanTable first_table, second_table;
 
@@ -262,9 +269,19 @@ TEST(TestHuffmanFunctions, testDecodeACCoefficients) {
   ASSERT_EQ(bit_index, 6);
   index = 0;
   bit_index = 8;
+  std::cout << "-----------------" << std::endl;
   results =
       DecodeACCoefficients(file_content, &index, &bit_index, second_table);
   ASSERT_THAT(results, ::testing::ElementsAreArray(expected_results));
+
+  index = 0;
+  bit_index = 8;
+  std::cout << "-----------------" << std::endl;
+  results =
+      DecodeACCoefficients(file_content_2, &index, &bit_index, second_table);
+
+  std::cout << results.at(38) << std::endl;
+  ASSERT_THAT(results, ::testing::ElementsAreArray(expected_results_2));
 
   // Then we test with a block of 4 black pixels followed by 4 white, 4 black,
   // ...

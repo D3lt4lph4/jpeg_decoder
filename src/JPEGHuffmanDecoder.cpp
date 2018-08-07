@@ -181,8 +181,6 @@ int Extended(int diff, unsigned char ssss) {
   int value = 1;
 
   value = value << (ssss - 1);
-  std::cout << value;
-  std::cout << diff;
   if (diff < value) {
     value = (-1 << ssss) + 1;
     diff += value;
@@ -212,7 +210,7 @@ std::vector<int> DecodeACCoefficients(unsigned char *stream,
   do {
     rs = Decode(stream, index, bit_index, used_table);
     ssss = rs % 16;
-    rrrr = rs >> 4;
+    rrrr = (rs & 240) >> 4;
     r = rrrr;
     if (ssss == 0) {
       if (r == 15) {
@@ -222,7 +220,8 @@ std::vector<int> DecodeACCoefficients(unsigned char *stream,
       }
     } else {
       k = k + r;
-      ZZ.at(k) = DecodeZZ(stream, index, bit_index, ssss);
+      ZZ.at(k - 1) = DecodeZZ(stream, index, bit_index, ssss);
+      k += 1;
       if (k == 63) {
         out_condition = true;
       }
