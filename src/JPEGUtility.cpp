@@ -1,7 +1,10 @@
+#include "JPEGUtility.hpp"
+
+#include <iostream>
+#include <opencv2/core/core.hpp>
 #include <stdexcept>
 
 #include "JPEGType.hpp"
-#include "JPEGUtility.hpp"
 
 /**
  * \fn unsigned char NextBit()
@@ -60,4 +63,65 @@ unsigned char NextBit(unsigned char *file_content, unsigned int *index,
     *bit_index = 8;
   }
   return bit;
+}
+
+/**
+ * \fn void IDCT(cv::Mat *new_block, unsigned int component_number)
+ *
+ * \brief Calculate the inverse cosinus transform over the block provided. The
+ * transform is calculated the channel provided in component_number.
+ *
+ * \param[in, out] new_block A pointer to the OpenCV data to modify.
+ *
+ * \param[in] component_number The component on which to perform the IDCT.
+ */
+void IDCT(cv::Mat *new_block, unsigned int component_number) {
+  float result, cu, cv;
+  cv::Mat temp_operation = new_block->clone();
+
+  for (size_t x = 0; x < 8; x++) {
+    for (size_t y = 0; y < 8; y++) {
+      result = 0;
+      for (size_t u = 0; u < 8; u++) {
+        for (size_t v = 0; v < 8; v++) {
+          if (u == 0 && v == 0) {
+            cu = 1 / sqrt(2);
+            cv = 1 / sqrt(2);
+          } else {
+            cu = 1;
+            cv = 1;
+          }
+          result += cu * cv *
+                    temp_operation.at<cv::Vec3i>(u, v)[component_number - 1] *
+                    cos((2 * x + 1) * u * M_PI / 16.0) *
+                    cos((2 * y + 1) * v * M_PI / 16.0);
+        }
+      }
+      new_block->at<cv::Vec3i>(x, y)[component_number - 1] = (result / 4);
+      std::cout << result / 4 << " ";
+    }
+    std::cout << std::endl;
+  }
+  *new_block = cv::max(*new_block, 0);
+}
+
+void GoToBGR(cv::Mat *new_block) {
+  cv::Mat temp_operation = new_block->clone();
+
+  for (size_t i = 0; i < 8; i++) {
+    for (size_t j = 0; j < 8; j++) {
+      new_block->at<cv::Vec3i>(i, j)[0] =
+          temp_operation.at<cv::Vec3i>(i, j)[0] +
+          1.402 * (temp_operation.at<cv::Vec3i>(i, j)[2] - 128);
+      new_block->at<cv::Vec3i>(i, j)[1] =
+          temp_operation.at<cv::Vec3i>(i, j)[0] -
+          0.34414 * (temp_operation.at<cv::Vec3i>(i, j)[1] - 128) -
+          0.71414 * (temp_operation.at<cv::Vec3i>(i, j)[2] - 128);
+      new_block->at<cv::Vec3i>(i, j)[2] =
+          temp_operation.at<cv::Vec3i>(i, j)[0] +
+          1.772 * (temp_operation.at<cv::Vec3i>(i, j)[1] - 128);
+      std::cout << new_block->at<cv::Vec3i>(i, j) << " ";
+    }
+    std::cout << std::endl;
+  }
 }

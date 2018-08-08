@@ -12,7 +12,7 @@ int main(int argc, char const *argv[]) {
     cv::Mat image;
     std::string file_name = argv[1];
 
-    image = decoder.DecodeFile(file_name, 1);
+    image = decoder.DecodeFile(file_name, 4);
 
     cv::namedWindow("Decoded image.", cv::WINDOW_AUTOSIZE);
     cv::imshow("Decoded image.", image);

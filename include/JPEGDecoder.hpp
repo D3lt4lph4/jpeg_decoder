@@ -26,10 +26,9 @@ class JPEGDecoder {
   void DecodeToLevel();
   void DecodeFrame(unsigned char encoding_process_type);
   void DecodeScan(unsigned char encoding_process_type);
-  void Dequantize(cv::Mat *new_block,
-                  QuantizationTable table void PerformIDCT(cv::Mat *new_block));
-  void PerformIDCT(cv::Mat *new_block);
-
+  void Dequantize(cv::Mat *new_block, QuantizationTable table,
+                  unsigned int component_number);
+  
   // Baseline functions
   void ResetDecoderBaseline();
   void DecodeRestartIntervalBaseline();

@@ -1,3 +1,4 @@
+#include <math.h>
 #include <cstring>
 #include <fstream>
 #include <iostream>
@@ -12,6 +13,7 @@
 #include "JPEGException.hpp"
 #include "JPEGHuffmanDecoder.hpp"
 #include "JPEGParser.hpp"
+#include "JPEGUtility.hpp"
 
 /**
  * \fn JPEGDecoder::JPEGDecoder()
@@ -320,7 +322,8 @@ void JPEGDecoder::ResetDecoderBaseline() {}
  */
 void JPEGDecoder::DecodeRestartIntervalBaseline() {
   int n = 0, start_line, start_column;
-  unsigned char decoded_dc, diff;
+  unsigned char decoded_dc;
+  int diff;
   this->ResetDecoderBaseline();
   unsigned int component_number = 1, number_of_blocks;
   unsigned char dc_table_index, ac_table_index, bit_index = 8;
@@ -354,33 +357,41 @@ void JPEGDecoder::DecodeRestartIntervalBaseline() {
                    &bit_index, this->dc_huffman_tables_.at(dc_table_index));
         diff = Receive(decoded_dc, this->current_file_content_,
                        this->current_index_, &bit_index);
+
         diff = Extended(diff, decoded_dc);
-
         new_block.at<cv::Vec3i>(0, 0)[component_number - 1] = diff;
-
+        // std::cout << diff << " : ";
         // We decode the ac components.
         AC_Coefficients = DecodeACCoefficients(
             this->current_file_content_, this->current_index_, &bit_index,
             this->ac_huffman_tables_.at(ac_table_index));
 
-        if (this->decoding_level_ < 3) {
+        if (this->decoding_level_ > 1) {
           // Perform dequantization
-          this->Dequantize(&new_block, this->quantization_tables_.at(
-                                           (unsigned char)component_number));
+          this->Dequantize(&new_block,
+                           this->quantization_tables_.at(
+                               this->current_frame_header_
+                                   .component_signification_parameters_
+                                   .at((unsigned char)component_number)
+                                   .at(2)),
+                           component_number);
         }
 
         for (size_t i = 0; i < 8; i++) {
           for (size_t j = 0; j < 8; j++) {
-            if (i != 0 && j != 0) {
+            if (!(i == 0 && j == 0)) {
               new_block.at<cv::Vec3i>(i, j)[component_number - 1] =
                   AC_Coefficients.at(ZZ_order[i * 8 + j - 1]);
+              // std::cout << AC_Coefficients.at(ZZ_order[i * 8 + j - 1]);
+              // std::cout << " ";
             }
           }
+          // std::cout << std::endl;
         }
 
-        if (this->decoding_level_ < 4) {
+        if (this->decoding_level_ > 2) {
           // Perform IDCT.
-          this->PerformIDCT(&new_block);
+          IDCT(&new_block, component_number);
         }
 
         if (component_number ==
@@ -390,6 +401,10 @@ void JPEGDecoder::DecodeRestartIntervalBaseline() {
         } else {
           component_number += 1;
         }
+      }
+      if (this->decoding_level_ > 3) {
+        // Perform IDCT.
+        YCbCrToBGR(&new_block);
       }
       n += 1;
     }
@@ -445,8 +460,8 @@ unsigned char *JPEGDecoder::GetMarker() {
   }
 }
 
-void Dequantize(cv::Mat *new_block, QuantizationTable table,
-                unsigned int component_number) {
+void JPEGDecoder::Dequantize(cv::Mat *new_block, QuantizationTable table,
+                             unsigned int component_number) {
   for (size_t i = 0; i < 8; i++) {
     for (size_t j = 0; j < 8; j++) {
       new_block->at<cv::Vec3i>(i, j)[component_number - 1] *=
@@ -454,5 +469,3 @@ void Dequantize(cv::Mat *new_block, QuantizationTable table,
     }
   }
 }
-
-void PerformIDCT(cv::Mat *new_block) {}
