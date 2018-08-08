@@ -139,6 +139,7 @@ cv::Mat JPEGDecoder::DecodeFile(std::string filename, int level) {
     throw FileNotFoundException(filename);
   }
 
+  this->DecodeToLevel();
   return this->current_image_;
 }
 
@@ -275,6 +276,7 @@ void JPEGDecoder::DecodeFrame(unsigned char encoding_process_type) {
       }
     }
   } while (*marker != END_OF_IMAGE);
+  *(this->current_index_) -= 2;
 }
 
 /**
@@ -324,13 +326,14 @@ void JPEGDecoder::DecodeRestartIntervalBaseline() {
   int n = 0, start_line, start_column;
   unsigned char decoded_dc, diff;
   this->ResetDecoderBaseline();
-  unsigned int component_number = 1;
+  unsigned int component_number = 1, number_of_blocks;
   unsigned char dc_table_index, ac_table_index, bit_index = 8;
   this->data_unit_per_mcu_ = 3;
   cv::Mat new_block;
   std::vector<int> AC_Coefficients;
-
-  while (!this->IsMarker()) {
+  number_of_blocks =
+      this->number_of_blocks_per_line * this->number_of_blocks_per_column;
+  while (this->block_index < number_of_blocks) {
     n = 0;
     while (n < this->data_unit_per_mcu_) {
       if (this->current_frame_header_.number_of_image_component > 1) {
@@ -383,6 +386,9 @@ void JPEGDecoder::DecodeRestartIntervalBaseline() {
       }
       n += 1;
     }
+  }
+  if (bit_index < 8) {
+    *(this->current_index_) += 1;
   }
 }
 

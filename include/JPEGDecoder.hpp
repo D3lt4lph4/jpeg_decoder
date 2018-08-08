@@ -23,6 +23,7 @@ class JPEGDecoder {
   void DecoderSetup();
 
   // Decoding functions
+  void DecodeToLevel();
   void DecodeFrame(unsigned char encoding_process_type);
   void DecodeScan(unsigned char encoding_process_type);
 
