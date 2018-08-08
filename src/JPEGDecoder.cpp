@@ -138,8 +138,6 @@ cv::Mat JPEGDecoder::DecodeFile(std::string filename, int level) {
   } else {
     throw FileNotFoundException(filename);
   }
-
-  this->DecodeToLevel();
   return this->current_image_;
 }
 
@@ -151,11 +149,9 @@ std::ostream &operator<<(std::ostream &out, const JPEGDecoder &decoder) {
     case 0:
       out << "Unit : 0, no units\n";
       break;
-
     case 1:
       out << "Unit : 1, dot per inch\n";
       break;
-
     case 2:
       out << "Unit : 2, dot per cm\n";
       break;
@@ -340,8 +336,8 @@ void JPEGDecoder::DecodeRestartIntervalBaseline() {
         start_line = this->block_index / this->number_of_blocks_per_line;
         start_column = this->block_index % this->number_of_blocks_per_line;
         new_block = this->current_image_(
-            cv::Range(8 * start_line, 8 + 1 * start_line),
-            cv::Range(8 * start_column, 8 + 1 * start_column));
+            cv::Range(8 * start_line, 8 * (1 + start_line)),
+            cv::Range(8 * start_column, 8 * (1 + start_column)));
         // Then we are interleaved.
         dc_table_index =
             this->current_scan_.scan_components_specification_parameters_
@@ -367,13 +363,24 @@ void JPEGDecoder::DecodeRestartIntervalBaseline() {
             this->current_file_content_, this->current_index_, &bit_index,
             this->ac_huffman_tables_.at(ac_table_index));
 
+        if (this->decoding_level_ < 3) {
+          // Perform dequantization
+          this->Dequantize(&new_block, this->quantization_tables_.at(
+                                           (unsigned char)component_number));
+        }
+
         for (size_t i = 0; i < 8; i++) {
           for (size_t j = 0; j < 8; j++) {
             if (i != 0 && j != 0) {
               new_block.at<cv::Vec3i>(i, j)[component_number - 1] =
-                  AC_Coefficients.at(i * 8 + j - 1);
+                  AC_Coefficients.at(ZZ_order[i * 8 + j - 1]);
             }
           }
+        }
+
+        if (this->decoding_level_ < 4) {
+          // Perform IDCT.
+          this->PerformIDCT(&new_block);
         }
 
         if (component_number ==
@@ -437,3 +444,15 @@ unsigned char *JPEGDecoder::GetMarker() {
     throw std::runtime_error(error.str());
   }
 }
+
+void Dequantize(cv::Mat *new_block, QuantizationTable table,
+                unsigned int component_number) {
+  for (size_t i = 0; i < 8; i++) {
+    for (size_t j = 0; j < 8; j++) {
+      new_block->at<cv::Vec3i>(i, j)[component_number - 1] *=
+          table.qks_.at(i * 8 + j);
+    }
+  }
+}
+
+void PerformIDCT(cv::Mat *new_block) {}
