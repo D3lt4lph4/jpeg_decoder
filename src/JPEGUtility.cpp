@@ -77,35 +77,44 @@ unsigned char NextBit(unsigned char *file_content, unsigned int *index,
  */
 void IDCT(cv::Mat *new_block, unsigned int component_number) {
   float result, cu, cv;
-  cv::Mat temp_operation = new_block->clone();
+  cv::Mat temp_operation = new_block->clone(), mask;
 
   for (size_t x = 0; x < 8; x++) {
     for (size_t y = 0; y < 8; y++) {
       result = 0;
       for (size_t u = 0; u < 8; u++) {
         for (size_t v = 0; v < 8; v++) {
-          if (u == 0 && v == 0) {
+          if (u == 0) {
             cu = 1 / sqrt(2);
-            cv = 1 / sqrt(2);
           } else {
             cu = 1;
+          }
+          if (v == 0) {
+            cv = 1 / sqrt(2);
+          } else {
             cv = 1;
           }
           result += cu * cv *
-                    temp_operation.at<cv::Vec3i>(u, v)[component_number - 1] *
+                    temp_operation.at<cv::Vec3i>(v, u)[component_number - 1] *
                     cos((2 * x + 1) * u * M_PI / 16.0) *
                     cos((2 * y + 1) * v * M_PI / 16.0);
         }
+        std::cout << cos((2 * x + 1) * u * M_PI / 16.0) << std::endl;
       }
-      new_block->at<cv::Vec3i>(x, y)[component_number - 1] = (result / 4);
-      std::cout << result / 4 << " ";
+      result = result / 4 + 128;
+      if (result > 255) {
+        new_block->at<cv::Vec3i>(y, x)[component_number - 1] = 255;
+      } else if (result < 0) {
+        new_block->at<cv::Vec3i>(y, x)[component_number - 1] = 0;
+      } else {
+        new_block->at<cv::Vec3i>(y, x)[component_number - 1] = result;
+      }
     }
-    std::cout << std::endl;
+    // std::cout << std::endl;
   }
-  *new_block = cv::max(*new_block, 0);
 }
 
-void GoToBGR(cv::Mat *new_block) {
+void YCbCrToBGR(cv::Mat *new_block) {
   cv::Mat temp_operation = new_block->clone();
 
   for (size_t i = 0; i < 8; i++) {
