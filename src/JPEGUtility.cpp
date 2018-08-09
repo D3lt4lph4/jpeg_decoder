@@ -99,7 +99,7 @@ void IDCT(cv::Mat *new_block, unsigned int component_number) {
                     cos((2 * x + 1) * u * M_PI / 16.0) *
                     cos((2 * y + 1) * v * M_PI / 16.0);
         }
-        std::cout << cos((2 * x + 1) * u * M_PI / 16.0) << std::endl;
+        // std::cout << cos((2 * x + 1) * u * M_PI / 16.0) << std::endl;
       }
       result = result / 4 + 128;
       if (result > 255) {
@@ -110,7 +110,6 @@ void IDCT(cv::Mat *new_block, unsigned int component_number) {
         new_block->at<cv::Vec3i>(y, x)[component_number - 1] = result;
       }
     }
-    // std::cout << std::endl;
   }
 }
 
@@ -129,8 +128,6 @@ void YCbCrToBGR(cv::Mat *new_block) {
       new_block->at<cv::Vec3i>(i, j)[2] =
           temp_operation.at<cv::Vec3i>(i, j)[0] +
           1.772 * (temp_operation.at<cv::Vec3i>(i, j)[1] - 128);
-      std::cout << new_block->at<cv::Vec3i>(i, j) << " ";
     }
-    std::cout << std::endl;
   }
 }

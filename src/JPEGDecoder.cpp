@@ -140,6 +140,7 @@ cv::Mat JPEGDecoder::DecodeFile(std::string filename, int level) {
   } else {
     throw FileNotFoundException(filename);
   }
+
   return this->current_image_;
 }
 
@@ -217,7 +218,7 @@ void JPEGDecoder::DecodeFrame(unsigned char encoding_process_type) {
         (this->current_frame_header_.number_of_samples_per_line_ + 8 - 1) / 8;
     this->current_image_ = cv::Mat(
         this->current_frame_header_.number_of_lines_,
-        this->current_frame_header_.number_of_samples_per_line_, CV_32FC3);
+        this->current_frame_header_.number_of_samples_per_line_, CV_32SC3);
   }
 
   do {
@@ -366,17 +367,6 @@ void JPEGDecoder::DecodeRestartIntervalBaseline() {
             this->current_file_content_, this->current_index_, &bit_index,
             this->ac_huffman_tables_.at(ac_table_index));
 
-        if (this->decoding_level_ > 1) {
-          // Perform dequantization
-          this->Dequantize(&new_block,
-                           this->quantization_tables_.at(
-                               this->current_frame_header_
-                                   .component_signification_parameters_
-                                   .at((unsigned char)component_number)
-                                   .at(2)),
-                           component_number);
-        }
-
         for (size_t i = 0; i < 8; i++) {
           for (size_t j = 0; j < 8; j++) {
             if (!(i == 0 && j == 0)) {
@@ -389,6 +379,17 @@ void JPEGDecoder::DecodeRestartIntervalBaseline() {
           // std::cout << std::endl;
         }
 
+        if (this->decoding_level_ > 1) {
+          // Perform dequantization
+          this->Dequantize(&new_block,
+                           this->quantization_tables_.at(
+                               this->current_frame_header_
+                                   .component_signification_parameters_
+                                   .at((unsigned char)component_number)
+                                   .at(2)),
+                           component_number);
+        }
+
         if (this->decoding_level_ > 2) {
           // Perform IDCT.
           IDCT(&new_block, component_number);
@@ -396,16 +397,16 @@ void JPEGDecoder::DecodeRestartIntervalBaseline() {
 
         if (component_number ==
             this->current_frame_header_.number_of_image_component) {
+          if (this->decoding_level_ > 3) {
+            YCbCrToBGR(&new_block);
+          }
           component_number = 1;
           this->block_index += 1;
         } else {
           component_number += 1;
         }
       }
-      if (this->decoding_level_ > 3) {
-        // Perform IDCT.
-        YCbCrToBGR(&new_block);
-      }
+
       n += 1;
     }
   }
@@ -462,10 +463,12 @@ unsigned char *JPEGDecoder::GetMarker() {
 
 void JPEGDecoder::Dequantize(cv::Mat *new_block, QuantizationTable table,
                              unsigned int component_number) {
+  int value;
   for (size_t i = 0; i < 8; i++) {
     for (size_t j = 0; j < 8; j++) {
+      value = new_block->at<cv::Vec3i>(i, j)[component_number - 1];
       new_block->at<cv::Vec3i>(i, j)[component_number - 1] *=
-          table.qks_.at(i * 8 + j);
+          table.qks_.at(ZZ_order[i * 8 + j]);
     }
   }
 }

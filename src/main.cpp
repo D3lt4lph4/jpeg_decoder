@@ -13,10 +13,11 @@ int main(int argc, char const *argv[]) {
     std::string file_name = argv[1];
 
     image = decoder.DecodeFile(file_name, 4);
+    image.convertTo(image, CV_8UC3);
 
-    cv::namedWindow("Decoded image.", cv::WINDOW_AUTOSIZE);
     cv::imshow("Decoded image.", image);
     cv::waitKey(0);
+
   } else {
     std::cout << "Please enter one image to decode." << std::endl;
   }
