@@ -217,8 +217,13 @@ void JPEGDecoder::DecodeFrame(unsigned char encoding_process_type) {
     this->number_of_blocks_per_line =
         (this->current_frame_header_.number_of_samples_per_line_ + 8 - 1) / 8;
     this->current_image_ = cv::Mat(
-        this->current_frame_header_.number_of_lines_,
-        this->current_frame_header_.number_of_samples_per_line_, CV_32SC3);
+        this->current_frame_header_.number_of_lines_ +
+            ((8 - (this->current_frame_header_.number_of_lines_ % 8)) % 8),
+        this->current_frame_header_.number_of_samples_per_line_ +
+            (8 -
+             ((this->current_frame_header_.number_of_samples_per_line_ % 8)) %
+                 8),
+        CV_32SC3);
   }
 
   do {
