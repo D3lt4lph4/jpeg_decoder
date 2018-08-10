@@ -118,14 +118,14 @@ void YCbCrToBGR(cv::Mat *new_block) {
 
   for (size_t i = 0; i < 8; i++) {
     for (size_t j = 0; j < 8; j++) {
-      new_block->at<cv::Vec3i>(i, j)[0] =
+      new_block->at<cv::Vec3i>(i, j)[2] =
           temp_operation.at<cv::Vec3i>(i, j)[0] +
           1.402 * (temp_operation.at<cv::Vec3i>(i, j)[2] - 128);
       new_block->at<cv::Vec3i>(i, j)[1] =
           temp_operation.at<cv::Vec3i>(i, j)[0] -
           0.34414 * (temp_operation.at<cv::Vec3i>(i, j)[1] - 128) -
           0.71414 * (temp_operation.at<cv::Vec3i>(i, j)[2] - 128);
-      new_block->at<cv::Vec3i>(i, j)[2] =
+      new_block->at<cv::Vec3i>(i, j)[0] =
           temp_operation.at<cv::Vec3i>(i, j)[0] +
           1.772 * (temp_operation.at<cv::Vec3i>(i, j)[1] - 128);
     }
