@@ -221,10 +221,10 @@ std::vector<int> DecodeACCoefficients(unsigned char *stream,
     } else {
       k = k + r;
       ZZ.at(k - 1) = DecodeZZ(stream, index, bit_index, ssss);
-      k += 1;
       if (k == 63) {
         out_condition = true;
       }
+      k += 1;
     }
   } while (!out_condition);
   return ZZ;

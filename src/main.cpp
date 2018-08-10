@@ -15,8 +15,8 @@ int main(int argc, char const *argv[]) {
     image = decoder.DecodeFile(file_name, 4);
     image.convertTo(image, CV_8UC3);
 
-    // cv::imshow("Decoded image.", image);
-    // cv::waitKey(0);
+    cv::imshow("Decoded image.", image);
+    cv::waitKey(0);
 
   } else {
     std::cout << "Please enter one image to decode." << std::endl;

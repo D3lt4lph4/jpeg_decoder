@@ -366,7 +366,7 @@ void JPEGDecoder::DecodeRestartIntervalBaseline() {
 
         diff = Extended(diff, decoded_dc);
         new_block.at<cv::Vec3i>(0, 0)[component_number - 1] = diff;
-        // std::cout << diff << " : ";
+
         // We decode the ac components.
         AC_Coefficients = DecodeACCoefficients(
             this->current_file_content_, this->current_index_, &bit_index,
@@ -377,11 +377,8 @@ void JPEGDecoder::DecodeRestartIntervalBaseline() {
             if (!(i == 0 && j == 0)) {
               new_block.at<cv::Vec3i>(i, j)[component_number - 1] =
                   AC_Coefficients.at(ZZ_order[i * 8 + j - 1]);
-              // std::cout << AC_Coefficients.at(ZZ_order[i * 8 + j - 1]);
-              // std::cout << " ";
             }
           }
-          // std::cout << std::endl;
         }
 
         if (this->decoding_level_ > 1) {
