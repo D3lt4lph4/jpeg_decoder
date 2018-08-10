@@ -328,17 +328,27 @@ void JPEGDecoder::ResetDecoderBaseline() {}
  */
 void JPEGDecoder::DecodeRestartIntervalBaseline() {
   int n = 0, start_line, start_column;
-  unsigned char decoded_dc;
+  unsigned char decoded_dc, horizontal_number_of_blocks,
+      vertical_number_of_blocks;
   int diff;
   this->ResetDecoderBaseline();
   unsigned int component_number = 1, number_of_blocks;
   unsigned char dc_table_index, ac_table_index, bit_index = 8;
-  this->data_unit_per_mcu_ = 3;
   cv::Mat new_block;
   std::vector<int> AC_Coefficients;
+
   number_of_blocks =
       this->number_of_blocks_per_line * this->number_of_blocks_per_column;
   while (this->block_index < number_of_blocks) {
+    horizontal_number_of_blocks =
+        this->current_frame_header_.component_signification_parameters_
+            .at((unsigned char)component_number)
+            .at(0);
+    vertical_number_of_blocks =
+        this->current_frame_header_.component_signification_parameters_
+            .at((unsigned char)component_number)
+            .at(1);
+    this->data_unit_per_mcu_ = 3;
     n = 0;
     while (n < this->data_unit_per_mcu_) {
       if (this->current_frame_header_.number_of_image_component > 1) {
@@ -372,11 +382,11 @@ void JPEGDecoder::DecodeRestartIntervalBaseline() {
             this->current_file_content_, this->current_index_, &bit_index,
             this->ac_huffman_tables_.at(ac_table_index));
 
-        for (size_t i = 0; i < 8; i++) {
-          for (size_t j = 0; j < 8; j++) {
-            if (!(i == 0 && j == 0)) {
-              new_block.at<cv::Vec3i>(i, j)[component_number - 1] =
-                  AC_Coefficients.at(ZZ_order[i * 8 + j - 1]);
+        for (size_t row = 0; row < 8; row++) {
+          for (size_t col = 0; col < 8; col++) {
+            if (!(row == 0 && col == 0)) {
+              new_block.at<cv::Vec3i>(row, col)[component_number - 1] =
+                  AC_Coefficients.at(ZZ_order[row * 8 + col] - 1);
             }
           }
         }

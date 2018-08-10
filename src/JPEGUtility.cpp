@@ -107,7 +107,7 @@ void IDCT(cv::Mat *new_block, unsigned int component_number) {
       } else if (result < 0) {
         new_block->at<cv::Vec3i>(y, x)[component_number - 1] = 0;
       } else {
-        new_block->at<cv::Vec3i>(y, x)[component_number - 1] = result;
+        new_block->at<cv::Vec3i>(y, x)[component_number - 1] = (int)result;
       }
     }
   }
@@ -116,18 +116,18 @@ void IDCT(cv::Mat *new_block, unsigned int component_number) {
 void YCbCrToBGR(cv::Mat *new_block) {
   cv::Mat temp_operation = new_block->clone();
 
-  for (size_t i = 0; i < 8; i++) {
+  for (size_t row = 0; row < 8; row++) {
     for (size_t j = 0; j < 8; j++) {
-      new_block->at<cv::Vec3i>(i, j)[2] =
-          temp_operation.at<cv::Vec3i>(i, j)[0] +
-          1.402 * (temp_operation.at<cv::Vec3i>(i, j)[2] - 128);
-      new_block->at<cv::Vec3i>(i, j)[1] =
-          temp_operation.at<cv::Vec3i>(i, j)[0] -
-          0.34414 * (temp_operation.at<cv::Vec3i>(i, j)[1] - 128) -
-          0.71414 * (temp_operation.at<cv::Vec3i>(i, j)[2] - 128);
-      new_block->at<cv::Vec3i>(i, j)[0] =
-          temp_operation.at<cv::Vec3i>(i, j)[0] +
-          1.772 * (temp_operation.at<cv::Vec3i>(i, j)[1] - 128);
+      new_block->at<cv::Vec3i>(row, j)[2] =
+          temp_operation.at<cv::Vec3i>(row, j)[0] +
+          1.402 * (temp_operation.at<cv::Vec3i>(row, j)[2] - 128);
+      new_block->at<cv::Vec3i>(row, j)[1] =
+          temp_operation.at<cv::Vec3i>(row, j)[0] -
+          0.34414 * (temp_operation.at<cv::Vec3i>(row, j)[1] - 128) -
+          0.71414 * (temp_operation.at<cv::Vec3i>(row, j)[2] - 128);
+      new_block->at<cv::Vec3i>(row, j)[0] =
+          temp_operation.at<cv::Vec3i>(row, j)[0] +
+          1.772 * (temp_operation.at<cv::Vec3i>(row, j)[1] - 128);
     }
   }
 }
