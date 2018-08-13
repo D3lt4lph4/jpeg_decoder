@@ -330,7 +330,7 @@ void JPEGDecoder::DecodeRestartIntervalBaseline() {
   int n = 0, start_line, start_column;
   unsigned char decoded_dc, horizontal_number_of_blocks,
       vertical_number_of_blocks;
-  int diff;
+  int diff, prev[3] = {0, 0, 0};
   this->ResetDecoderBaseline();
   unsigned int component_number = 1, number_of_blocks;
   unsigned char dc_table_index, ac_table_index, bit_index = 8;
@@ -375,7 +375,10 @@ void JPEGDecoder::DecodeRestartIntervalBaseline() {
                        this->current_index_, &bit_index);
 
         diff = Extended(diff, decoded_dc);
-        new_block.at<cv::Vec3i>(0, 0)[component_number - 1] = diff;
+        new_block.at<cv::Vec3i>(0, 0)[component_number - 1] =
+            diff + prev[component_number - 1];
+        prev[component_number - 1] =
+            new_block.at<cv::Vec3i>(0, 0)[component_number - 1];
 
         // We decode the ac components.
         AC_Coefficients = DecodeACCoefficients(
@@ -404,13 +407,41 @@ void JPEGDecoder::DecodeRestartIntervalBaseline() {
 
         if (this->decoding_level_ > 2) {
           // Perform IDCT.
+
+          /* for (size_t a = 0; a < 8; a++) {
+            for (size_t b = 0; b < 8; b++) {
+              std::cout << new_block.at<cv::Vec3i>(a, b);
+            }
+            std::cout << std::endl;
+          }
+          std::cout << "----------------------------" << std::endl; */
           IDCT(&new_block, component_number);
+          /*   for (size_t a = 0; a < 8; a++) {
+              for (size_t b = 0; b < 8; b++) {
+                std::cout << new_block.at<cv::Vec3i>(a, b);
+              }
+              std::cout << std::endl;
+            }
+            std::cout << "----------------------------" << std::endl; */
         }
 
         if (component_number ==
             this->current_frame_header_.number_of_image_component) {
           if (this->decoding_level_ > 3) {
+            /* for (size_t a = 0; a < 8; a++) {
+              for (size_t b = 0; b < 8; b++) {
+                std::cout << new_block.at<cv::Vec3i>(a, b);
+              }
+              std::cout << std::endl;
+            }
+            std::cout << "----------------------------" << std::endl; */
             YCbCrToBGR(&new_block);
+            /*    for (size_t a = 0; a < 8; a++) {
+                 for (size_t b = 0; b < 8; b++) {
+                   std::cout << new_block.at<cv::Vec3i>(a, b);
+                 }
+                 std::cout << std::endl;
+               } */
           }
           component_number = 1;
           this->block_index += 1;
