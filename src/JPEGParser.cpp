@@ -111,7 +111,7 @@ FrameHeader ParseFrameHeader(unsigned char* file_content, unsigned int* index,
   FrameHeader frame_header = FrameHeader();
 
   // unsigned int header_length;
-  unsigned char number_of_image_component_in_frame,
+  unsigned char number_of_component__in_frame,
       mask_h = 240, mask_v = 15, c, horizontal_sampling_factor,
       vertical_sampling_factor, quantization_table_destination_selector;
 
@@ -129,11 +129,11 @@ FrameHeader ParseFrameHeader(unsigned char* file_content, unsigned int* index,
   frame_header.number_of_samples_per_line_ =
       int(file_content[*index + 5] << 8 | file_content[*index + 6]);
 
-  frame_header.number_of_image_component = file_content[*index + 7];
+  frame_header.number_of_component_ = file_content[*index + 7];
 
   *index += 8;
 
-  for (size_t i = 0; i < frame_header.number_of_image_component; i++) {
+  for (size_t i = 0; i < frame_header.number_of_component_; i++) {
     std::vector<unsigned char> components_vector;
 
     c = file_content[*index];
@@ -147,7 +147,7 @@ FrameHeader ParseFrameHeader(unsigned char* file_content, unsigned int* index,
     components_vector.push_back(vertical_sampling_factor);
     components_vector.push_back(quantization_table_destination_selector);
 
-    frame_header.component_signification_parameters_.insert(
+    frame_header.component_parameters_.insert(
         std::pair<unsigned char, std::vector<unsigned char>>(
             c, components_vector));
     *index += 3;
@@ -185,14 +185,14 @@ ScanHeader ParseScanHeader(unsigned char* file_content, unsigned int* index) {
   image_component_in_scan = file_content[*index];
   *index += 1;
 
-  scan.number_of_image_components_ = image_component_in_scan;
+  scan.number_of_component_s_ = image_component_in_scan;
 
   for (size_t i = 0; i < image_component_in_scan; i++) {
     scan_component_selector = file_content[*index];
     dc_table_destination_selector = (file_content[*index + 1] & mask_high) >> 4;
     ac_table_destination_selector = file_content[*index + 1] & mask_low;
     *index += 2;
-    if (!scan.scan_components_specification_parameters_
+    if (!scan.components_parameters_
              .insert(std::pair<unsigned char,
                                std::pair<unsigned char, unsigned char>>(
                  scan_component_selector,
@@ -200,7 +200,7 @@ ScanHeader ParseScanHeader(unsigned char* file_content, unsigned int* index) {
                      dc_table_destination_selector,
                      ac_table_destination_selector)))
              .second) {
-      scan.scan_components_specification_parameters_.insert(
+      scan.components_parameters_.insert(
           std::pair<unsigned char, std::pair<unsigned char, unsigned char>>(
               scan_component_selector, std::pair<unsigned char, unsigned char>(
                                            dc_table_destination_selector,

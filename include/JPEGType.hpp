@@ -51,22 +51,22 @@ struct JFIFHeader
         thumbnail_vertical_pixel_count_;
 };
 
-struct FrameHeader
-{
-    unsigned char encoding_process_type_, sample_precision_;
-    unsigned int number_of_lines_, number_of_samples_per_line_,
-        number_of_image_component;
-    std::map<unsigned char, std::vector<unsigned char>>
-        component_signification_parameters_;
+<<<<<<< HEAD
+
+struct FrameHeader {
+  unsigned char encoding_process_type_, sample_precision_;
+  unsigned int number_of_lines_, number_of_samples_per_line_,
+      number_of_component_;
+  std::map<unsigned char, std::vector<unsigned char>>
+      component_parameters_;
 };
 
-struct ScanHeader
-{
-    unsigned char number_of_image_components_, start_of_spectral_selection_,
-        end_of_spectral_selection_, approximation_high_bit_,
-        approximation_low_bit_;
-    std::map<unsigned char, std::pair<unsigned char, unsigned char>>
-        scan_components_specification_parameters_;
+struct ScanHeader {
+  unsigned char number_of_component_s_, start_of_spectral_selection_,
+      end_of_spectral_selection_, approximation_high_bit_,
+      approximation_low_bit_;
+  std::map<unsigned char, std::pair<unsigned char, unsigned char>>
+      components_parameters_;
 };
 
 struct HuffmanTable

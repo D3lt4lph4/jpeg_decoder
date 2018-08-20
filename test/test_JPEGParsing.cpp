@@ -47,12 +47,12 @@ TEST(ParsingTest, test_FrameHeader) {
   ASSERT_EQ(header.sample_precision_, 8);
   ASSERT_EQ(header.number_of_lines_, 16);
   ASSERT_EQ(header.number_of_samples_per_line_, 16);
-  ASSERT_EQ(header.number_of_image_component, 3);
-  ASSERT_THAT(header.component_signification_parameters_.at(1),
+  ASSERT_EQ(header.number_of_component_, 3);
+  ASSERT_THAT(header.component_parameters_.at(1),
               ::testing::ElementsAreArray(expected_results));
-  ASSERT_THAT(header.component_signification_parameters_.at(2),
+  ASSERT_THAT(header.component_parameters_.at(2),
               ::testing::ElementsAreArray(expected_results_2));
-  ASSERT_THAT(header.component_signification_parameters_.at(3),
+  ASSERT_THAT(header.component_parameters_.at(3),
               ::testing::ElementsAreArray(expected_results_3));
   ASSERT_EQ(index, 17);
 }
@@ -65,18 +65,18 @@ TEST(ParsingTest, test_ScanHeader) {
 
   ScanHeader header = ParseScanHeader(file_content, &index);
 
-  ASSERT_EQ(header.number_of_image_components_, 3);
+  ASSERT_EQ(header.number_of_component_s_, 3);
   ASSERT_EQ(header.start_of_spectral_selection_, 0);
   ASSERT_EQ(header.end_of_spectral_selection_, 63);
   ASSERT_EQ(header.approximation_high_bit_, 0);
   ASSERT_EQ(header.approximation_low_bit_, 0);
 
-  ASSERT_EQ(header.scan_components_specification_parameters_.at(1).first, 0);
-  ASSERT_EQ(header.scan_components_specification_parameters_.at(1).second, 0);
-  ASSERT_EQ(header.scan_components_specification_parameters_.at(2).first, 1);
-  ASSERT_EQ(header.scan_components_specification_parameters_.at(2).second, 1);
-  ASSERT_EQ(header.scan_components_specification_parameters_.at(3).first, 1);
-  ASSERT_EQ(header.scan_components_specification_parameters_.at(3).second, 1);
+  ASSERT_EQ(header.components_parameters_.at(1).first, 0);
+  ASSERT_EQ(header.components_parameters_.at(1).second, 0);
+  ASSERT_EQ(header.components_parameters_.at(2).first, 1);
+  ASSERT_EQ(header.components_parameters_.at(2).second, 1);
+  ASSERT_EQ(header.components_parameters_.at(3).first, 1);
+  ASSERT_EQ(header.components_parameters_.at(3).second, 1);
 
   ASSERT_EQ(index, 12);
 }
