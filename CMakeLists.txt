@@ -9,6 +9,10 @@ include(CTest)
 enable_testing()
 
 include_directories("include/")
+if(WIN32)
+  set(OpenCV_DIR "C:/Program Files (x86)/opencv/build")
+endif()
+  
 find_package( OpenCV REQUIRED )
 
 
