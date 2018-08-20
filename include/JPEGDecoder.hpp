@@ -10,14 +10,15 @@
 #include "JPEGParser.hpp"
 #include "JPEGType.hpp"
 
-class JPEGDecoder {
- public:
+class JPEGDecoder
+{
+public:
   JPEGDecoder();
   cv::Mat DecodeFile(std::string file_name, int level);
   friend std::ostream &operator<<(std::ostream &out,
                                   const JPEGDecoder &decoder);
 
- private:
+private:
   // Decoder related functions.
   void InitializeDecoder();
   void DecoderSetup();
@@ -28,7 +29,7 @@ class JPEGDecoder {
   void DecodeScan(unsigned char encoding_process_type);
   void Dequantize(cv::Mat *new_block, QuantizationTable table,
                   unsigned int component_number);
-  
+
   // Baseline functions
   void ResetDecoderBaseline();
   void DecodeRestartIntervalBaseline();
