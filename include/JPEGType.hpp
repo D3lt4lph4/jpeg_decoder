@@ -51,7 +51,6 @@ struct JFIFHeader
         thumbnail_vertical_pixel_count_;
 };
 
-<<<<<<< HEAD
 
 struct FrameHeader {
   unsigned char encoding_process_type_, sample_precision_;
