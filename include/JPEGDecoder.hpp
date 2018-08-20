@@ -10,15 +10,14 @@
 #include "JPEGParser.hpp"
 #include "JPEGType.hpp"
 
-class JPEGDecoder
-{
-public:
+class JPEGDecoder {
+ public:
   JPEGDecoder();
   cv::Mat DecodeFile(std::string file_name, int level);
   friend std::ostream &operator<<(std::ostream &out,
                                   const JPEGDecoder &decoder);
 
-private:
+ private:
   // Decoder related functions.
   void InitializeDecoder();
   void DecoderSetup();
@@ -33,6 +32,7 @@ private:
   // Baseline functions
   void ResetDecoderBaseline();
   void DecodeRestartIntervalBaseline();
+  void DecodeMCUBaseline(unsigned int mcu_number);
 
   // Marker related functions
   bool IsMarker();
@@ -48,8 +48,8 @@ private:
   std::map<unsigned char, HuffmanTable> dc_huffman_tables_, ac_huffman_tables_;
 
   // The headers
-  FrameHeader current_frame_header_;
-  ScanHeader current_scan_;
+  FrameHeader frame_header_;
+  ScanHeader scan_header_;
   JFIFHeader current_jfif_header;
 
   // File crossing variable.
