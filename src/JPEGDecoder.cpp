@@ -428,9 +428,14 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
           for (size_t column_d = 0;
                column_d < h_max / horizontal_number_of_blocks; column_d++) {
             new_block = this->current_image_(
-                cv::Range(8 * start_line + row_d, 8 * (1 + start_line + row_d)),
-                cv::Range(8 * start_column + column_d,
-                          8 * (1 + start_column + column_d)));
+                cv::Range(8 * (start_line + row_d +
+                               v_block * v_max / vertical_number_of_blocks),
+                          8 * (1 + start_line + row_d +
+                               v_block * v_max / vertical_number_of_blocks)),
+                cv::Range(8 * (start_column + column_d +
+                               h_block * h_max / horizontal_number_of_blocks),
+                          8 * (1 + start_column + column_d +
+                               h_block * h_max / horizontal_number_of_blocks)));
 
             // We save the dc coefficient and update the previous value.
             new_block.at<cv::Vec3i>(0, 0)[component_number - 1] =
@@ -470,8 +475,8 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
     for (size_t row_d = 0; row_d < v_max; row_d++) {
       for (size_t column_d = 0; column_d < h_max; column_d++) {
         new_block = this->current_image_(
-            cv::Range(8 * start_line + row_d, 8 * (1 + start_line + row_d)),
-            cv::Range(8 * start_column + column_d,
+            cv::Range(8 * (start_line + row_d), 8 * (1 + start_line + row_d)),
+            cv::Range(8 * (start_column + column_d),
                       8 * (1 + start_column + column_d)));
         YCbCrToBGR(&new_block);
       }
