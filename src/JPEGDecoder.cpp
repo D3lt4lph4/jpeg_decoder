@@ -326,13 +326,36 @@ void JPEGDecoder::ResetDecoderBaseline() {}
 void JPEGDecoder::DecodeRestartIntervalBaseline() {
   unsigned char vertical_number_of_blocks, dc_table_index, ac_table_index,
       bit_index = 8;
-  unsigned int mcu_number, number_of_mcus;
-
+  unsigned int mcu_number, number_of_mcus, h_max = 0, v_max = 0;
+  int prev[3] = {0, 0, 0};
   this->ResetDecoderBaseline();
 
-  while (mcu_number < number_of_mcus) {
-    this->DecodeMCUBaseline(mcu_number);
+  // Calculating the number of mcus to parse.
+
+  for (size_t component_number = 1;
+       component_number <= this->frame_header_.number_of_component_;
+       component_number++) {
+    if (this->frame_header_.component_parameters_.at(component_number).at(0) >
+        h_max) {
+      h_max =
+          this->frame_header_.component_parameters_.at(component_number).at(0);
+    }
+    if (this->frame_header_.component_parameters_.at(component_number).at(1) >
+        v_max) {
+      v_max =
+          this->frame_header_.component_parameters_.at(component_number).at(1);
+    }
   }
+
+  number_of_mcus =
+      ((this->frame_header_.number_of_lines_ + (v_max * 8) - 1) / (v_max * 8)) *
+      ((this->frame_header_.number_of_samples_per_line_ + (h_max * 8) - 1) /
+       (h_max * 8));
+
+  for (unsigned int mcu_number = 0; mcu_number < number_of_mcus; mcu_number++) {
+    this->DecodeMCUBaseline(mcu_number, h_max, v_max, &bit_index, prev);
+  }
+
   if (bit_index < 8) {
     *(this->current_index_) += 1;
   }
@@ -347,23 +370,30 @@ void JPEGDecoder::DecodeRestartIntervalBaseline() {
  * starts from the top left mcu and goes line by line to the bottom right one.
  *
  */
-void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number) {
+void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
+                                    unsigned int v_max,
+                                    unsigned char *bit_index, int *prev) {
   unsigned int horizontal_number_of_blocks, vertical_number_of_blocks,
       start_line, start_column, number_of_mcu_per_line,
-      number_of_mcu_per_column;
+      number_of_mcu_per_column, mcu_per_line;
 
-  int diff, prev[3] = {0, 0, 0};
+  int diff;
 
-  unsigned char decoded_dc, dc_table_index, ac_table_index, number_of_component,
-      bit_index = 8;
+  unsigned char decoded_dc, dc_table_index, ac_table_index, number_of_component;
 
   cv::Mat new_block;
   std::vector<int> AC_Coefficients;
 
   number_of_component = this->frame_header_.number_of_component_;
 
-  for (unsigned char component_number = 0;
-       component_number < number_of_component; component_number++) {
+  mcu_per_line =
+      (this->frame_header_.number_of_samples_per_line_ + (h_max * 8) - 1) /
+      (h_max * 8);
+  start_line = mcu_number / mcu_per_line * v_max;
+  start_column = mcu_number % mcu_per_line * h_max;
+
+  for (unsigned char component_number = 1;
+       component_number <= number_of_component; component_number++) {
     dc_table_index =
         this->scan_header_.components_parameters_.at(component_number).first;
     ac_table_index =
@@ -377,60 +407,74 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number) {
     for (size_t v_block = 0; v_block < vertical_number_of_blocks; v_block++) {
       for (size_t h_block = 0; h_block < horizontal_number_of_blocks;
            h_block++) {
-        new_block = this->current_image_(
-            cv::Range(8 * start_line, 8 * (1 + start_line)),
-            cv::Range(8 * start_column, 8 * (1 + start_column)));
-
         // Getting the dc coefficient.
         decoded_dc =
-            Decode(this->current_file_content_, this->current_index_,
-                   &bit_index, this->dc_huffman_tables_.at(dc_table_index));
+            Decode(this->current_file_content_, this->current_index_, bit_index,
+                   this->dc_huffman_tables_.at(dc_table_index));
         diff = Receive(decoded_dc, this->current_file_content_,
-                       this->current_index_, &bit_index);
+                       this->current_index_, bit_index);
 
         diff = Extended(diff, decoded_dc);
-
-        // We save the dc coefficient and update the previous value.
-        new_block.at<cv::Vec3i>(0, 0)[component_number - 1] =
-            diff + prev[component_number - 1];
-        prev[component_number - 1] =
-            new_block.at<cv::Vec3i>(0, 0)[component_number - 1];
+        prev[component_number - 1] = diff + prev[component_number - 1];
 
         // Getting the AC coefficients.
         AC_Coefficients = DecodeACCoefficients(
-            this->current_file_content_, this->current_index_, &bit_index,
+            this->current_file_content_, this->current_index_, bit_index,
             this->ac_huffman_tables_.at(ac_table_index));
 
-        for (size_t row = 0; row < 8; row++) {
-          for (size_t col = 0; col < 8; col++) {
-            if (!(row == 0 && col == 0)) {
-              new_block.at<cv::Vec3i>(row, col)[component_number - 1] =
-                  AC_Coefficients.at(ZZ_order[row * 8 + col] - 1);
+        // We save the info in the correct blocks.
+        for (size_t row_d = 0; row_d < v_max / vertical_number_of_blocks;
+             row_d++) {
+          for (size_t column_d = 0;
+               column_d < h_max / horizontal_number_of_blocks; column_d++) {
+            new_block = this->current_image_(
+                cv::Range(8 * start_line + row_d, 8 * (1 + start_line + row_d)),
+                cv::Range(8 * start_column + column_d,
+                          8 * (1 + start_column + column_d)));
+
+            // We save the dc coefficient and update the previous value.
+            new_block.at<cv::Vec3i>(0, 0)[component_number - 1] =
+                prev[component_number - 1];
+
+            for (size_t row = 0; row < 8; row++) {
+              for (size_t col = 0; col < 8; col++) {
+                if (!(row == 0 && col == 0)) {
+                  new_block.at<cv::Vec3i>(row, col)[component_number - 1] =
+                      AC_Coefficients.at(ZZ_order[row * 8 + col] - 1);
+                }
+              }
+            }
+            // If required, dequantize the coefficient.
+            if (this->decoding_level_ > 1) {
+              // Perform dequantization
+              this->Dequantize(&new_block,
+                               this->quantization_tables_.at(
+                                   this->frame_header_.component_parameters_
+                                       .at((unsigned char)component_number)
+                                       .at(2)),
+                               component_number);
+            }
+
+            // If required Perform the dct inverse.
+            if (this->decoding_level_ > 2) {
+              IDCT(&new_block, component_number);
             }
           }
-        }
-
-        // If required, dequantize the coefficient.
-        if (this->decoding_level_ > 1) {
-          // Perform dequantization
-          this->Dequantize(&new_block,
-                           this->quantization_tables_.at(
-                               this->frame_header_.component_parameters_
-                                   .at((unsigned char)component_number)
-                                   .at(2)),
-                           component_number);
-        }
-
-        // If required Perform the dct inverse.
-        if (this->decoding_level_ > 2) {
-          IDCT(&new_block, component_number);
         }
       }
     }
     // If required, perform the color space tranform on the newly decoded
     // blocks.
-    if (this->decoding_level_ > 3) {
-      YCbCrToBGR(&new_block);
+  }
+  if (this->decoding_level_ > 3) {
+    for (size_t row_d = 0; row_d < v_max; row_d++) {
+      for (size_t column_d = 0; column_d < h_max; column_d++) {
+        new_block = this->current_image_(
+            cv::Range(8 * start_line + row_d, 8 * (1 + start_line + row_d)),
+            cv::Range(8 * start_column + column_d,
+                      8 * (1 + start_column + column_d)));
+        YCbCrToBGR(&new_block);
+      }
     }
   }
 }

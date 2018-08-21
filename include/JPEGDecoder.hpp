@@ -32,7 +32,9 @@ class JPEGDecoder {
   // Baseline functions
   void ResetDecoderBaseline();
   void DecodeRestartIntervalBaseline();
-  void DecodeMCUBaseline(unsigned int mcu_number);
+  void DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
+                         unsigned int v_max, unsigned char *bit_index,
+                         int *prev);
 
   // Marker related functions
   bool IsMarker();
