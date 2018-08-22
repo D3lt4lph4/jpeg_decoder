@@ -73,7 +73,26 @@ int main(int argc, char* argv[]) {
   // If the directory is specified, we process the files in it.
   if (result.count("directory")) {
     std::string directory = result["directory"].as<std::string>();
-    if (!exists(directory)) {
+    boost::filesystem::directory_iterator end_iterator;
+    if (!boost::filesystem::exists(directory)) {
+      std::cout << "The directory doesn't exists, exiting..." << std::endl;
+      exit(0);
+    }
+
+    for (boost::filesystem::directory_iterator iterator(directory);
+         iterator != end_iterator; ++iterator) {
+      if (!boost::filesystem::is_directory(iterator->status())) {
+        if (boost::filesystem::extension(iterator->path()) == ".jpg") {
+          JPEGDecoder decoder;
+          cv::Mat image;
+
+          image = decoder.DecodeFile(iterator->path().string(),
+                                     result["level"].as<int>());
+
+          // Writing the decoded image as .dat file.
+          matwrite(iterator->path().string() + ".dat", image);
+        }
+      }
     }
   }
 
