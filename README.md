@@ -23,3 +23,7 @@ The images are mostly handled in RGB (or BGR) by the image processing framework/
 ## Quantification 
 
 ## Encoding
+
+# TODO
+
+Add the output directory to the image alone.
