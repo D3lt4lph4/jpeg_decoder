@@ -23,9 +23,9 @@ void matwrite(const std::string& filename, const cv::Mat& mat) {
   if (mat.isContinuous()) {
     fs.write(mat.ptr<char>(0), (mat.dataend - mat.datastart));
   } else {
-    int rowsz = CV_ELEM_SIZE(type) * mat.cols;
+    int row_size = CV_ELEM_SIZE(type) * mat.cols;
     for (int r = 0; r < mat.rows; ++r) {
-      fs.write(mat.ptr<char>(r), rowsz);
+      fs.write(mat.ptr<char>(r), row_size);
     }
   }
 }
