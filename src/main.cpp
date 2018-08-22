@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <cerrno>
 
 #include <cxxopts.hpp>
 #include <opencv2/core/core.hpp>
@@ -14,7 +15,9 @@
 
 void matwrite(const std::string& filename, const cv::Mat& mat) {
   std::ofstream fs(filename, std::fstream::binary);
-
+  if (fs.fail()) {
+      std::cerr << strerror(errno) << std::endl;
+}
   // Header
   int type = mat.type();
   int channels = mat.channels();
@@ -55,7 +58,7 @@ int main(int argc, char* argv[]) {
       "help", "Print help")("s,show",
                             "If the image(s) should be displayed. For now, not "
                             "handled by the directory parsing.",
-                            cxxopts::value<bool>(show));
+                            cxxopts::value<bool>(show))("o,output", "The output directory, the generated file name will use the name of the image + .dat.");
 
   auto result = options.parse(argc, argv);
 
@@ -88,6 +91,7 @@ int main(int argc, char* argv[]) {
           JPEGDecoder decoder;
           cv::Mat image;
 
+          std::cout << "Processing the image : " << iterator->path().string() << std::endl; 
           image = decoder.DecodeFile(iterator->path().string(),
                                      result["level"].as<int>());
 
