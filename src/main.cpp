@@ -1,8 +1,10 @@
+#include <boost/filesystem.hpp>
 #include <chrono>
 #include <fstream>
 #include <iostream>
 #include <string>
 
+#include <cxxopts.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
@@ -30,21 +32,69 @@ void matwrite(const std::string& filename, const cv::Mat& mat) {
   }
 }
 
-int main(int argc, char const* argv[]) {
-  if (argc == 2) {
+int main(int argc, char* argv[]) {
+  bool show = false;
+
+  // Creating the parser.
+  cxxopts::Options options("jpeg_decoder",
+                           "Decoder for jpeg files, can decode at different "
+                           "\"level\" and export the decoded image.");
+  options.add_options()(
+      "d,directory", "Directory containing the images to decode.",
+      cxxopts::value<std::string>()->default_value("default"))(
+      "l,level",
+      "The level of decoding to use, one or below to output the huffman "
+      "decoded values, 2 for the dequantized values, 3 for IDCT values, and 4 "
+      "or more for the RGB values.",
+      cxxopts::value<int>()->default_value("2"))(
+      "f,file",
+      "The file to parse, if a directory is specified, will be ignored.",
+      cxxopts::value<std::string>()->default_value("default"))(
+      "help", "Print help")("s,show",
+                            "If the image(s) should be displayed. For now, not "
+                            "handled by the directory parsing.",
+                            cxxopts::value<bool>(show));
+
+  auto result = options.parse(argc, argv);
+
+  // If the help is required, display it.
+  if (result.count("help")) {
+    std::cout << options.help({"", "Group"}) << std::endl;
+    exit(0);
+  }
+
+  if (!result.count("level")) {
+    std::cout
+        << "The level should be specified for the decoder to know when to stop."
+        << std::endl;
+    exit(0);
+  }
+
+  // If the directory is specified, we process the files in it.
+  if (result.count("directory")) {
+    std::string directory = result["directory"].as<std::string>();
+    if (!exists(directory)) {
+    }
+  }
+
+  // Process the file if specified.
+  if (result.count("file")) {
     JPEGDecoder decoder;
     cv::Mat image;
-    std::string file_name = argv[1];
 
-    image = decoder.DecodeFile(file_name, 2);
-    matwrite("output.dat", image);
-    image.convertTo(image, CV_8UC3);
+    image = decoder.DecodeFile(result["file"].as<std::string>(),
+                               result["level"].as<int>());
 
-    cv::imshow("Decoded image.", image);
-    cv::waitKey(0);
+    // Writing the decoded image as .dat file.
+    matwrite(result["file"].as<std::string>() + ".dat", image);
 
-  } else {
-    std::cout << "Please enter one image to decode." << std::endl;
+    if (show) {
+      image.convertTo(image, CV_8UC3);
+      cv::imshow("Decoded image.", image);
+      cv::waitKey(0);
+    }
+
+    return 0;
   }
 
   return 0;

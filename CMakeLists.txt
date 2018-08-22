@@ -13,10 +13,12 @@ if(WIN32)
   set(OpenCV_DIR "C:/Program Files (x86)/opencv/build")
 endif()
   
-find_package( OpenCV REQUIRED )
+set(BOOST_ROOT "/usr/local/boost_1_67_0")
 
+find_package(OpenCV REQUIRED)
+find_package(Boost REQUIRED) 
 
-
+include_directories("include/" ${Boost_INCLUDE_DIRS})
 #-------------------------------------------------
 #                GOOGLE TEST CONF
 #-------------------------------------------------
@@ -73,4 +75,4 @@ set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 include(CPack)
 
-target_link_libraries(jpeg_decoder ${OpenCV_LIBS} JPEGDecoder)
+target_link_libraries(jpeg_decoder ${OpenCV_LIBS} ${Boost_LIBRARY_DIRS} JPEGDecoder)
