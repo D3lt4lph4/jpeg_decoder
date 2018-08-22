@@ -13,10 +13,10 @@ if(WIN32)
   set(OpenCV_DIR "C:/Program Files (x86)/opencv/build")
 endif()
   
-set(BOOST_ROOT "/usr/local/boost_1_67_0")
+
 
 find_package(OpenCV REQUIRED)
-find_package(Boost REQUIRED) 
+find_package(Boost COMPONENTS thread system filesystem REQUIRED) 
 
 include_directories("include/" ${Boost_INCLUDE_DIRS})
 #-------------------------------------------------
@@ -70,9 +70,9 @@ add_library(JPEGDecoder src/JPEGDecoder.cpp src/JPEGHuffmanDecoder.cpp src/JPEGU
 # Adding the main code executable
 add_executable(jpeg_decoder src/main.cpp)
 
-
+set(CMAKE_EXE_LINKER_FLAGS "-lboost_system")
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 include(CPack)
 
-target_link_libraries(jpeg_decoder ${OpenCV_LIBS} ${Boost_LIBRARY_DIRS} JPEGDecoder)
+target_link_libraries(jpeg_decoder ${OpenCV_LIBS} ${Boost_LIBRARIES} ${Boost_LIBRARY_DIRS} JPEGDecoder)
