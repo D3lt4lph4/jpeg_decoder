@@ -159,8 +159,11 @@ cv::Mat JPEGDecoder::DecodeFile(std::string filename, int level) {
   }
 
   delete[] this->current_file_content_;
-
-  return this->current_image_.clone();
+  return this
+      ->current_image_(
+          cv::Range(0, this->frame_header_.number_of_lines_),
+          cv::Range(0, this->frame_header_.number_of_samples_per_line_))
+      .clone();
 }
 
 std::ostream &operator<<(std::ostream &out, const JPEGDecoder &decoder) {
