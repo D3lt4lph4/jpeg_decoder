@@ -64,8 +64,10 @@ class JPEGDecoder {
   JFIFHeader current_jfif_header;
 
   // File crossing variable.
-  unsigned char *current_file_content_, *bit_index, *last_k_, logging_level_;
+  unsigned char *current_file_content_, *bit_index, *last_k_;
   unsigned int *current_index_;
+
+  int logging_level_;
 
   int number_of_blocks_per_line, number_of_blocks_per_column, block_index;
 };

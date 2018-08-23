@@ -22,8 +22,9 @@
 /**
  * \fn JPEGDecoder::JPEGDecoder()
  */
-JPEGDecoder::JPEGDecoder() : block_index(0), logging_level_(1) {
+JPEGDecoder::JPEGDecoder() : block_index(0), logging_level_(0) {
   this->current_index_ = new (unsigned int);
+  this->InitializeLogger();
 }
 
 /**
@@ -569,6 +570,10 @@ void JPEGDecoder::Dequantize(cv::Mat *new_block, QuantizationTable table,
 
 void JPEGDecoder::InitializeLogger() {
   switch (this->logging_level_) {
+    case 0:
+      boost::log::core::get()->set_filter(boost::log::trivial::severity >
+                                          boost::log::trivial::fatal);
+      break;
     case 1:
       boost::log::core::get()->set_filter(boost::log::trivial::severity ==
                                           boost::log::trivial::info);
