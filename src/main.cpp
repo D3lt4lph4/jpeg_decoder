@@ -1,7 +1,6 @@
-#define BOOST_NO_CXX11_SCOPED_ENUMS
 #include <boost/filesystem.hpp>
-#undef BOOST_NO_CXX11_SCOPED_ENUMS
 #include <cerrno>
+
 #include <chrono>
 #include <fstream>
 #include <iostream>
@@ -14,10 +13,14 @@
 #include "JPEGDecoder.hpp"
 
 void matwrite(const std::string& filename, const cv::Mat& mat) {
+  double min, max;
   std::ofstream fs(filename, std::fstream::binary);
   if (fs.fail()) {
     std::cerr << strerror(errno) << std::endl;
   }
+
+  cv::minMaxLoc(mat, &min, &max);
+  std::cout << min << "  " << max << std::endl;
   // Header
   int type = mat.type();
   int channels = mat.channels();
@@ -112,6 +115,9 @@ int main(int argc, char* argv[]) {
         }
       }
     }
+    return 0;
+  } else {
+    std::cout << "No directory specified, defaulting to files." << std::endl;
   }
 
   // Process the file if specified.
@@ -132,6 +138,8 @@ int main(int argc, char* argv[]) {
     }
 
     return 0;
+  } else {
+    std::cout << "No file specified, exiting." << std::endl;
   }
 
   return 0;

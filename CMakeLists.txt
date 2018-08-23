@@ -14,11 +14,14 @@ if(WIN32)
 endif()
   
 
-
 find_package(OpenCV REQUIRED)
-find_package(Boost COMPONENTS thread system filesystem REQUIRED) 
+find_package(Boost COMPONENTS thread system filesystem log REQUIRED) 
+
+message(STATUS "Found opencv library : ${OpenCV_LIBS}\n")
+message(STATUS "Found boost library : ${Boost_LIBRARIES}\n")
 
 include_directories("include/" ${Boost_INCLUDE_DIRS})
+
 #-------------------------------------------------
 #                GOOGLE TEST CONF
 #-------------------------------------------------
@@ -65,14 +68,18 @@ endif()
 # Adding subdirectories
 add_subdirectory(test)
 
-add_library(JPEGDecoder src/JPEGDecoder.cpp src/JPEGHuffmanDecoder.cpp src/JPEGUtility.cpp src/JPEGParser.cpp)
+# fu
+add_definitions(-DBOOST_LOG_DYN_LINK)
+
+add_library(JPEGDecoder SHARED src/JPEGDecoder.cpp src/JPEGHuffmanDecoder.cpp src/JPEGUtility.cpp src/JPEGParser.cpp)
+target_link_libraries(JPEGDecoder ${Boost_LIBRARIES})
 
 # Adding the main code executable
 add_executable(jpeg_decoder src/main.cpp)
 
-set(CMAKE_EXE_LINKER_FLAGS "-lboost_system")
+#set(CMAKE_EXE_LINKER_FLAGS "-lboost_system -lboost_log -lboost_log_setup")
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 include(CPack)
 
-target_link_libraries(jpeg_decoder ${OpenCV_LIBS} ${Boost_LIBRARIES} ${Boost_LIBRARY_DIRS} JPEGDecoder)
+target_link_libraries(jpeg_decoder ${OpenCV_LIBS} ${Boost_LIBRARIES} JPEGDecoder)

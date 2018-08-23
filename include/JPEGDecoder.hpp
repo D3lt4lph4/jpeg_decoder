@@ -12,7 +12,12 @@
 
 class JPEGDecoder {
  public:
+  // Constructors & Destructor
   JPEGDecoder();
+  JPEGDecoder(unsigned char logging_level_);
+  ~JPEGDecoder();
+
+  // Class functions
   cv::Mat DecodeFile(std::string file_name, int level);
   friend std::ostream &operator<<(std::ostream &out,
                                   const JPEGDecoder &decoder);
@@ -20,6 +25,7 @@ class JPEGDecoder {
  private:
   // Decoder related functions.
   void InitializeDecoder();
+  void ClearVariables();
   void DecoderSetup();
 
   // Decoding functions
@@ -40,6 +46,9 @@ class JPEGDecoder {
   bool IsMarker();
   unsigned char *GetMarker();
 
+  // Logging functions
+  void InitializeLogger();
+
   unsigned int restart_interval;
   int current_define_quantization_table_, data_unit_per_mcu_, decoding_level_;
   cv::Mat current_image_, current_thumbnail_;
@@ -55,7 +64,7 @@ class JPEGDecoder {
   JFIFHeader current_jfif_header;
 
   // File crossing variable.
-  unsigned char *current_file_content_, *bit_index, *last_k_;
+  unsigned char *current_file_content_, *bit_index, *last_k_, logging_level_;
   unsigned int *current_index_;
 
   int number_of_blocks_per_line, number_of_blocks_per_column, block_index;

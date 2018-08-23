@@ -6,6 +6,10 @@
 #include <stdexcept>
 #include <string>
 
+#include <boost/log/core.hpp>
+#include <boost/log/expressions.hpp>
+#include <boost/log/trivial.hpp>
+
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
@@ -18,10 +22,19 @@
 /**
  * \fn JPEGDecoder::JPEGDecoder()
  */
-JPEGDecoder::JPEGDecoder() {
+JPEGDecoder::JPEGDecoder() : block_index(0), logging_level_(1) {
   this->current_index_ = new (unsigned int);
-  this->block_index = 0;
 }
+
+/**
+ * \fn JPEGDecoder::JPEGDecoder()
+ */
+JPEGDecoder::JPEGDecoder(unsigned char logging_level) : block_index(0) {
+  this->current_index_ = new (unsigned int);
+  this->logging_level_ = logging_level;
+}
+
+JPEGDecoder::~JPEGDecoder() { delete this->current_index_; }
 
 /**
  * \fn cv::Mat JPEGDecoder::Decode(std::string filename, int level)
@@ -32,6 +45,7 @@ JPEGDecoder::JPEGDecoder() {
  */
 cv::Mat JPEGDecoder::DecodeFile(std::string filename, int level) {
   std::ifstream file_to_decode;
+  bool out_condition = false;
   int size, current_index = 0;
   unsigned char *marker, table_key;
   QuantizationTable quantization_table;
@@ -65,12 +79,12 @@ cv::Mat JPEGDecoder::DecodeFile(std::string filename, int level) {
           case APPO:
             this->current_jfif_header = ParseJFIFSegment(
                 this->current_file_content_, this->current_index_);
-            std::cout << "JFIF segment parsed." << std::endl;
+            BOOST_LOG_TRIVIAL(info) << "JFIF segment parsed.";
             break;
           case COMMENT:
-            std::cout << ParseComment(this->current_file_content_,
-                                      this->current_index_)
-                      << std::endl;
+            BOOST_LOG_TRIVIAL(info) << "Comment in the file : "
+                                    << ParseComment(this->current_file_content_,
+                                                    this->current_index_);
             break;
           case DEFINE_RESTART_INTERVAL:
             // TODO
@@ -86,15 +100,15 @@ cv::Mat JPEGDecoder::DecodeFile(std::string filename, int level) {
               this->quantization_tables_.insert(
                   std::make_pair(table_key, quantization_table));
             }
-            std::cout << "Quantization table parsed." << std::endl;
+            BOOST_LOG_TRIVIAL(info) << "Quantization table parsed.";
             break;
           case START_OF_FRAME_BASELINE:
             this->DecodeFrame(FRAME_TYPE_BASELINE_DTC);
-            std::cout << "Frame decoded." << std::endl;
+            BOOST_LOG_TRIVIAL(info) << "Frame decoded.";
             break;
           case START_OF_FRAME_PROGRESSIVE:
             this->DecodeFrame(FRAME_TYPE_PROGRESSIVE);
-            std::cout << "Frame decoded." << std::endl;
+            BOOST_LOG_TRIVIAL(info) << "Frame decoded.";
             break;
           case DEFINE_HUFFMAN_TABLE:
             huffman_tables = ParseHuffmanTableSpecification(
@@ -121,17 +135,20 @@ cv::Mat JPEGDecoder::DecodeFile(std::string filename, int level) {
                 }
               }
             }
-            std::cout << "Huffman table decoded." << std::endl;
+            BOOST_LOG_TRIVIAL(info) << "Huffman table decoded.";
             break;
           case END_OF_IMAGE:
+            out_condition = true;
             break;
           default:
-            std::cout << "I did not know how to parse the block : " << std::hex
-                      << int(*marker) << std::endl;
+            BOOST_LOG_TRIVIAL(error)
+                << "I did not know how to parse the block : " << std::hex
+                << int(*marker) << std::endl;
             throw std::runtime_error("Error while processing the jpeg file.");
             break;
         }
-      } while (*marker != END_OF_IMAGE);
+        delete marker;
+      } while (!out_condition);
     } else {
       throw std::runtime_error(
           "Expected SOI marker, but sosmething else found, cannot parse the "
@@ -141,7 +158,9 @@ cv::Mat JPEGDecoder::DecodeFile(std::string filename, int level) {
     throw FileNotFoundException(filename);
   }
 
-  return this->current_image_;
+  delete[] this->current_file_content_;
+
+  return this->current_image_.clone();
 }
 
 std::ostream &operator<<(std::ostream &out, const JPEGDecoder &decoder) {
@@ -220,18 +239,20 @@ void JPEGDecoder::DecodeFrame(unsigned char encoding_process_type) {
             (32 + (42 - (this->frame_header_.number_of_lines_ % 8)) % 8),
         this->frame_header_.number_of_samples_per_line_ +
             (42 - ((this->frame_header_.number_of_samples_per_line_ % 8)) % 8),
-        CV_32SC3);
+        CV_32SC3, cv::Scalar(0));
   }
 
   do {
     marker = this->GetMarker();
     if (*marker == START_OF_SCAN) {
-      std::cout << "Getting scan" << std::endl;
+      BOOST_LOG_TRIVIAL(info) << "Getting a scan to decode." << std::endl;
       this->DecodeScan(encoding_process_type);
     } else {
       switch (*marker) {
         case COMMENT:
-          ParseComment(this->current_file_content_, this->current_index_);
+          BOOST_LOG_TRIVIAL(info) << "Comment in the current scan : "
+                                  << ParseComment(this->current_file_content_,
+                                                  this->current_index_);
           break;
         case DEFINE_RESTART_INTERVAL:
           // TODO
@@ -239,7 +260,7 @@ void JPEGDecoder::DecodeFrame(unsigned char encoding_process_type) {
         case DEFINE_QUANTIZATION_TABLE:
           ParseQuantizationTable(this->current_file_content_,
                                  this->current_index_);
-          std::cout << "Quantization table parsed." << std::endl;
+          BOOST_LOG_TRIVIAL(info) << "Quantization table parsed." << std::endl;
           break;
         case DEFINE_HUFFMAN_TABLE:
           huffman_tables = ParseHuffmanTableSpecification(
@@ -265,13 +286,14 @@ void JPEGDecoder::DecodeFrame(unsigned char encoding_process_type) {
               }
             }
           }
-          std::cout << "Huffman table parsed." << std::endl;
+          BOOST_LOG_TRIVIAL(info) << "Huffman table parsed." << std::endl;
           break;
         case END_OF_IMAGE:
           break;
         default:
-          std::cout << "I did not know how to parse the block : " << std::hex
-                    << int(*marker) << std::endl;
+          BOOST_LOG_TRIVIAL(error)
+              << "I did not know how to parse the block : " << std::hex
+              << int(*marker) << std::endl;
           throw std::runtime_error("Error while processing the jpeg file.");
           break;
       }
@@ -539,5 +561,28 @@ void JPEGDecoder::Dequantize(cv::Mat *new_block, QuantizationTable table,
       new_block->at<cv::Vec3i>(i, j)[component_number - 1] *=
           table.qks_.at(ZZ_order[i * 8 + j]);
     }
+  }
+}
+
+void JPEGDecoder::InitializeLogger() {
+  switch (this->logging_level_) {
+    case 1:
+      boost::log::core::get()->set_filter(boost::log::trivial::severity ==
+                                          boost::log::trivial::info);
+      break;
+    case 2:
+      boost::log::core::get()->set_filter(boost::log::trivial::severity ==
+                                          boost::log::trivial::debug);
+      break;
+    case 3:
+      boost::log::core::get()->set_filter(boost::log::trivial::severity >=
+                                          boost::log::trivial::info);
+      break;
+    case 4:
+      boost::log::core::get()->set_filter(boost::log::trivial::severity >=
+                                          boost::log::trivial::fatal);
+      break;
+    default:
+      break;
   }
 }
