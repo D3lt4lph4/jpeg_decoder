@@ -583,11 +583,11 @@ void JPEGDecoder::InitializeLogger() {
                                           boost::log::trivial::debug);
       break;
     case 3:
-      boost::log::core::get()->set_filter(boost::log::trivial::severity >=
+      boost::log::core::get()->set_filter(boost::log::trivial::severity <=
                                           boost::log::trivial::info);
       break;
     case 4:
-      boost::log::core::get()->set_filter(boost::log::trivial::severity >=
+      boost::log::core::get()->set_filter(boost::log::trivial::severity <=
                                           boost::log::trivial::fatal);
       break;
     default:
