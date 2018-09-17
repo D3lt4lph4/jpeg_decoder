@@ -7,37 +7,23 @@
 #include <string>
 
 #include <cxxopts.hpp>
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
 
 #include "JPEGDecoder.hpp"
 
-void matwrite(const std::string& filename, const cv::Mat& mat) {
+void matwrite(const std::string& filename, int* mat, unsigned int image_size_x,
+              unsigned int image_size_y) {
   double min, max;
   std::ofstream fs(filename, std::fstream::binary);
   if (fs.fail()) {
     std::cerr << strerror(errno) << std::endl;
   }
 
-  cv::minMaxLoc(mat, &min, &max);
-  std::cout << min << "  " << max << std::endl;
-  // Header
-  int type = mat.type();
-  int channels = mat.channels();
-  fs.write((char*)&mat.rows, sizeof(int));  // rows
-  fs.write((char*)&mat.cols, sizeof(int));  // cols
-  fs.write((char*)&type, sizeof(int));      // type
-  fs.write((char*)&channels, sizeof(int));  // channels
+  int channels = 3;
+  fs.write((char*)image_size_y, sizeof(unsigned int));  // rows
+  fs.write((char*)image_size_x, sizeof(int));           // cols
+  fs.write((char*)&channels, sizeof(int));              // channels
 
-  // Data
-  if (mat.isContinuous()) {
-    fs.write(mat.ptr<char>(0), (mat.dataend - mat.datastart));
-  } else {
-    int row_size = CV_ELEM_SIZE(type) * mat.cols;
-    for (int r = 0; r < mat.rows; ++r) {
-      fs.write(mat.ptr<char>(r), row_size);
-    }
-  }
+  fs.write((char*)mat, image_size_x * image_size_y * sizeof(int));
 }
 
 int main(int argc, char* argv[]) {
@@ -97,20 +83,23 @@ int main(int argc, char* argv[]) {
       if (!boost::filesystem::is_directory(iterator->status())) {
         if (boost::filesystem::extension(iterator->path()) == ".jpg") {
           JPEGDecoder decoder;
-          cv::Mat image;
+          int* image;
+          unsigned int image_size_x = 0, image_size_y = 0;
 
           std::cout << "Processing the image : " << iterator->path().string()
                     << std::endl;
-          image = decoder.DecodeFile(iterator->path().string(),
-                                     result["level"].as<int>());
+          image = (int*)decoder.DecodeFile(iterator->path().string(),
+                                           &image_size_x, &image_size_y,
+                                           result["level"].as<int>());
 
           // Writing the decoded image as .dat file.
           if (result.count("output")) {
             matwrite(result["output"].as<std::string>() +
                          iterator->path().filename().string() + ".dat",
-                     image);
+                     image, image_size_x, image_size_y);
           } else {
-            matwrite(iterator->path().string() + ".dat", image);
+            matwrite(iterator->path().string() + ".dat", image, image_size_x,
+                     image_size_y);
           }
         }
       }
@@ -123,19 +112,16 @@ int main(int argc, char* argv[]) {
   // Process the file if specified.
   if (result.count("file")) {
     JPEGDecoder decoder;
-    cv::Mat image;
+    int* image;
+    unsigned int image_size_x = 0, image_size_y = 0;
 
-    image = decoder.DecodeFile(result["file"].as<std::string>(),
-                               result["level"].as<int>());
+    image = (int*)decoder.DecodeFile(result["file"].as<std::string>(),
+                                     &image_size_x, &image_size_y,
+                                     result["level"].as<int>());
 
     // Writing the decoded image as .dat file.
-    matwrite(result["file"].as<std::string>() + ".dat", image);
-
-    if (show) {
-      image.convertTo(image, CV_8UC3);
-      cv::imshow("Decoded image.", image);
-      cv::waitKey(0);
-    }
+    matwrite(result["file"].as<std::string>() + ".dat", image, image_size_x,
+             image_size_y);
 
     return 0;
   } else {
