@@ -69,6 +69,7 @@ cv::Mat JPEGDecoder::DecodeFile(std::string filename, int level) {
     size = file_to_decode.tellg();
     file_to_decode.seekg(0, std::ios::beg);
     this->current_file_content_ = new unsigned char[size + 1];
+    *(this->current_index_) = 0;
     file_to_decode.read(reinterpret_cast<char *>(this->current_file_content_),
                         size);
 
@@ -82,10 +83,88 @@ cv::Mat JPEGDecoder::DecodeFile(std::string filename, int level) {
                 this->current_file_content_, this->current_index_);
             BOOST_LOG_TRIVIAL(info) << "JFIF segment parsed.";
             break;
-          case COMMENT:
-            BOOST_LOG_TRIVIAL(info) << "Comment in the file : "
-                                    << ParseComment(this->current_file_content_,
+          case APP1:
+            BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
+            ParseApplicationBlock(this->current_file_content_,
                                                     this->current_index_);
+            break;
+          case APP2:
+            BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
+            ParseApplicationBlock(this->current_file_content_,
+                                                    this->current_index_);
+            break; 
+          case APP3:
+            BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
+            ParseApplicationBlock(this->current_file_content_,
+                                                    this->current_index_);
+            break;
+          case APP4:
+            BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
+            ParseApplicationBlock(this->current_file_content_,
+                                                    this->current_index_);
+            break;
+          case APP5:
+            BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
+            ParseApplicationBlock(this->current_file_content_,
+                                                    this->current_index_);
+            break;
+          case APP6:
+            BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
+            ParseApplicationBlock(this->current_file_content_,
+                                                    this->current_index_);
+            break;
+          case APP7:
+            BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
+            ParseApplicationBlock(this->current_file_content_,
+                                                    this->current_index_);
+            break;
+          case APP8:
+            BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
+            ParseApplicationBlock(this->current_file_content_,
+                                                    this->current_index_);
+            break;
+          case APP9:
+            BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
+            ParseApplicationBlock(this->current_file_content_,
+                                                    this->current_index_);
+            break;
+          case APP10:
+            BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
+            ParseApplicationBlock(this->current_file_content_,
+                                                    this->current_index_);
+            break;
+          case APP11:
+            BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
+            ParseApplicationBlock(this->current_file_content_,
+                                                    this->current_index_);
+            break; 
+          case APP12:
+            BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
+            ParseApplicationBlock(this->current_file_content_,
+                                                    this->current_index_);
+            break;
+          case APP13:
+            BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
+            ParseApplicationBlock(this->current_file_content_,
+                                                    this->current_index_);
+            break;
+          case APP14:
+            BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
+            ParseApplicationBlock(this->current_file_content_,
+                                                    this->current_index_);
+            break;
+          case APP15:
+            BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
+            ParseApplicationBlock(this->current_file_content_,
+                                                    this->current_index_);
+            break;
+          case COMMENT:{
+            std::string comment;
+            comment = ParseComment(this->current_file_content_,
+                                                    this->current_index_);
+            BOOST_LOG_TRIVIAL(info) << "Comment in the file : "
+                                    << comment;
+          }
             break;
           case DEFINE_RESTART_INTERVAL:
             // TODO
@@ -551,7 +630,7 @@ unsigned char *JPEGDecoder::GetMarker() {
     std::cout << this->current_index_ << std::endl;
     error << "Error while reading marker, 0xFF expected, but " << std::hex
           << (int)this->current_file_content_[*(this->current_index_)]
-          << " found.";
+          << " found at index: " << *(this->current_index_);
     throw std::runtime_error(error.str());
   }
 }
