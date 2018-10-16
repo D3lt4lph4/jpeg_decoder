@@ -6,5 +6,6 @@
 unsigned char NextBit(unsigned char *file_content, unsigned int *index,
                       unsigned char *bit_index);
 void IDCT(cv::Mat *new_block, unsigned int component_number);
+void FastIDCT(cv::Mat *new_block, unsigned int component_number);
 void YCbCrToBGR(cv::Mat *new_block);
 #endif

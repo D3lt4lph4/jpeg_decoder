@@ -574,7 +574,7 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
 
             // If required Perform the dct inverse.
             if (this->decoding_level_ > 2) {
-              IDCT(&new_block, component_number);
+              FastIDCT(&new_block, component_number);
             }
           }
         }
