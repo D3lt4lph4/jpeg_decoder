@@ -460,10 +460,17 @@ void JPEGDecoder::DecodeRestartIntervalBaseline() {
   for (unsigned int mcu_number = 0; mcu_number < number_of_mcus; mcu_number++) {
     this->DecodeMCUBaseline(mcu_number, h_max, v_max, &bit_index, prev);
   }
+  unsigned char* marker;
+  marker = new unsigned char[2];
+  std::memcpy(marker,
+                &(this->current_file_content_[*(this->current_index_)]), 2);
 
-  if (bit_index < 8) {
+  if (marker[0] == 0xFF && marker[1] == 0x00) {
+    *(this->current_index_) += 2;
+  } else if (bit_index < 8) {
     *(this->current_index_) += 1;
   }
+  delete marker;
 }
 
 /**
