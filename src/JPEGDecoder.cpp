@@ -1,3 +1,12 @@
+/**
+ * \file JPEGDecoder.cpp
+ * The source code for the class JPEGDecoder
+ *
+ * \author Benjamin Deguerre
+ * \version 1.0
+ *
+ */
+
 #include <math.h>
 #include <cstring>
 #include <fstream>
@@ -10,17 +19,18 @@
 #include <boost/log/expressions.hpp>
 #include <boost/log/trivial.hpp>
 
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-
 #include "JPEGDecoder.hpp"
 #include "JPEGException.hpp"
 #include "JPEGHuffmanDecoder.hpp"
 #include "JPEGParser.hpp"
 #include "JPEGUtility.hpp"
 
+/** \class JPEGDecoder
+ * \brief Decoding class
+ */
+
 /**
- * \fn JPEGDecoder::JPEGDecoder()
+ * \fn JPEGDecoder::JPEGDecoder() : block_index(0), logging_level_(0)
  */
 JPEGDecoder::JPEGDecoder() : block_index(0), logging_level_(0) {
   this->current_index_ = new (unsigned int);
@@ -28,7 +38,7 @@ JPEGDecoder::JPEGDecoder() : block_index(0), logging_level_(0) {
 }
 
 /**
- * \fn JPEGDecoder::JPEGDecoder()
+ * \fn JPEGDecoder::JPEGDecoder(unsigned char logging_level) : block_index(0)
  */
 JPEGDecoder::JPEGDecoder(unsigned char logging_level) : block_index(0) {
   this->current_index_ = new (unsigned int);
@@ -38,13 +48,14 @@ JPEGDecoder::JPEGDecoder(unsigned char logging_level) : block_index(0) {
 JPEGDecoder::~JPEGDecoder() { delete this->current_index_; }
 
 /**
- * \fn cv::Mat JPEGDecoder::Decode(std::string filename, int level)
+ * \fn void *JPEGDecoder::DecodeFile(std::string filename, unsigned int *image_size_x, unsigned int *image_size_y, int level)
  * \brief Take a JPEG compress file as entry and output the decoded matrix.
  *
  * \param[in] filename The file to be decoded.
  * \param[in] level The required level of decoding.
  */
-cv::Mat JPEGDecoder::DecodeFile(std::string filename, int level) {
+void *JPEGDecoder::DecodeFile(std::string filename, unsigned int *image_size_x,
+                              unsigned int *image_size_y, int level) {
   std::ifstream file_to_decode;
   bool out_condition = false;
   int size, current_index = 0;
@@ -55,7 +66,7 @@ cv::Mat JPEGDecoder::DecodeFile(std::string filename, int level) {
 
   // If the filename is the same, we assume to have the same image.
   if (filename.compare(this->current_filename_) == 0) {
-    return this->current_image_.clone();
+    return this->current_image_;
   }
 
   this->InitializeDecoder();
@@ -160,11 +171,7 @@ cv::Mat JPEGDecoder::DecodeFile(std::string filename, int level) {
   }
 
   delete[] this->current_file_content_;
-  return this
-      ->current_image_(
-          cv::Range(0, this->frame_header_.number_of_lines_),
-          cv::Range(0, this->frame_header_.number_of_samples_per_line_))
-      .clone();
+  return this->current_image_;
 }
 
 std::ostream &operator<<(std::ostream &out, const JPEGDecoder &decoder) {
@@ -238,12 +245,13 @@ void JPEGDecoder::DecodeFrame(unsigned char encoding_process_type) {
         (this->frame_header_.number_of_lines_ + 8 - 1) / 8;
     this->number_of_blocks_per_line =
         (this->frame_header_.number_of_samples_per_line_ + 8 - 1) / 8;
-    this->current_image_ = cv::Mat(
-        this->frame_header_.number_of_lines_ +
-            (32 + (42 - (this->frame_header_.number_of_lines_ % 8)) % 8),
-        this->frame_header_.number_of_samples_per_line_ +
-            (42 - ((this->frame_header_.number_of_samples_per_line_ % 8)) % 8),
-        CV_32SC3, cv::Scalar(0));
+    this->current_image_ =
+        new int[3 *
+                (this->frame_header_.number_of_lines_ +
+                 (32 + (42 - (this->frame_header_.number_of_lines_ % 8)) % 8)) *
+                (this->frame_header_.number_of_samples_per_line_ +
+                 (42 - ((this->frame_header_.number_of_samples_per_line_ % 8)) %
+                           8))];
   }
 
   do {
@@ -407,7 +415,7 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
 
   unsigned char decoded_dc, dc_table_index, ac_table_index, number_of_component;
 
-  cv::Mat new_block;
+  int *new_block;
   std::vector<int> AC_Coefficients;
 
   number_of_component = this->frame_header_.number_of_component_;

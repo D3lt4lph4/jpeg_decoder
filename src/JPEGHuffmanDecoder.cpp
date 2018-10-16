@@ -1,24 +1,20 @@
+/**
+ * \file JPEGHuffmanDecoder.cpp
+ */
+
 #include <iostream>
-#include <opencv2/core.hpp>
 
 #include "JPEGHuffmanDecoder.hpp"
 #include "JPEGUtility.hpp"
 
 /**
- * \fn std::vector<unsigned char>
- * JPEGHuffmanDecoder::GenerateSizeTable(std::vector<unsigned char> bits)
+ * \fn std::vector<unsigned char> JPEGHuffmanDecoder::GenerateSizeTable(std::vector<unsigned char> bits)
  *
- * \brief Function to get the huffsize table for a huffman tree. The huffsize
- * table contains all the size of the codes in the huffman table, i.e if we have
- * three codes of length 3 and to of length 4, the huffsize will be [3,3,3,4,4,
- * 0]. The zero at the end is used as marker for other functions.
+ * \brief Function to get the huffsize table for a huffman tree. The huffsize table contains all the size of the codes in the huffman table, i.e if we have three codes of length 3 and to of length 4, the huffsize will be [3,3,3,4,4,0]. The zero at the end is used as marker for other functions.
  *
- * \param[in] bits This is the array containing the number of code of each
- * length, starting from 1.
+ * \param[in] bits This is the array containing the number of code of each length, starting from 1.
  *
- * \return std::pair<unsigned char, std::vector<unsigned char>> The first
- * element of the pair is the index of the 0 value in the array and the second
- * element is the array of length, the length of the array is sum(bits) + 1
+ * \return std::pair<unsigned char, std::vector<unsigned char>> The first element of the pair is the index of the 0 value in the array and the second element is the array of length, the length of the array is sum(bits) + 1
  */
 std::pair<unsigned char, std::vector<unsigned char>> GenerateSizeTable(
     std::vector<unsigned char> bits) {
@@ -41,18 +37,13 @@ std::pair<unsigned char, std::vector<unsigned char>> GenerateSizeTable(
 }
 
 /**
- * \fn std::vector<unsigned short> GenerateCodeTable(HuffmanTable
- * *table_to_fill)
+ * \fn std::vector<unsigned short> GenerateCodeTable(std::vector<unsigned char> huffsize)
  *
- * \brief Function to generate the code table of the huffman
- * tree. The code are generated using the huffsize table generated from bits.
+ * \brief Function to generate the code table of the huffman tree. The code are generated using the huffsize table generated from bits.
  *
- * The code table contains code that have size going up to 11 for baseline (8
- * bits input precision) and 15 if the input precision for for the input is 12
- * bits.
+ * The code table contains code that have size going up to 11 for baseline (8 bits input precision) and 15 if the input precision for for the input is 12 bits.
  *
- * \param[in] huffsize The array containing the list of the sizes of all the
- * codes.
+ * \param[in] huffsize The array containing the list of the sizes of all the codes.
  *
  * \return A vector of shorts containing sum(huffsize) codes.
  */

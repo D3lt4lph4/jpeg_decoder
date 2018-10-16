@@ -1,15 +1,19 @@
+/**
+ * \file JPEGDecoder.hpp
+ */
+
 #ifndef __JPEG_DECODER__
 #define __JPEG_DECODER__
 
 #include <map>
 
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-
 #include "JPEGHuffmanDecoder.hpp"
 #include "JPEGParser.hpp"
 #include "JPEGType.hpp"
 
+/**
+ * \class JPEGDecoder
+ */
 class JPEGDecoder {
  public:
   // Constructors & Destructor
@@ -18,7 +22,8 @@ class JPEGDecoder {
   ~JPEGDecoder();
 
   // Class functions
-  cv::Mat DecodeFile(std::string file_name, int level);
+  void *DecodeFile(std::string file_name, unsigned int *image_size_x,
+                   unsigned int *image_size_y, int level);
   friend std::ostream &operator<<(std::ostream &out,
                                   const JPEGDecoder &decoder);
 
@@ -32,7 +37,7 @@ class JPEGDecoder {
   void DecodeToLevel();
   void DecodeFrame(unsigned char encoding_process_type);
   void DecodeScan(unsigned char encoding_process_type);
-  void Dequantize(cv::Mat *new_block, QuantizationTable table,
+  void Dequantize(int *new_block, QuantizationTable table,
                   unsigned int component_number);
 
   // Baseline functions
@@ -51,7 +56,7 @@ class JPEGDecoder {
 
   unsigned int restart_interval;
   int current_define_quantization_table_, data_unit_per_mcu_, decoding_level_;
-  cv::Mat current_image_, current_thumbnail_;
+  void *current_image_, *current_thumbnail_;
   std::string current_filename_;
 
   // The different tables

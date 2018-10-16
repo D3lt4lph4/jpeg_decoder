@@ -1,8 +1,8 @@
 #include "JPEGUtility.hpp"
 
 #include <iostream>
-#include <opencv2/core/core.hpp>
 #include <stdexcept>
+#include <math.h>
 
 #include "JPEGType.hpp"
 
@@ -75,9 +75,9 @@ unsigned char NextBit(unsigned char *file_content, unsigned int *index,
  *
  * \param[in] component_number The component on which to perform the IDCT.
  */
-void IDCT(cv::Mat *new_block, unsigned int component_number) {
+void IDCT(int *new_block, unsigned int component_number) {
   float result, cu, cv;
-  cv::Mat temp_operation = new_block->clone(), mask;
+  int temp_operation[64];
 
   for (size_t x = 0; x < 8; x++) {
     for (size_t y = 0; y < 8; y++) {
@@ -113,8 +113,8 @@ void IDCT(cv::Mat *new_block, unsigned int component_number) {
   }
 }
 
-void YCbCrToBGR(cv::Mat *new_block) {
-  cv::Mat temp_operation = new_block->clone();
+void YCbCrToBGR(int *new_block) {
+  int *temp_operation[64];
 
   for (size_t row = 0; row < 8; row++) {
     for (size_t j = 0; j < 8; j++) {
