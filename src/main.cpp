@@ -19,8 +19,8 @@ void matwrite(const std::string& filename, const cv::Mat& mat) {
     std::cerr << strerror(errno) << std::endl;
   }
 
-  cv::minMaxLoc(mat, &min, &max);
-  std::cout << min << "  " << max << std::endl;
+  //cv::minMaxLoc(mat, &min, &max);
+  // std::cout << min << "  " << max << std::endl;
   // Header
   int type = mat.type();
   int channels = mat.channels();
