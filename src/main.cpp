@@ -18,7 +18,6 @@ void matwrite(const std::string& filename, const cv::Mat& mat) {
   if (fs.fail()) {
     std::cerr << strerror(errno) << std::endl;
   }
-
   //cv::minMaxLoc(mat, &min, &max);
   // std::cout << min << "  " << max << std::endl;
   // Header
@@ -38,6 +37,7 @@ void matwrite(const std::string& filename, const cv::Mat& mat) {
       fs.write(mat.ptr<char>(r), row_size);
     }
   }
+  fs.close();
 }
 
 int main(int argc, char* argv[]) {
@@ -106,11 +106,37 @@ int main(int argc, char* argv[]) {
 
           // Writing the decoded image as .dat file.
           if (result.count("output")) {
-            matwrite(result["output"].as<std::string>() +
-                         iterator->path().filename().string() + ".dat",
+            switch (result["level"].as<int>())
+            {
+              case 2:
+                matwrite(result["output"].as<std::string>() +
+                         iterator->path().stem().string() + ".qhjpg",
                      image);
+                break;
+              case 3:
+                matwrite(result["output"].as<std::string>() +
+                         iterator->path().stem().string() + ".iqhjpg",
+                     image);
+                break;
+              default:
+                matwrite(result["output"].as<std::string>() +
+                         iterator->path().stem().string() + ".riqhjpg",
+                     image);
+                break;
+            }
           } else {
-            matwrite(iterator->path().string() + ".dat", image);
+            switch (result["level"].as<int>())
+            {
+              case 2:
+                matwrite(iterator->path().parent_path().string() + iterator->path().stem().string() + ".qhjpg", image);
+                break;
+              case 3:
+                matwrite(iterator->path().parent_path().string() + iterator->path().stem().string() + ".iqhjpg", image);
+                break;
+              default:
+                matwrite(iterator->path().parent_path().string() + iterator->path().stem().string() + ".riqhjpg", image);
+                break;
+            }
           }
         }
       }
@@ -124,13 +150,45 @@ int main(int argc, char* argv[]) {
   if (result.count("file")) {
     JPEGDecoder decoder;
     cv::Mat image;
-
     image = decoder.DecodeFile(result["file"].as<std::string>(),
                                result["level"].as<int>());
 
     // Writing the decoded image as .dat file.
-    matwrite(result["file"].as<std::string>() + ".dat", image);
+    boost::filesystem::path p(result["file"].as<std::string>());
 
+    if (result.count("output")) {
+            switch (result["level"].as<int>())
+            {
+              case 2:
+                matwrite(result["output"].as<std::string>() +
+                         p.stem().string() + ".qhjpg",
+                     image);
+                break;
+              case 3:
+                matwrite(result["output"].as<std::string>() +
+                         p.stem().string() + ".iqhjpg",
+                     image);
+                break;
+              default:
+                matwrite(result["output"].as<std::string>() +
+                         p.stem().string() + ".riqhjpg",
+                     image);
+                break;
+            }
+          } else {
+            switch (result["level"].as<int>())
+            {
+              case 2:
+                matwrite(p.parent_path().string() + p.stem().string() + ".qhjpg", image);
+                break;
+              case 3:
+                matwrite(p.parent_path().string() + p.stem().string() + ".iqhjpg", image);
+                break;
+              default:
+                matwrite(p.parent_path().string() + p.stem().string() + ".riqhjpg", image);
+                break;
+            }
+          }
     if (show) {
       image.convertTo(image, CV_8UC3);
       cv::imshow("Decoded image.", image);
