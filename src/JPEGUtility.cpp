@@ -1,8 +1,8 @@
 #include "JPEGUtility.hpp"
 
+#include <math.h>
 #include <iostream>
 #include <stdexcept>
-#include <math.h>
 
 #include "JPEGType.hpp"
 
@@ -119,7 +119,7 @@ void IDCT(int *new_block, unsigned int component_number) {
   }
 }
 
-static void idct1(int *x, int *y, int ps, int half)  // 1D-IDCT
+static void FastIDCT1(int *x, int *y, int ps, int half)  // 1D-IDCT
 {
   int p, n;
   x[0] <<= 9, x[1] <<= 7, x[3] *= 181, x[4] <<= 9, x[5] *= 181, x[7] <<= 7;
@@ -138,33 +138,40 @@ static void idct1(int *x, int *y, int ps, int half)  // 1D-IDCT
   y[7 * 8] = (x[0] - x[1]) >> ps;
 }
 
-void FastIDCT(cv::Mat *new_block, unsigned int component_number)  // 2D 8x8 IDCT
+/**
+ * \fn void FastIDCT(int *new_block, unsigned int component_number)
+ * \brief Compute the a faster IDCT in dimension two. The algorithm is based
+ * upon the DCT implementation of Loeffler.
+ *
+ * \param[in] int* new_block, An array of size 8x8 representing the coefficients
+ * of the DCT of a block.
+ *
+ *
+ */
+void FastIDCT(int *new_block, unsigned int component_number)  // 2D 8x8 IDCT
 {
   int i, b[64], b2[64];
-  for (size_t c = 0; c < 8; c++) {
-    for (size_t r = 0; r < 8; r++) {
-      b[c*8+r] = new_block->at<cv::Vec3i>(r, c)[component_number - 1];
-    }
-  }
-  for (i = 0; i < 8; i++) idct1(b + i * 8, b2 + i, 9, 1 << 8);    // row
-  for (i = 0; i < 8; i++) idct1(b2 + i * 8, b + i, 12, 1 << 11);  // col
+
+  for (i = 0; i < 8; i++)
+    FastIDCT1(new_block + i * 8, b2 + i, 9, 1 << 8);  // row
+  for (i = 0; i < 8; i++)
+    FastIDCT1(b2 + i * 8, new_block + i, 12, 1 << 11);  // col
 
   for (size_t c = 0; c < 8; c++) {
     for (size_t r = 0; r < 8; r++) {
-      new_block->at<cv::Vec3i>(r, c)[component_number - 1] = b[c*8+r] + 128;
-      if (new_block->at<cv::Vec3i>(r, c)[component_number - 1] > 255) {
-        new_block->at<cv::Vec3i>(r, c)[component_number - 1] = 255;
-      } else if (new_block->at<cv::Vec3i>(r, c)[component_number - 1] < 0) {
-        new_block->at<cv::Vec3i>(r, c)[component_number - 1] = 0;
+      new_block[c * 8 + r] = new_block[c * 8 + r] + 128;
+      if (new_block[c * 8 + r] > 255) {
+        new_block[c * 8 + r] = 255;
+      } else if (new_block[c * 8 + r] < 0) {
+        new_block[c * 8 + r] = 0;
       } else {
-        new_block->at<cv::Vec3i>(r, c)[component_number - 1] = (int)new_block->at<cv::Vec3i>(r, c)[component_number - 1];
+        new_block[c * 8 + r] = (int)new_block[c * 8 + r];
       }
-      
     }
   }
 }
 
-void YCbCrToBGR(cv::Mat *new_block) {
+void YCbCrToBGR(int *new_block) {
   cv::Mat temp_operation = new_block->clone();
 
   for (size_t row = 0; row < 8; row++) {
