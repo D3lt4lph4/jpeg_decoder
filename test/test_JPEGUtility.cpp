@@ -261,3 +261,16 @@ TEST(UtilityTest, testFastIDCT) {
   ASSERT_THAT(value_input, ::testing::ElementsAreArray(value_result));
   ASSERT_THAT(value_input_2, ::testing::ElementsAreArray(value_result_2));
 }
+
+TEST(UtilityTest, testFastIDCT1) {
+
+  int value_input[] = {-4, 184, 0, 215, 0, 326, 0, 921};
+
+  int value_result[] = {358.60, -361.60, 358.96, -359.31, 356.48, -361.78,  358.77, -361.43};
+
+  int results[8];
+
+  FastIDCT1(value_input, results, 9, 1 << 8);
+  
+  ASSERT_THAT(results, ::testing::ElementsAreArray(value_result));
+}
