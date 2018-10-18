@@ -167,7 +167,7 @@ void FastIDCT1(int *x, int *y, int ps, int half)
  *
  *
  */
-void FastIDCT(int *new_block, unsigned int component_number)  // 2D 8x8 IDCT
+void FastIDCT(int *new_block)  // 2D 8x8 IDCT
 {
   int i, b[64], b2[64];
 

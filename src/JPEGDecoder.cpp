@@ -547,42 +547,42 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
              row_d++) {
           for (size_t column_d = 0;
                column_d < h_max / horizontal_number_of_blocks; column_d++) {
-            new_block = this->current_image_(
-                cv::Range(8 * (start_line + row_d +
-                               v_block * v_max / vertical_number_of_blocks),
-                          8 * (1 + start_line + row_d +
-                               v_block * v_max / vertical_number_of_blocks)),
-                cv::Range(8 * (start_column + column_d +
-                               h_block * h_max / horizontal_number_of_blocks),
-                          8 * (1 + start_column + column_d +
-                               h_block * h_max / horizontal_number_of_blocks)));
+            //new_block = this->current_image_(
+                // cv::Range(8 * (start_line + row_d +
+                //                v_block * v_max / vertical_number_of_blocks),
+                //           8 * (1 + start_line + row_d +
+                //                v_block * v_max / vertical_number_of_blocks)),
+                // cv::Range(8 * (start_column + column_d +
+                //                h_block * h_max / horizontal_number_of_blocks),
+                //           8 * (1 + start_column + column_d +
+                //                h_block * h_max / horizontal_number_of_blocks)));
 
             // We save the dc coefficient and update the previous value.
-            new_block.at<cv::Vec3i>(0, 0)[component_number - 1] =
-                prev[component_number - 1];
+            // new_block.at<cv::Vec3i>(0, 0)[component_number - 1] =
+            //     prev[component_number - 1];
 
-            for (size_t row = 0; row < 8; row++) {
-              for (size_t col = 0; col < 8; col++) {
-                if (!(row == 0 && col == 0)) {
-                  new_block.at<cv::Vec3i>(row, col)[component_number - 1] =
-                      AC_Coefficients.at(ZZ_order[row * 8 + col] - 1);
-                }
-              }
-            }
+            // for (size_t row = 0; row < 8; row++) {
+            //   for (size_t col = 0; col < 8; col++) {
+            //     if (!(row == 0 && col == 0)) {
+            //       new_block.at<cv::Vec3i>(row, col)[component_number - 1] =
+            //           AC_Coefficients.at(ZZ_order[row * 8 + col] - 1);
+            //     }
+            //   }
+            // }
             // If required, dequantize the coefficient.
             if (this->decoding_level_ > 1) {
               // Perform dequantization
-              this->Dequantize(&new_block,
-                               this->quantization_tables_.at(
-                                   this->frame_header_.component_parameters_
-                                       .at((unsigned char)component_number)
-                                       .at(2)),
-                               component_number);
+              // this->Dequantize(&new_block,
+              //                  this->quantization_tables_.at(
+              //                      this->frame_header_.component_parameters_
+              //                          .at((unsigned char)component_number)
+              //                          .at(2)),
+              //                  component_number);
             }
 
             // If required Perform the dct inverse.
             if (this->decoding_level_ > 2) {
-              FastIDCT(&new_block, component_number);
+              //FastIDCT(&new_block, component_number);
             }
           }
         }
@@ -592,15 +592,15 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
     // blocks.
   }
   if (this->decoding_level_ > 3) {
-    for (size_t row_d = 0; row_d < v_max; row_d++) {
-      for (size_t column_d = 0; column_d < h_max; column_d++) {
-        new_block = this->current_image_(
-            cv::Range(8 * (start_line + row_d), 8 * (1 + start_line + row_d)),
-            cv::Range(8 * (start_column + column_d),
-                      8 * (1 + start_column + column_d)));
-        YCbCrToBGR(&new_block);
-      }
-    }
+    // for (size_t row_d = 0; row_d < v_max; row_d++) {
+    //   for (size_t column_d = 0; column_d < h_max; column_d++) {
+    //     new_block = this->current_image_(
+    //         cv::Range(8 * (start_line + row_d), 8 * (1 + start_line + row_d)),
+    //         cv::Range(8 * (start_column + column_d),
+    //                   8 * (1 + start_column + column_d)));
+    //     YCbCrToBGR(&new_block);
+    //   }
+    // }
   }
 }
 
@@ -650,16 +650,16 @@ unsigned char *JPEGDecoder::GetMarker() {
   }
 }
 
-void JPEGDecoder::Dequantize(cv::Mat *new_block, QuantizationTable table,
+void JPEGDecoder::Dequantize(int *new_block, QuantizationTable table,
                              unsigned int component_number) {
-  int value;
-  for (size_t i = 0; i < 8; i++) {
-    for (size_t j = 0; j < 8; j++) {
-      value = new_block->at<cv::Vec3i>(i, j)[component_number - 1];
-      new_block->at<cv::Vec3i>(i, j)[component_number - 1] *=
-          table.qks_.at(ZZ_order[i * 8 + j]);
-    }
-  }
+  // int value;
+  // for (size_t i = 0; i < 8; i++) {
+  //   for (size_t j = 0; j < 8; j++) {
+  //     value = new_block->at<cv::Vec3i>(i, j)[component_number - 1];
+  //     new_block->at<cv::Vec3i>(i, j)[component_number - 1] *=
+  //         table.qks_.at(ZZ_order[i * 8 + j]);
+  //   }
+  // }
 }
 
 void JPEGDecoder::InitializeLogger() {

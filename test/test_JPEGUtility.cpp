@@ -250,7 +250,6 @@ TEST(UtilityTest, testFastIDCT) {
           254, 254, 254, 0,   0,   0,   254, 254, 254, 0,   0,   0,   254, 254,
           254, 0,   0,   0,   254, 254, 254, 0,   0,   0};
   
-  
   FastIDCT(value_input);
   FastIDCT(value_input+64);
   FastIDCT(value_input+128);
@@ -266,11 +265,11 @@ TEST(UtilityTest, testFastIDCT1) {
 
   int value_input[] = {-4, 184, 0, 215, 0, 326, 0, 921};
 
-  int value_result[] = {358.60, -361.60, 358.96, -359.31, 356.48, -361.78,  358.77, -361.43};
+  int value_result[] = {358, -361, 358, -359, 356, -361,  358, -361};
 
   int results[8];
 
   FastIDCT1(value_input, results, 9, 1 << 8);
   
-  ASSERT_THAT(results, ::testing::ElementsAreArray(value_result));
+  ASSERT_THAT(value_input, ::testing::ElementsAreArray(value_result));
 }
