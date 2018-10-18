@@ -176,15 +176,12 @@ TEST(UtilityTest, testIDCT) {
           254, 254, 254, 0,   0,   0,   254, 254, 254, 0,   0,   0,   254, 254,
           254, 0,   0,   0,   254, 254, 254, 0,   0,   0};
 
-  cv::Mat input_mat(8, 8, CV_32SC3, &value_input),
-      input_mat_2(8, 8, CV_32SC3, &value_input_2);
-
-  IDCT(&input_mat, 1);
-  IDCT(&input_mat, 2);
-  IDCT(&input_mat, 3);
-  IDCT(&input_mat_2, 1);
-  IDCT(&input_mat_2, 2);
-  IDCT(&input_mat_2, 3);
+  IDCT(value_input);
+  IDCT(value_input+64);
+  IDCT(value_input+128);
+  IDCT(value_input_2);
+  IDCT(value_input_2+64);
+  IDCT(value_input_2+128);
 
   ASSERT_THAT(value_input, ::testing::ElementsAreArray(value_result));
   ASSERT_THAT(value_input_2, ::testing::ElementsAreArray(value_result_2));
@@ -252,16 +249,14 @@ TEST(UtilityTest, testFastIDCT) {
           0,   0,   254, 254, 254, 0,   0,   0,   254, 254, 254, 0,   0,   0,
           254, 254, 254, 0,   0,   0,   254, 254, 254, 0,   0,   0,   254, 254,
           254, 0,   0,   0,   254, 254, 254, 0,   0,   0};
-
-  cv::Mat input_mat(8, 8, CV_32SC3, &value_input),
-      input_mat_2(8, 8, CV_32SC3, &value_input_2);
-
-  FastIDCT(&input_mat, 1);
-  FastIDCT(&input_mat, 2);
-  FastIDCT(&input_mat, 3);
-  FastIDCT(&input_mat_2, 1);
-  FastIDCT(&input_mat_2, 2);
-  FastIDCT(&input_mat_2, 3);
+  
+  
+  FastIDCT(value_input);
+  FastIDCT(value_input+64);
+  FastIDCT(value_input+128);
+  FastIDCT(value_input_2);
+  FastIDCT(value_input_2+64);
+  FastIDCT(value_input_2+128);
 
   ASSERT_THAT(value_input, ::testing::ElementsAreArray(value_result));
   ASSERT_THAT(value_input_2, ::testing::ElementsAreArray(value_result_2));
