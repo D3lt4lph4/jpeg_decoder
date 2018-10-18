@@ -14,5 +14,6 @@ std::pair<unsigned char, QuantizationTable> ParseQuantizationTable(
 std::vector<std::pair<unsigned char, HuffmanTable>>
 ParseHuffmanTableSpecification(unsigned char* file_content,
                                unsigned int* index);
+void ParseApplicationBlock(unsigned char* file_content, unsigned int* index);
 
 #endif

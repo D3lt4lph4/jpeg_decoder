@@ -27,7 +27,23 @@ const unsigned char EXPAND_REFERENCE_COMPONENTS = 0xDF;
 
 const unsigned char COMMENT = 0xFE;
 
+// Define all the APP blocks
 const unsigned char APPO = 0xE0;
+const unsigned char APP1 = 0xE1;
+const unsigned char APP2 = 0xE2;
+const unsigned char APP3 = 0xE3;
+const unsigned char APP4 = 0xE4;
+const unsigned char APP5 = 0xE5;
+const unsigned char APP6 = 0xE6;
+const unsigned char APP7 = 0xE7;
+const unsigned char APP8 = 0xE8;
+const unsigned char APP9 = 0xE9;
+const unsigned char APP10 = 0xEA;
+const unsigned char APP11 = 0xEB;
+const unsigned char APP12 = 0xEC;
+const unsigned char APP13 = 0xED;
+const unsigned char APP14 = 0xEE;
+const unsigned char APP15 = 0xEF;
 
 const unsigned char JFIF[] = {0x4a, 0x46, 0x49, 0x46, 0x00};
 

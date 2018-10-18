@@ -41,3 +41,5 @@ private*
 
 callgrind.*
 docs/
+
+CMakeFiles/*

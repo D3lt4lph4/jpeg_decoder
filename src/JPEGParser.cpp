@@ -340,3 +340,10 @@ ParseHuffmanTableSpecification(unsigned char* file_content,
   }
   return output;
 }
+
+void ParseApplicationBlock(unsigned char* file_content, unsigned int* index) {
+  unsigned int application_definition_length;
+  application_definition_length =
+      int(file_content[*index] << 8 | file_content[*index + 1]);
+  *index += application_definition_length;
+  }
