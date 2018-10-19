@@ -8,12 +8,6 @@ set(Tutorial_VERSION_MINOR 1)
 include(CTest)
 enable_testing()
 
-if(WIN32)
-  set(OpenCV_DIR "C:/Program Files (x86)/opencv/build")
-endif()
-  
-
-find_package(OpenCV REQUIRED)
 find_package(Boost COMPONENTS thread system filesystem log REQUIRED) 
 
 message(STATUS "Found opencv library : ${OpenCV_LIBS}\n")
@@ -80,4 +74,4 @@ target_link_libraries(JPEGDecoder ${Boost_LIBRARIES})
 # Adding the main code executable
 add_executable(jpeg_decoder src/main.cpp)
 
-target_link_libraries(jpeg_decoder ${OpenCV_LIBS} ${Boost_LIBRARIES} JPEGDecoder)
+target_link_libraries(jpeg_decoder ${Boost_LIBRARIES} JPEGDecoder)
