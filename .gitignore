@@ -40,4 +40,6 @@ private*
 *.dat
 
 callgrind.*
-docs/
+
+docs/*
+CMakeFiles/*

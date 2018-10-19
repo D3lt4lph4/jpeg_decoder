@@ -6,6 +6,12 @@
 
 #include "JPEGType.hpp"
 
+#define xadd3(xa, xb, xc, xd, h)                                               \
+  p = xa + xb, n = xa - xb, xa = p + xc + h, xb = n + xd + h, xc = p - xc + h, \
+  xd = n - xd + h  // triple-butterfly-add (and possible rounding)
+#define xmul(xa, xb, k1, k2, sh)                               \
+  n = k1 * (xa + xb), p = xa, xa = (n + (k2 - k1) * xb) >> sh, \
+  xb = (n - (k2 + k1) * p) >> sh  // butterfly-mul equ.(2)
 /**
  * \fn unsigned char NextBit()
  * \brief Returns the next bit in the stream.
@@ -113,8 +119,53 @@ void IDCT(int *new_block, unsigned int component_number) {
   }
 }
 
-void YCbCrToBGR(int *new_block) {
-  int *temp_operation[64];
+static void idct1(int *x, int *y, int ps, int half)  // 1D-IDCT
+{
+  int p, n;
+  x[0] <<= 9, x[1] <<= 7, x[3] *= 181, x[4] <<= 9, x[5] *= 181, x[7] <<= 7;
+  xmul(x[6], x[2], 277, 669, 0);
+  xadd3(x[0], x[4], x[6], x[2], half);
+  xadd3(x[1], x[7], x[3], x[5], 0);
+  xmul(x[5], x[3], 251, 50, 6);
+  xmul(x[1], x[7], 213, 142, 6);
+  y[0 * 8] = (x[0] + x[1]) >> ps;
+  y[1 * 8] = (x[4] + x[5]) >> ps;
+  y[2 * 8] = (x[2] + x[3]) >> ps;
+  y[3 * 8] = (x[6] + x[7]) >> ps;
+  y[4 * 8] = (x[6] - x[7]) >> ps;
+  y[5 * 8] = (x[2] - x[3]) >> ps;
+  y[6 * 8] = (x[4] - x[5]) >> ps;
+  y[7 * 8] = (x[0] - x[1]) >> ps;
+}
+
+void FastIDCT(cv::Mat *new_block, unsigned int component_number)  // 2D 8x8 IDCT
+{
+  int i, b[64], b2[64];
+  for (size_t c = 0; c < 8; c++) {
+    for (size_t r = 0; r < 8; r++) {
+      b[c*8+r] = new_block->at<cv::Vec3i>(r, c)[component_number - 1];
+    }
+  }
+  for (i = 0; i < 8; i++) idct1(b + i * 8, b2 + i, 9, 1 << 8);    // row
+  for (i = 0; i < 8; i++) idct1(b2 + i * 8, b + i, 12, 1 << 11);  // col
+
+  for (size_t c = 0; c < 8; c++) {
+    for (size_t r = 0; r < 8; r++) {
+      new_block->at<cv::Vec3i>(r, c)[component_number - 1] = b[c*8+r] + 128;
+      if (new_block->at<cv::Vec3i>(r, c)[component_number - 1] > 255) {
+        new_block->at<cv::Vec3i>(r, c)[component_number - 1] = 255;
+      } else if (new_block->at<cv::Vec3i>(r, c)[component_number - 1] < 0) {
+        new_block->at<cv::Vec3i>(r, c)[component_number - 1] = 0;
+      } else {
+        new_block->at<cv::Vec3i>(r, c)[component_number - 1] = (int)new_block->at<cv::Vec3i>(r, c)[component_number - 1];
+      }
+      
+    }
+  }
+}
+
+void YCbCrToBGR(cv::Mat *new_block) {
+  cv::Mat temp_operation = new_block->clone();
 
   for (size_t row = 0; row < 8; row++) {
     for (size_t j = 0; j < 8; j++) {
