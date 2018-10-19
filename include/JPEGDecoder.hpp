@@ -37,8 +37,7 @@ class JPEGDecoder {
   void DecodeToLevel();
   void DecodeFrame(unsigned char encoding_process_type);
   void DecodeScan(unsigned char encoding_process_type);
-  void Dequantize(int *new_block, QuantizationTable table,
-                  unsigned int component_number);
+  void Dequantize(int *new_block, QuantizationTable table);
 
   // Baseline functions
   void ResetDecoderBaseline();
@@ -56,7 +55,7 @@ class JPEGDecoder {
 
   unsigned int restart_interval;
   int current_define_quantization_table_, data_unit_per_mcu_, decoding_level_;
-  void *current_image_, *current_thumbnail_;
+  int *current_image_, *current_thumbnail_;
   std::string current_filename_;
 
   // The different tables
