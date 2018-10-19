@@ -48,8 +48,9 @@ JPEGDecoder::JPEGDecoder(unsigned char logging_level) : block_index(0) {
 JPEGDecoder::~JPEGDecoder() { delete this->current_index_; }
 
 /**
- * \fn void *JPEGDecoder::DecodeFile(std::string filename, unsigned int *image_size_x, unsigned int *image_size_y, int level)
- * \brief Take a JPEG compress file as entry and output the decoded matrix.
+ * \fn void *JPEGDecoder::DecodeFile(std::string filename, unsigned int
+ * *image_size_x, unsigned int *image_size_y, int level) \brief Take a JPEG
+ * compress file as entry and output the decoded matrix.
  *
  * \param[in] filename The file to be decoded.
  * \param[in] level The required level of decoding.
@@ -97,86 +98,84 @@ void *JPEGDecoder::DecodeFile(std::string filename, unsigned int *image_size_x,
           case APP1:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                                    this->current_index_);
+                                  this->current_index_);
             break;
           case APP2:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                                    this->current_index_);
-            break; 
+                                  this->current_index_);
+            break;
           case APP3:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                                    this->current_index_);
+                                  this->current_index_);
             break;
           case APP4:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                                    this->current_index_);
+                                  this->current_index_);
             break;
           case APP5:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                                    this->current_index_);
+                                  this->current_index_);
             break;
           case APP6:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                                    this->current_index_);
+                                  this->current_index_);
             break;
           case APP7:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                                    this->current_index_);
+                                  this->current_index_);
             break;
           case APP8:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                                    this->current_index_);
+                                  this->current_index_);
             break;
           case APP9:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                                    this->current_index_);
+                                  this->current_index_);
             break;
           case APP10:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                                    this->current_index_);
+                                  this->current_index_);
             break;
           case APP11:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                                    this->current_index_);
-            break; 
+                                  this->current_index_);
+            break;
           case APP12:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                                    this->current_index_);
+                                  this->current_index_);
             break;
           case APP13:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                                    this->current_index_);
+                                  this->current_index_);
             break;
           case APP14:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                                    this->current_index_);
+                                  this->current_index_);
             break;
           case APP15:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                                    this->current_index_);
+                                  this->current_index_);
             break;
-          case COMMENT:{
+          case COMMENT: {
             std::string comment;
-            comment = ParseComment(this->current_file_content_,
-                                                    this->current_index_);
-            BOOST_LOG_TRIVIAL(info) << "Comment in the file : "
-                                    << comment;
-          }
-            break;
+            comment =
+                ParseComment(this->current_file_content_, this->current_index_);
+            BOOST_LOG_TRIVIAL(info) << "Comment in the file : " << comment;
+          } break;
           case DEFINE_RESTART_INTERVAL:
             // TODO
             break;
@@ -468,10 +467,10 @@ void JPEGDecoder::DecodeRestartIntervalBaseline() {
   for (unsigned int mcu_number = 0; mcu_number < number_of_mcus; mcu_number++) {
     this->DecodeMCUBaseline(mcu_number, h_max, v_max, &bit_index, prev);
   }
-  unsigned char* marker;
+  unsigned char *marker;
   marker = new unsigned char[2];
-  std::memcpy(marker,
-                &(this->current_file_content_[*(this->current_index_)]), 2);
+  std::memcpy(marker, &(this->current_file_content_[*(this->current_index_)]),
+              2);
 
   if (marker[0] == 0xFF && marker[1] == 0x00) {
     *(this->current_index_) += 2;
@@ -547,15 +546,15 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
              row_d++) {
           for (size_t column_d = 0;
                column_d < h_max / horizontal_number_of_blocks; column_d++) {
-            //new_block = this->current_image_(
-                // cv::Range(8 * (start_line + row_d +
-                //                v_block * v_max / vertical_number_of_blocks),
-                //           8 * (1 + start_line + row_d +
-                //                v_block * v_max / vertical_number_of_blocks)),
-                // cv::Range(8 * (start_column + column_d +
-                //                h_block * h_max / horizontal_number_of_blocks),
-                //           8 * (1 + start_column + column_d +
-                //                h_block * h_max / horizontal_number_of_blocks)));
+            // new_block = this->current_image_(
+            // cv::Range(8 * (start_line + row_d +
+            //                v_block * v_max / vertical_number_of_blocks),
+            //           8 * (1 + start_line + row_d +
+            //                v_block * v_max / vertical_number_of_blocks)),
+            // cv::Range(8 * (start_column + column_d +
+            //                h_block * h_max / horizontal_number_of_blocks),
+            //           8 * (1 + start_column + column_d +
+            //                h_block * h_max / horizontal_number_of_blocks)));
 
             // We save the dc coefficient and update the previous value.
             // new_block.at<cv::Vec3i>(0, 0)[component_number - 1] =
@@ -582,7 +581,7 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
 
             // If required Perform the dct inverse.
             if (this->decoding_level_ > 2) {
-              //FastIDCT(&new_block, component_number);
+              // FastIDCT(&new_block, component_number);
             }
           }
         }
@@ -592,15 +591,14 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
     // blocks.
   }
   if (this->decoding_level_ > 3) {
-    // for (size_t row_d = 0; row_d < v_max; row_d++) {
-    //   for (size_t column_d = 0; column_d < h_max; column_d++) {
-    //     new_block = this->current_image_(
-    //         cv::Range(8 * (start_line + row_d), 8 * (1 + start_line + row_d)),
-    //         cv::Range(8 * (start_column + column_d),
-    //                   8 * (1 + start_column + column_d)));
-    //     YCbCrToBGR(&new_block);
-    //   }
-    // }
+    int *block_temp;
+    for (size_t row_d = 0; row_d < v_max; row_d++) {
+      for (size_t column_d = 0; column_d < h_max; column_d++) {
+        block_temp =
+            ((int *)this->current_image_) + 192 * (row_d * 8 + column_d);
+        YCbCrToBGR(block_temp);
+      }
+    }
   }
 }
 
@@ -652,14 +650,11 @@ unsigned char *JPEGDecoder::GetMarker() {
 
 void JPEGDecoder::Dequantize(int *new_block, QuantizationTable table,
                              unsigned int component_number) {
-  // int value;
-  // for (size_t i = 0; i < 8; i++) {
-  //   for (size_t j = 0; j < 8; j++) {
-  //     value = new_block->at<cv::Vec3i>(i, j)[component_number - 1];
-  //     new_block->at<cv::Vec3i>(i, j)[component_number - 1] *=
-  //         table.qks_.at(ZZ_order[i * 8 + j]);
-  //   }
-  // }
+  for (size_t row = 0; row < 8; row++) {
+    for (size_t col = 0; col < 8; col++) {
+      new_block[row * 8 + col] *= table.qks_.at(ZZ_order[row * 8 + col]);
+    }
+  }
 }
 
 void JPEGDecoder::InitializeLogger() {
