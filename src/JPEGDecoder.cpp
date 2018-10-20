@@ -55,8 +55,7 @@ JPEGDecoder::~JPEGDecoder() { delete this->current_index_; }
  * \param[in] filename The file to be decoded.
  * \param[in] level The required level of decoding.
  */
-void *JPEGDecoder::DecodeFile(std::string filename, unsigned int *image_size_x,
-                              unsigned int *image_size_y, int level) {
+void *JPEGDecoder::DecodeFile(std::string filename, int level) {
   std::ifstream file_to_decode;
   bool out_condition = false;
   int size, current_index = 0;

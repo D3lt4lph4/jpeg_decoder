@@ -22,8 +22,11 @@ class JPEGDecoder {
   ~JPEGDecoder();
 
   // Class functions
-  void *DecodeFile(std::string file_name, unsigned int *image_size_x,
-                   unsigned int *image_size_y, int level);
+  void *DecodeFile(std::string file_name, int level);
+  unsigned int getImageSizeX();
+  unsigned int getImageSizeY();
+  int getChannels();
+
   friend std::ostream &operator<<(std::ostream &out,
                                   const JPEGDecoder &decoder);
 
@@ -32,6 +35,7 @@ class JPEGDecoder {
   void InitializeDecoder();
   void ClearVariables();
   void DecoderSetup();
+
 
   // Decoding functions
   void DecodeToLevel();
