@@ -201,12 +201,12 @@ void YCbCrToBGR(int *new_block) {
   int R, G, B;
   for (size_t row = 0; row < 8; row++) {
     for (size_t col = 0; col < 8; col++) {
-      R = new_block[row+col*8] + 1.402 * new_block[row+col*8+128] - 128;
-      G = new_block[row+col*8] - 0.34414 * (new_block[row+col*8+64] - 128) - 0.71414 * (new_block[row+col*8+128] - 128);
-      B = new_block[row+col*8] + 1.772 * (new_block[row+col*8+64] - 128);
-      new_block[row+col*8+128] = R;
-      new_block[row+col*8+64] = G;
-      new_block[row+col*8] = B;
+      R = new_block[row*8+col] + 1.402 * (new_block[row*8+col+128] - 128);
+      G = new_block[row*8+col] - 0.34414 * (new_block[row*8+col+64] - 128) - 0.71414 * (new_block[row*8+col+128] - 128);
+      B = new_block[row*8+col] + 1.772 * (new_block[row*8+col+64] - 128);
+      new_block[row*8+col+128] = R;
+      new_block[row*8+col+64] = G;
+      new_block[row*8+col] = B;
     }
   }
 }
