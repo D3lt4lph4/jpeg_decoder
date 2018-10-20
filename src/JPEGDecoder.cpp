@@ -504,7 +504,7 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
   std::vector<int> AC_Coefficients;
 
   number_of_component = this->frame_header_.number_of_component_;
-
+  line_length = this->frame_header_.number_of_samples_per_line_ * 64 * 3;
   mcu_per_line =
       (this->frame_header_.number_of_samples_per_line_ + (h_max * 8) - 1) /
       (h_max * 8);
@@ -547,15 +547,6 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
           for (size_t column_d = 0;
                column_d < h_max / horizontal_number_of_blocks; column_d++) {
             new_block = this->current_image_+ (start_line + row_d) * line_length + (start_column + column_d) * 64 * 3 + 64 * (component_number-1);
-            /* new_block = this->current_image_(
-            cv::Range(8 * (start_line + row_d +
-                           v_block * v_max / vertical_number_of_blocks),
-                      8 * (1 + start_line + row_d +
-                           v_block * v_max / vertical_number_of_blocks)),
-            cv::Range(8 * (start_column + column_d +
-                           h_block * h_max / horizontal_number_of_blocks),
-                      8 * (1 + start_column + column_d +
-                           h_block * h_max / horizontal_number_of_blocks))); */
 
             // We save the dc coefficient and update the previous value.
             new_block[0] = prev[component_number - 1];
