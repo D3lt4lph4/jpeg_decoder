@@ -545,8 +545,8 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
              row_d++) {
           for (size_t column_d = 0;
                column_d < h_max / horizontal_number_of_blocks; column_d++) {
-            new_block = &(this->current_image_[(start_line + row_d) * line_length +
-                        (start_column + column_d) * 64 * 3 +
+            new_block = &(this->current_image_[(start_line + row_d + v_block) * line_length +
+                        (start_column + column_d + h_block) * 64 * 3 +
                         64 * (component_number - 1)]);
 
             // We save the dc coefficient and update the previous value.
