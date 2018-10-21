@@ -503,7 +503,7 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
   std::vector<int> AC_Coefficients;
 
   number_of_component = this->frame_header_.number_of_component_;
-  line_length = this->frame_header_.number_of_samples_per_line_ * 64 * 3;
+  line_length = this->frame_header_.number_of_samples_per_line_ * 8 * 3;
   mcu_per_line =
       (this->frame_header_.number_of_samples_per_line_ + (h_max * 8) - 1) /
       (h_max * 8);
@@ -545,7 +545,9 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
              row_d++) {
           for (size_t column_d = 0;
                column_d < h_max / horizontal_number_of_blocks; column_d++) {
-            new_block = this->current_image_+ (start_line + row_d) * line_length + (start_column + column_d) * 64 * 3 + 64 * (component_number-1);
+            new_block = &(this->current_image_[(start_line + row_d) * line_length +
+                        (start_column + column_d) * 64 * 3 +
+                        64 * (component_number - 1)]);
 
             // We save the dc coefficient and update the previous value.
             new_block[0] = prev[component_number - 1];
@@ -553,7 +555,8 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
             for (size_t row = 0; row < 8; row++) {
               for (size_t col = 0; col < 8; col++) {
                 if (!(row == 0 && col == 0)) {
-                  new_block[row*8 + col] = AC_Coefficients.at(ZZ_order[row * 8 + col] - 1);
+                  new_block[row * 8 + col] =
+                      AC_Coefficients.at(ZZ_order[row * 8 + col] - 1);
                 }
               }
             }
@@ -582,8 +585,7 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
     int *block_temp;
     for (size_t row_d = 0; row_d < v_max; row_d++) {
       for (size_t column_d = 0; column_d < h_max; column_d++) {
-        block_temp =
-            ((int *)this->current_image_) + 192 * (row_d * 8 + column_d);
+        block_temp = &(this->current_image_[(start_line + row_d) * line_length + (start_column + column_d) * 64 * 3]);
         YCbCrToBGR(block_temp);
       }
     }
@@ -670,3 +672,13 @@ void JPEGDecoder::InitializeLogger() {
       break;
   }
 }
+
+unsigned int JPEGDecoder::getImageSizeX() {
+  return this->current_jfif_header.horizontal_pixel_density_;
+}
+
+unsigned int JPEGDecoder::getImageSizeY() {
+  return this->current_jfif_header.vertical_pixel_density_;
+}
+
+int JPEGDecoder::getChannels() { return 3; }

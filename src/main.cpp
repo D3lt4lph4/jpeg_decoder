@@ -12,9 +12,9 @@
 
 // We only use opencv if we are in debug mode to visually check the results of
 // the decoding
-#ifdef DEBUG
 #include <opencv2/opencv.hpp>
-#endif
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv/cv.h>
 
 void matwrite(const std::string& filename, int* mat, unsigned int image_size_x,
               unsigned int image_size_y, int channels) {
@@ -68,7 +68,33 @@ int main(int argc, char* argv[]) {
            cxxopts::value<std::string>());
 
   auto result = options.parse(argc, argv);
-
+  
+  JPEGDecoder decoder;
+  int* image;
+  image = (int*)decoder.DecodeFile("data/cell_bar.jpg", 4);
+  cv::Mat image_to_display = cv::Mat(32, 32, CV_32SC3);
+  
+  for(size_t row = 0; row < 4; row++)
+  {
+    for(size_t col = 0; col < 4; col++)
+    {
+      for(size_t row_cell = 0; row_cell < 8; row_cell++)
+      {
+        for(size_t col_cell = 0; col_cell < 8; col_cell++)
+        {
+          image_to_display.at<cv::Vec3i>(row * 8 + row_cell, col*8+col_cell)[0] = image[row * 64 * 4 * 3 + col * 64 * 3 + row_cell * 8 + col_cell];
+          image_to_display.at<cv::Vec3i>(row * 8 + row_cell, col*8+col_cell)[1] = image[row * 64 * 4 * 3 + col * 64 * 3 + row_cell * 8 + col_cell + 64];
+          image_to_display.at<cv::Vec3i>(row * 8 + row_cell, col*8+col_cell)[2] = image[row * 64 * 4 * 3 + col * 64 * 3 + row_cell * 8 + col_cell + 128];
+        }
+        std::cout << std::endl;
+      }
+      std::cout << "-----------------------------------------------------" << std::endl;
+    }
+  }
+  
+  image_to_display.convertTo(image_to_display, CV_8UC3);
+  cv::imshow("Decoded image.", image_to_display);
+  cv::waitKey(0);
   // If the help is required, display it.
   if (result.count("help")) {
     std::cout << options.help({"", "Group"}) << std::endl;
@@ -201,7 +227,7 @@ int main(int argc, char* argv[]) {
     }
 #ifdef DEBUG
     if (show) {
-      cv::Mat image_to_display = Mat(image_size_x, image_size_y, CV_32SC3, image);
+      cv::Mat image_to_display = cv::Mat(image_size_x, image_size_y, CV_32SC3, image);
       image_to_display.convertTo(image_to_display, CV_8UC3);
       cv::imshow("Decoded image.", image_to_display);
       cv::waitKey(0);
