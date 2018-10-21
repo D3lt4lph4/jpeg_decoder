@@ -12,9 +12,11 @@
 
 // We only use opencv if we are in debug mode to visually check the results of
 // the decoding
-#include <opencv2/opencv.hpp>
-#include <opencv2/highgui/highgui.hpp>
+#ifdef DEBUG
 #include <opencv/cv.h>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/opencv.hpp>
+#endif
 
 void matwrite(const std::string& filename, int* mat, unsigned int image_size_x,
               unsigned int image_size_y, int channels) {
@@ -68,33 +70,7 @@ int main(int argc, char* argv[]) {
            cxxopts::value<std::string>());
 
   auto result = options.parse(argc, argv);
-  
-  JPEGDecoder decoder;
-  int* image;
-  image = (int*)decoder.DecodeFile("data/cell_bar.jpg", 4);
-  cv::Mat image_to_display = cv::Mat(32, 32, CV_32SC3);
-  
-  for(size_t row = 0; row < 4; row++)
-  {
-    for(size_t col = 0; col < 4; col++)
-    {
-      for(size_t row_cell = 0; row_cell < 8; row_cell++)
-      {
-        for(size_t col_cell = 0; col_cell < 8; col_cell++)
-        {
-          image_to_display.at<cv::Vec3i>(row * 8 + row_cell, col*8+col_cell)[0] = image[row * 64 * 4 * 3 + col * 64 * 3 + row_cell * 8 + col_cell];
-          image_to_display.at<cv::Vec3i>(row * 8 + row_cell, col*8+col_cell)[1] = image[row * 64 * 4 * 3 + col * 64 * 3 + row_cell * 8 + col_cell + 64];
-          image_to_display.at<cv::Vec3i>(row * 8 + row_cell, col*8+col_cell)[2] = image[row * 64 * 4 * 3 + col * 64 * 3 + row_cell * 8 + col_cell + 128];
-        }
-        std::cout << std::endl;
-      }
-      std::cout << "-----------------------------------------------------" << std::endl;
-    }
-  }
-  
-  image_to_display.convertTo(image_to_display, CV_8UC3);
-  cv::imshow("Decoded image.", image_to_display);
-  cv::waitKey(0);
+
   // If the help is required, display it.
   if (result.count("help")) {
     std::cout << options.help({"", "Group"}) << std::endl;
@@ -127,10 +103,11 @@ int main(int argc, char* argv[]) {
 
           std::cout << "Processing the image : " << iterator->path().string()
                     << std::endl;
-          image = (int*)decoder.DecodeFile(iterator->path().string(), result["level"].as<int>());
+          image = (int*)decoder.DecodeFile(iterator->path().string(),
+                                           result["level"].as<int>());
 
           image_size_x = decoder.getImageSizeX();
-          image_size_y = decoder.getImageSizeX();
+          image_size_y = decoder.getImageSizeY();
           channels = decoder.getChannels();
 
           // Writing the decoded image as .dat file.
@@ -186,7 +163,7 @@ int main(int argc, char* argv[]) {
     image = (int*)decoder.DecodeFile(result["file"].as<std::string>(),
                                      result["level"].as<int>());
     image_size_x = decoder.getImageSizeX();
-    image_size_y = decoder.getImageSizeX();
+    image_size_y = decoder.getImageSizeY();
     channels = decoder.getChannels();
     // Writing the decoded image as .dat file.
     boost::filesystem::path p(result["file"].as<std::string>());
@@ -227,7 +204,40 @@ int main(int argc, char* argv[]) {
     }
 #ifdef DEBUG
     if (show) {
-      cv::Mat image_to_display = cv::Mat(image_size_x, image_size_y, CV_32SC3, image);
+      cv::Mat image_to_display = cv::Mat(image_size_y, image_size_x, CV_32SC3);
+      int row_size = image_size_x / 8;
+      std::cout << image_size_y << std::endl;
+      std::cout << image_size_x << std::endl;
+      image_size_y = 566;
+      // Putting the data inside the opencv matrix.
+      for (size_t row = 0; row < image_size_y / 8; row++) {
+        for (size_t col = 0; col < image_size_x / 8; col++) {
+          for (size_t row_cell = 0; row_cell < 8; row_cell++) {
+            if (row * 8 + row_cell >= image_size_y) {
+              break;
+            }
+            for (size_t col_cell = 0; col_cell < 8; col_cell++) {
+              if (col * 8 + col_cell >= image_size_x) {
+                break;
+              }
+
+              image_to_display.at<cv::Vec3i>(row * 8 + row_cell,
+                                             col * 8 + col_cell)[0] =
+                  image[row * 64 * row_size * 3 + col * 64 * 3 + row_cell * 8 +
+                        col_cell];
+              image_to_display.at<cv::Vec3i>(row * 8 + row_cell,
+                                             col * 8 + col_cell)[1] =
+                  image[row * 64 * row_size * 3 + col * 64 * 3 + row_cell * 8 +
+                        col_cell + 64];
+              image_to_display.at<cv::Vec3i>(row * 8 + row_cell,
+                                             col * 8 + col_cell)[2] =
+                  image[row * 64 * row_size * 3 + col * 64 * 3 + row_cell * 8 +
+                        col_cell + 128];
+            }
+          }
+        }
+      }
+
       image_to_display.convertTo(image_to_display, CV_8UC3);
       cv::imshow("Decoded image.", image_to_display);
       cv::waitKey(0);
