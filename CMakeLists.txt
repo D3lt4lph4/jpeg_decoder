@@ -18,6 +18,34 @@ find_package(Boost COMPONENTS thread system filesystem log REQUIRED)
 message(STATUS "Found opencv library : ${OpenCV_LIBS}\n")
 message(STATUS "Found boost library : ${Boost_LIBRARIES}\n")
 
+
+#-------------------------------------------------
+#                SWIG CONF
+#-------------------------------------------------
+
+FIND_PACKAGE(SWIG REQUIRED)
+INCLUDE(${SWIG_USE_FILE})
+
+FIND_PACKAGE(PythonLibs 2.7 REQUIRED)
+INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
+
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
+
+SET(CMAKE_SWIG_FLAGS "")
+
+SET_SOURCE_FILES_PROPERTIES(decoder.i PROPERTIES CPLUSPLUS ON)
+SET_SOURCE_FILES_PROPERTIES(decoder.i PROPERTIES SWIG_FLAGS "-includeall")
+file(GLOB_RECURSE Swig_SRC "src/*.cpp")
+
+SWIG_ADD_MODULE(decoder python decoder.i ${Swig_SRC})
+SWIG_LINK_LIBRARIES(decoder ${OpenCV_LIBS} ${Boost_LIBRARIES})
+SET_SOURCE_FILES_PROPERTIES(${swig_generated_file_fullname} PROPERTIES COMPILE_FLAGS "-fPIC")
+SWIG_LINK_LIBRARIES(decoder ${PYTHON_LIBRARIES})
+
+#-------------------------------------------------
+#               END SWIG CONF
+#-------------------------------------------------
+
 #-------------------------------------------------
 #                GOOGLE TEST CONF
 #-------------------------------------------------
