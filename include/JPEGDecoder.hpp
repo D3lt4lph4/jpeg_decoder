@@ -25,6 +25,8 @@ class JPEGDecoder {
   void *DecodeFile(std::string file_name, int level);
   unsigned int getImageSizeX();
   unsigned int getImageSizeY();
+  int getBlockPerLine();
+  int getBlockPerColumn();
   int getChannels();
 
   friend std::ostream &operator<<(std::ostream &out,

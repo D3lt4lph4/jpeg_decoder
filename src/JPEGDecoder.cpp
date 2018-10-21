@@ -503,10 +503,11 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
   std::vector<int> AC_Coefficients;
 
   number_of_component = this->frame_header_.number_of_component_;
-  line_length = this->frame_header_.number_of_samples_per_line_ * 8 * 3;
+
   mcu_per_line =
       (this->frame_header_.number_of_samples_per_line_ + (h_max * 8) - 1) /
       (h_max * 8);
+  line_length = mcu_per_line * h_max * 64 * 3;
   start_line = mcu_number / mcu_per_line * v_max;
   start_column = mcu_number % mcu_per_line * h_max;
 
@@ -545,9 +546,10 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
              row_d++) {
           for (size_t column_d = 0;
                column_d < h_max / horizontal_number_of_blocks; column_d++) {
-            new_block = &(this->current_image_[(start_line + row_d + v_block) * line_length +
-                        (start_column + column_d + h_block) * 64 * 3 +
-                        64 * (component_number - 1)]);
+            new_block = &(this->current_image_
+                              [(start_line + row_d + v_block) * line_length +
+                               (start_column + column_d + h_block) * 64 * 3 +
+                               64 * (component_number - 1)]);
 
             // We save the dc coefficient and update the previous value.
             new_block[0] = prev[component_number - 1];
@@ -585,7 +587,9 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
     int *block_temp;
     for (size_t row_d = 0; row_d < v_max; row_d++) {
       for (size_t column_d = 0; column_d < h_max; column_d++) {
-        block_temp = &(this->current_image_[(start_line + row_d) * line_length + (start_column + column_d) * 64 * 3]);
+        block_temp =
+            &(this->current_image_[(start_line + row_d) * line_length +
+                                   (start_column + column_d) * 64 * 3]);
         YCbCrToBGR(block_temp);
       }
     }
@@ -682,3 +686,9 @@ unsigned int JPEGDecoder::getImageSizeY() {
 }
 
 int JPEGDecoder::getChannels() { return 3; }
+
+int JPEGDecoder::getBlockPerLine() { return this->number_of_blocks_per_line; }
+
+int JPEGDecoder::getBlockPerColumn() {
+  return this->number_of_blocks_per_column;
+}

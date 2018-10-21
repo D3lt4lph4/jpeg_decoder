@@ -76,7 +76,9 @@ int main(int argc, char* argv[]) {
     std::cout << options.help({"", "Group"}) << std::endl;
     exit(0);
   }
-
+  JPEGDecoder decoder;
+  int* image;
+  image = (int*)decoder.DecodeFile("data/chat_2.jpg", 4);
   if (!result.count("level")) {
     std::cout
         << "The level should be specified for the decoder to know when to stop."
@@ -204,23 +206,18 @@ int main(int argc, char* argv[]) {
     }
 #ifdef DEBUG
     if (show) {
-      cv::Mat image_to_display = cv::Mat(image_size_y, image_size_x, CV_32SC3);
-      int row_size = image_size_x / 8;
-      std::cout << image_size_y << std::endl;
-      std::cout << image_size_x << std::endl;
+      cv::Mat image_to_display =
+          cv::Mat(decoder.getBlockPerColumn() * 8,
+                  (decoder.getBlockPerLine()) * 8, CV_32SC3);
+      int row_size = decoder.getBlockPerLine();
+      std::cout << decoder.getBlockPerColumn() * 8 << std::endl;
+      std::cout << (decoder.getBlockPerLine())* 8 << std::endl;
       image_size_y = 566;
       // Putting the data inside the opencv matrix.
-      for (size_t row = 0; row < image_size_y / 8; row++) {
-        for (size_t col = 0; col < image_size_x / 8; col++) {
+      for (size_t row = 0; row < decoder.getBlockPerColumn(); row++) {
+        for (size_t col = 0; col < decoder.getBlockPerLine(); col++) {
           for (size_t row_cell = 0; row_cell < 8; row_cell++) {
-            if (row * 8 + row_cell >= image_size_y) {
-              break;
-            }
             for (size_t col_cell = 0; col_cell < 8; col_cell++) {
-              if (col * 8 + col_cell >= image_size_x) {
-                break;
-              }
-
               image_to_display.at<cv::Vec3i>(row * 8 + row_cell,
                                              col * 8 + col_cell)[0] =
                   image[row * 64 * row_size * 3 + col * 64 * 3 + row_cell * 8 +
