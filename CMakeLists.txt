@@ -4,7 +4,7 @@ project(jpeg_decoder VERSION 0.1.0)
 set(CMAKE_CXX_STANDARD 11)
 set(Tutorial_VERSION_MAJOR 0)
 set(Tutorial_VERSION_MINOR 1)
-#set(CMAKE_CXX_FLAGS_DEBUG "-DDEBUG" "-g")
+set(CMAKE_CXX_FLAGS_DEBUG "-DDEBUG")
 include(CTest)
 enable_testing()
 
