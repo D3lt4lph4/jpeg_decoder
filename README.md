@@ -9,6 +9,20 @@ The workflow of the compression/decompression is the following one (main steps),
 
 ![compression/decompression workflow](https://raw.githubusercontent.com/D3lt4lph4/jpeg_encoder_decoder/master/images/compression_JPEG.png?token=AXSrihw6StMXldgUNoZ5d55DTkqKOXrGks5bdYj-wA%3D%3D "JPEG workflow")
 
+# Version tag description
+
+## v1.0.0
+
+Working version of the decoder
+
+## v1.1.0
+
+Adding the FastIDCT to the decoder to improve the calculation speed.
+
+## v1.2.0
+
+Removing OpenCV from the project if not in DEBUG mode.
+
 # TODO
 
 - Make a prettier method for the extension
