@@ -674,11 +674,11 @@ void JPEGDecoder::InitializeLogger() {
 }
 
 unsigned int JPEGDecoder::getImageSizeX() {
-  return this->current_jfif_header.horizontal_pixel_density_;
+  return this->frame_header_.number_of_samples_per_line_;
 }
 
 unsigned int JPEGDecoder::getImageSizeY() {
-  return this->current_jfif_header.vertical_pixel_density_;
+  return this->frame_header_.number_of_lines_;
 }
 
 int JPEGDecoder::getChannels() { return 3; }
