@@ -76,15 +76,6 @@ int main(int argc, char* argv[]) {
     std::cout << options.help({"", "Group"}) << std::endl;
     exit(0);
   }
-  JPEGDecoder decoder;
-  int* image;
-  image = (int*)decoder.DecodeFile("data/chat_2.jpg", 4);
-  if (!result.count("level")) {
-    std::cout
-        << "The level should be specified for the decoder to know when to stop."
-        << std::endl;
-    exit(0);
-  }
 
   // If the directory is specified, we process the files in it.
   if (result.count("directory")) {
@@ -108,8 +99,8 @@ int main(int argc, char* argv[]) {
           image = (int*)decoder.DecodeFile(iterator->path().string(),
                                            result["level"].as<int>());
 
-          image_size_x = decoder.getImageSizeX();
-          image_size_y = decoder.getImageSizeY();
+          image_size_x = decoder.getBlockPerColumn() * 8;
+          image_size_y = decoder.getBlockPerLine() * 8;
           channels = decoder.getChannels();
 
           // Writing the decoded image as .dat file.
@@ -164,8 +155,8 @@ int main(int argc, char* argv[]) {
     int* image;
     image = (int*)decoder.DecodeFile(result["file"].as<std::string>(),
                                      result["level"].as<int>());
-    image_size_x = decoder.getImageSizeX();
-    image_size_y = decoder.getImageSizeY();
+    image_size_x = decoder.getBlockPerColumn() * 8 ;
+    image_size_y = decoder.getBlockPerLine() * 8 ;
     channels = decoder.getChannels();
     // Writing the decoded image as .dat file.
     boost::filesystem::path p(result["file"].as<std::string>());
@@ -210,9 +201,7 @@ int main(int argc, char* argv[]) {
           cv::Mat(decoder.getBlockPerColumn() * 8,
                   (decoder.getBlockPerLine()) * 8, CV_32SC3);
       int row_size = decoder.getBlockPerLine();
-      std::cout << decoder.getBlockPerColumn() * 8 << std::endl;
-      std::cout << (decoder.getBlockPerLine())* 8 << std::endl;
-      image_size_y = 566;
+
       // Putting the data inside the opencv matrix.
       for (size_t row = 0; row < decoder.getBlockPerColumn(); row++) {
         for (size_t col = 0; col < decoder.getBlockPerLine(); col++) {
