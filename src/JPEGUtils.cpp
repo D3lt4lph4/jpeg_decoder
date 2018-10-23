@@ -1,5 +1,7 @@
 #include "JPEGUtils.hpp"
 
+JPEGImage::JPEGImage() {}
+
 JPEGImage::JPEGImage(std::vector<std::pair<int, int>> sizes) {
   this->image_components_.resize(sizes.size());
   this->components_shape = sizes;
@@ -21,7 +23,7 @@ std::pair<int, int> JPEGImage::GetComponentShape(int component) {
   return this->components_shape.at(component);
 }
 
-int& JPEGImage::at(int col, int row, int component) {
+int& JPEGImage::at(int row, int col, int component) {
   int line_length = this->components_shape.at(component).first;
   return this->image_components_.at(component)[row * line_length + col];
 }

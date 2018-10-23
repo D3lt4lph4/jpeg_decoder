@@ -73,7 +73,7 @@ add_subdirectory(test)
 add_definitions(-DBOOST_LOG_DYN_LINK)
 
 # Creating library for the decoder
-add_library(JPEGDecoder SHARED src/JPEGDecoder.cpp src/JPEGHuffmanDecoder.cpp src/JPEGUtility.cpp src/JPEGParser.cpp)
+add_library(JPEGDecoder SHARED src/JPEGDecoder.cpp src/JPEGHuffmanDecoder.cpp src/JPEGUtility.cpp src/JPEGParser.cpp src/JPEGUtils.cpp)
 target_link_libraries(JPEGDecoder ${Boost_LIBRARIES})
 
 # Adding the main code executable

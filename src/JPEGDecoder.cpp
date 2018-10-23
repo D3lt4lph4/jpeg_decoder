@@ -55,7 +55,7 @@ JPEGDecoder::~JPEGDecoder() { delete this->current_index_; }
  * \param[in] filename The file to be decoded.
  * \param[in] level The required level of decoding.
  */
-void *JPEGDecoder::DecodeFile(std::string filename, int level) {
+JPEGImage JPEGDecoder::DecodeFile(std::string filename, int level) {
   std::ifstream file_to_decode;
   bool out_condition = false;
   int size, current_index = 0;
@@ -66,7 +66,7 @@ void *JPEGDecoder::DecodeFile(std::string filename, int level) {
 
   // If the filename is the same, we assume to have the same image.
   if (filename.compare(this->current_filename_) == 0) {
-    return this->current_image_;
+    return *(this->current_image_);
   }
 
   this->InitializeDecoder();
@@ -248,7 +248,7 @@ void *JPEGDecoder::DecodeFile(std::string filename, int level) {
   }
 
   delete[] this->current_file_content_;
-  return this->current_image_;
+  return *(this->current_image_);
 }
 
 std::ostream &operator<<(std::ostream &out, const JPEGDecoder &decoder) {
@@ -313,22 +313,49 @@ void JPEGDecoder::DecodeFrame(unsigned char encoding_process_type) {
   HuffmanTable huffman_table;
   std::vector<std::pair<unsigned char, HuffmanTable>> huffman_tables;
   ;
+  unsigned int h_max = 0, v_max = 0;
 
   this->frame_header_ = ParseFrameHeader(
       this->current_file_content_, this->current_index_, encoding_process_type);
 
+  for (size_t component_number = 1;
+       component_number <= this->frame_header_.number_of_component_;
+       component_number++) {
+    if (this->frame_header_.component_parameters_.at(component_number).at(0) >
+        h_max) {
+      h_max =
+          this->frame_header_.component_parameters_.at(component_number).at(0);
+    }
+    if (this->frame_header_.component_parameters_.at(component_number).at(1) >
+        v_max) {
+      v_max =
+          this->frame_header_.component_parameters_.at(component_number).at(1);
+    }
+  }
+  std::vector<std::pair<int, int>> sizes(
+      this->frame_header_.number_of_component_);
+
   if (this->frame_header_.encoding_process_type_ == FRAME_TYPE_BASELINE_DTC) {
     this->number_of_blocks_per_column =
-        (this->frame_header_.number_of_lines_ + 8 - 1) / 8;
+        (this->frame_header_.number_of_lines_ + v_max - 1) / v_max;
     this->number_of_blocks_per_line =
-        (this->frame_header_.number_of_samples_per_line_ + 8 - 1) / 8;
-    this->current_image_ =
-        new int[3 *
-                (this->frame_header_.number_of_lines_ +
-                 (32 + (42 - (this->frame_header_.number_of_lines_ % 8)) % 8)) *
-                (this->frame_header_.number_of_samples_per_line_ +
-                 (42 - ((this->frame_header_.number_of_samples_per_line_ % 8)) %
-                           8))];
+        (this->frame_header_.number_of_samples_per_line_ + h_max - 1) / h_max;
+
+    for (size_t component_number = 1;
+         component_number <= this->frame_header_.number_of_component_;
+         component_number++) {
+      sizes.at(component_number - 1) = std::pair<int, int>(
+          this->number_of_blocks_per_column / h_max *
+              this->frame_header_.component_parameters_.at(component_number)
+                  .at(0) *
+              8,
+          this->number_of_blocks_per_line / v_max *
+              this->frame_header_.component_parameters_.at(component_number)
+                  .at(1) *
+              8);
+    }
+
+    this->current_image_ = new JPEGImage(sizes);
   }
 
   do {
@@ -542,57 +569,38 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
             this->ac_huffman_tables_.at(ac_table_index));
 
         // We save the info in the correct blocks.
-        for (size_t row_d = 0; row_d < v_max / vertical_number_of_blocks;
-             row_d++) {
-          for (size_t column_d = 0;
-               column_d < h_max / horizontal_number_of_blocks; column_d++) {
-            new_block = &(this->current_image_
-                              [(start_line + row_d + v_block) * line_length +
-                               (start_column + column_d + h_block) * 64 * 3 +
-                               64 * (component_number - 1)]);
 
-            // We save the dc coefficient and update the previous value.
-            new_block[0] = prev[component_number - 1];
+        // We save the dc coefficient and update the previous value.
+        this->current_image_->at(start_line, start_column, component_number) =
+            prev[component_number - 1];
 
-            for (size_t row = 0; row < 8; row++) {
-              for (size_t col = 0; col < 8; col++) {
-                if (!(row == 0 && col == 0)) {
-                  new_block[row * 8 + col] =
-                      AC_Coefficients.at(ZZ_order[row * 8 + col] - 1);
-                }
-              }
-            }
-            // If required, dequantize the coefficient.
-            if (this->decoding_level_ > 1) {
-              // Perform dequantization
-              this->Dequantize(new_block,
-                               this->quantization_tables_.at(
-                                   this->frame_header_.component_parameters_
-                                       .at((unsigned char)component_number)
-                                       .at(2)));
-            }
-
-            // If required Perform the dct inverse.
-            if (this->decoding_level_ > 2) {
-              FastIDCT(new_block);
+        for (size_t row = 0; row < 8; row++) {
+          for (size_t col = 0; col < 8; col++) {
+            if (!(row == 0 && col == 0)) {
+              this->current_image_->at(start_line + row, start_column + col,
+                                      component_number) =
+                  AC_Coefficients.at(ZZ_order[row * 8 + col] - 1);
             }
           }
+        }
+        // If required, dequantize the coefficient.
+        if (this->decoding_level_ > 1) {
+          // Perform dequantization
+          this->Dequantize(component_number, start_line, start_column,
+                           this->quantization_tables_.at(
+                               this->frame_header_.component_parameters_
+                                   .at((unsigned char)component_number)
+                                   .at(2)));
+        }
+
+        // If required Perform the dct inverse.
+        if (this->decoding_level_ > 2) {
+          FastIDCT(new_block);
         }
       }
     }
     // If required, perform the color space tranform on the newly decoded
     // blocks.
-  }
-  if (this->decoding_level_ > 3) {
-    int *block_temp;
-    for (size_t row_d = 0; row_d < v_max; row_d++) {
-      for (size_t column_d = 0; column_d < h_max; column_d++) {
-        block_temp =
-            &(this->current_image_[(start_line + row_d) * line_length +
-                                   (start_column + column_d) * 64 * 3]);
-        YCbCrToBGR(block_temp);
-      }
-    }
   }
 }
 
@@ -642,10 +650,13 @@ unsigned char *JPEGDecoder::GetMarker() {
   }
 }
 
-void JPEGDecoder::Dequantize(int *new_block, QuantizationTable table) {
+void JPEGDecoder::Dequantize(int component_number, int start_row, int start_col,
+                             QuantizationTable table) {
   for (size_t row = 0; row < 8; row++) {
     for (size_t col = 0; col < 8; col++) {
-      new_block[row * 8 + col] *= table.qks_.at(ZZ_order[row * 8 + col]);
+      this->current_image_->at(start_row + row, start_col + col,
+                              component_number) *=
+          table.qks_.at(ZZ_order[row * 8 + col]);
     }
   }
 }
