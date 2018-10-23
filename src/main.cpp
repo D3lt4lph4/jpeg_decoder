@@ -9,6 +9,7 @@
 #include <cxxopts.hpp>
 
 #include "JPEGDecoder.hpp"
+#include "JPEGUtils.hpp"
 
 // We only use opencv if we are in debug mode to visually check the results of
 // the decoding
@@ -18,17 +19,35 @@
 #include <opencv2/opencv.hpp>
 #endif
 
-void matwrite(const std::string& filename, int* mat, unsigned int image_size_x,
-              unsigned int image_size_y, int channels) {
+void matwrite(const std::string& filename, JPEGImage* mat, int channels) {
   std::ofstream fs(filename, std::fstream::binary);
   if (fs.fail()) {
     std::cerr << strerror(errno) << std::endl;
   }
 
-  fs.write((char*)&image_size_y, sizeof(int));  // rows
-  fs.write((char*)&image_size_x, sizeof(int));  // cols
-  fs.write((char*)&channels, sizeof(int));      // channels
-  fs.write((char*)mat, sizeof(int) * image_size_x * image_size_y);
+  // First we write all of the component sizes.
+  fs.write((char*)mat->GetComponentShape(0).first, sizeof(int));
+  fs.write((char*)mat->GetComponentShape(0).second, sizeof(int));
+  fs.write((char*)mat->GetComponentShape(1).first, sizeof(int));
+  fs.write((char*)mat->GetComponentShape(1).second, sizeof(int));
+  fs.write((char*)mat->GetComponentShape(2).first, sizeof(int));
+  fs.write((char*)mat->GetComponentShape(3).second, sizeof(int));
+
+  // We write the real image size, for future resizing if needed.
+  fs.write((char*)mat->GetRealShape().at(0), sizeof(int));  // row
+  fs.write((char*)mat->GetRealShape().at(1), sizeof(int));  // col
+  fs.write((char*)mat->GetRealShape().at(2), sizeof(int));  // chan
+
+  // Then we write all of the data.
+  fs.write((char*)mat->GetData(0), sizeof(int) *
+                                       mat->GetComponentShape(0).first *
+                                       mat->GetComponentShape(0).second);
+  fs.write((char*)mat->GetData(1), sizeof(int) *
+                                       mat->GetComponentShape(1).first *
+                                       mat->GetComponentShape(1).second);
+  fs.write((char*)mat->GetData(2), sizeof(int) *
+                                       mat->GetComponentShape(2).first *
+                                       mat->GetComponentShape(2).second);
   fs.close();
 }
 
@@ -36,7 +55,6 @@ int main(int argc, char* argv[]) {
 #ifdef DEBUG
   bool show = false;
 #endif
-  unsigned int image_size_x, image_size_y;
   int channels;
 
   // Creating the parser.
@@ -91,17 +109,12 @@ int main(int argc, char* argv[]) {
       if (!boost::filesystem::is_directory(iterator->status())) {
         if (boost::filesystem::extension(iterator->path()) == ".jpg") {
           JPEGDecoder decoder;
-          int* image;
-          unsigned int image_size_x = 0, image_size_y = 0;
+          JPEGImage* image;
 
           std::cout << "Processing the image : " << iterator->path().string()
                     << std::endl;
-          image = (int*)decoder.DecodeFile(iterator->path().string(),
-                                           result["level"].as<int>());
-
-          image_size_x = decoder.getBlockPerColumn() * 8;
-          image_size_y = decoder.getBlockPerLine() * 8;
-          channels = decoder.getChannels();
+          image = decoder.DecodeFile(iterator->path().string(),
+                                     result["level"].as<int>());
 
           // Writing the decoded image as .dat file.
           if (result.count("output")) {
@@ -109,17 +122,17 @@ int main(int argc, char* argv[]) {
               case 2:
                 matwrite(result["output"].as<std::string>() +
                              iterator->path().stem().string() + ".qhjpg",
-                         image, image_size_x, image_size_y, channels);
+                         image, channels);
                 break;
               case 3:
                 matwrite(result["output"].as<std::string>() +
                              iterator->path().stem().string() + ".iqhjpg",
-                         image, image_size_x, image_size_y, channels);
+                         image, channels);
                 break;
               default:
                 matwrite(result["output"].as<std::string>() +
                              iterator->path().stem().string() + ".riqhjpg",
-                         image, image_size_x, image_size_y, channels);
+                         image, channels);
                 break;
             }
           } else {
@@ -127,17 +140,17 @@ int main(int argc, char* argv[]) {
               case 2:
                 matwrite(iterator->path().parent_path().string() +
                              iterator->path().stem().string() + ".qhjpg",
-                         image, image_size_x, image_size_y, channels);
+                         image, channels);
                 break;
               case 3:
                 matwrite(iterator->path().parent_path().string() +
                              iterator->path().stem().string() + ".iqhjpg",
-                         image, image_size_x, image_size_y, channels);
+                         image, channels);
                 break;
               default:
                 matwrite(iterator->path().parent_path().string() +
                              iterator->path().stem().string() + ".riqhjpg",
-                         image, image_size_x, image_size_y, channels);
+                         image, channels);
                 break;
             }
           }
@@ -152,12 +165,10 @@ int main(int argc, char* argv[]) {
   // Process the file if specified.
   if (result.count("file")) {
     JPEGDecoder decoder;
-    int* image;
-    image = (int*)decoder.DecodeFile(result["file"].as<std::string>(),
-                                     result["level"].as<int>());
-    image_size_x = decoder.getBlockPerColumn() * 8 ;
-    image_size_y = decoder.getBlockPerLine() * 8 ;
-    channels = decoder.getChannels();
+    JPEGImage* image;
+    image = decoder.DecodeFile(result["file"].as<std::string>(),
+                               result["level"].as<int>());
+
     // Writing the decoded image as .dat file.
     boost::filesystem::path p(result["file"].as<std::string>());
 
@@ -166,61 +177,45 @@ int main(int argc, char* argv[]) {
         case 2:
           matwrite(
               result["output"].as<std::string>() + p.stem().string() + ".qhjpg",
-              image, image_size_x, image_size_y, channels);
+              image, channels);
           break;
         case 3:
           matwrite(result["output"].as<std::string>() + p.stem().string() +
                        ".iqhjpg",
-                   image, image_size_x, image_size_y, channels);
+                   image, channels);
           break;
         default:
           matwrite(result["output"].as<std::string>() + p.stem().string() +
                        ".riqhjpg",
-                   image, image_size_x, image_size_y, channels);
+                   image, channels);
           break;
       }
     } else {
       switch (result["level"].as<int>()) {
         case 2:
           matwrite(p.parent_path().string() + p.stem().string() + ".qhjpg",
-                   image, image_size_x, image_size_y, channels);
+                   image, channels);
           break;
         case 3:
           matwrite(p.parent_path().string() + p.stem().string() + ".iqhjpg",
-                   image, image_size_x, image_size_y, channels);
+                   image, channels);
           break;
         default:
           matwrite(p.parent_path().string() + p.stem().string() + ".riqhjpg",
-                   image, image_size_x, image_size_y, channels);
+                   image, channels);
           break;
       }
     }
 #ifdef DEBUG
     if (show) {
-      cv::Mat image_to_display =
-          cv::Mat(decoder.getBlockPerColumn() * 8,
-                  (decoder.getBlockPerLine()) * 8, CV_32SC3);
-      int row_size = decoder.getBlockPerLine();
+      std::vector<int> shape = image->GetRealShape();
+      cv::Mat image_to_display = cv::Mat(shape.at(0), shape.at(1), CV_32SC3);
 
-      // Putting the data inside the opencv matrix.
-      for (size_t row = 0; row < decoder.getBlockPerColumn(); row++) {
-        for (size_t col = 0; col < decoder.getBlockPerLine(); col++) {
-          for (size_t row_cell = 0; row_cell < 8; row_cell++) {
-            for (size_t col_cell = 0; col_cell < 8; col_cell++) {
-              image_to_display.at<cv::Vec3i>(row * 8 + row_cell,
-                                             col * 8 + col_cell)[0] =
-                  image[row * 64 * row_size * 3 + col * 64 * 3 + row_cell * 8 +
-                        col_cell];
-              image_to_display.at<cv::Vec3i>(row * 8 + row_cell,
-                                             col * 8 + col_cell)[1] =
-                  image[row * 64 * row_size * 3 + col * 64 * 3 + row_cell * 8 +
-                        col_cell + 64];
-              image_to_display.at<cv::Vec3i>(row * 8 + row_cell,
-                                             col * 8 + col_cell)[2] =
-                  image[row * 64 * row_size * 3 + col * 64 * 3 + row_cell * 8 +
-                        col_cell + 128];
-            }
-          }
+      for (size_t row = 0; row < shape.at(0); row++) {
+        for (size_t col = 0; col < shape.at(1); col++) {
+          image_to_display.at<cv::Vec3i>(row, col)[0] = image->at(row, col, 0);
+          image_to_display.at<cv::Vec3i>(row, col)[1] = image->at(row, col, 1);
+          image_to_display.at<cv::Vec3i>(row, col)[2] = image->at(row, col, 2);
         }
       }
 

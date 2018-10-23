@@ -55,7 +55,7 @@ JPEGDecoder::~JPEGDecoder() { delete this->current_index_; }
  * \param[in] filename The file to be decoded.
  * \param[in] level The required level of decoding.
  */
-JPEGImage JPEGDecoder::DecodeFile(std::string filename, int level) {
+JPEGImage *JPEGDecoder::DecodeFile(std::string filename, int level) {
   std::ifstream file_to_decode;
   bool out_condition = false;
   int size, current_index = 0;
@@ -66,7 +66,7 @@ JPEGImage JPEGDecoder::DecodeFile(std::string filename, int level) {
 
   // If the filename is the same, we assume to have the same image.
   if (filename.compare(this->current_filename_) == 0) {
-    return *(this->current_image_);
+    return this->current_image_;
   }
 
   this->InitializeDecoder();
@@ -248,7 +248,7 @@ JPEGImage JPEGDecoder::DecodeFile(std::string filename, int level) {
   }
 
   delete[] this->current_file_content_;
-  return *(this->current_image_);
+  return this->current_image_;
 }
 
 std::ostream &operator<<(std::ostream &out, const JPEGDecoder &decoder) {

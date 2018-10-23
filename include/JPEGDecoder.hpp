@@ -23,7 +23,7 @@ class JPEGDecoder {
   ~JPEGDecoder();
 
   // Class functions
-  JPEGImage DecodeFile(std::string file_name, int level);
+  JPEGImage *DecodeFile(std::string file_name, int level);
   unsigned int getImageSizeX();
   unsigned int getImageSizeY();
   int getBlockPerLine();

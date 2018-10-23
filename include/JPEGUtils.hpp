@@ -1,3 +1,6 @@
+#ifndef __JPEG_IMAGE__
+#define __JPEG_IMAGE__
+
 #include <vector>
 
 class JPEGImage {
@@ -7,10 +10,16 @@ class JPEGImage {
   ~JPEGImage();
 
   std::pair<int, int> GetComponentShape(int component);
+  std::vector<int> GetRealShape();
+  void SetRealShape(std::vector<int> shape);
 
   int& at(int row, int col, int component);
+  int* GetData(int component);
 
  private:
   std::vector<int*> image_components_;
   std::vector<std::pair<int, int>> components_shape;
+  std::vector<int> real_shape_;
 };
+
+#endif
