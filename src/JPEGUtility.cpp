@@ -161,9 +161,10 @@ void FastIDCT1(int *x, int *y, int ps, int half) {
  *
  *
  */
-void FastIDCT(int *new_block)  // 2D 8x8 IDCT
+void FastIDCT(std::vector<int> *image, int start_line, int start_column)  // 2D 8x8 IDCT
 {
   int i, b[64], b2[64];
+
 
   for (i = 0; i < 8; i++)
     FastIDCT1(new_block + i * 8, b2 + i, 9, 1 << 8);  // row
@@ -195,7 +196,7 @@ void FastIDCT(int *new_block)  // 2D 8x8 IDCT
  */
 void YCbCrToBGR(JPEGImage *image, std::vector<int> shape) {
   int R, G, B;
-  int rows = shape[0], cols = shape[1];
+  int rows = 32, cols = 32;
   for (size_t row = 0; row < rows; row++) {
     for (size_t col = 0; col < cols; col++) {
       R = image->at(row, col, 0) + 1.402 * (image->at(row, col, 2) - 128);

@@ -15,10 +15,10 @@ class JPEGImage {
   void RescaleToRealSize();
 
   int& at(int row, int col, int component);
-  int* GetData(int component);
+  std::vector<int> GetData(int component);
 
  private:
-  std::vector<int*> image_components_;
+  std::vector<std::vector<int>> image_components_;
   std::vector<std::pair<int, int>> components_shape;
   std::vector<int> real_shape_;
 };

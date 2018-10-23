@@ -19,8 +19,8 @@ JPEGImage::JPEGImage(std::vector<std::pair<int, int>> sizes) {
   this->components_shape = sizes;
 
   for (int component = 0; component < sizes.size(); component++) {
-    this->image_components_.at(component) =
-        new int[sizes.at(component).first * sizes.at(component).second];
+    this->image_components_.at(component).resize(sizes.at(component).first *
+                                                 sizes.at(component).second);
   }
 }
 
@@ -28,12 +28,7 @@ JPEGImage::JPEGImage(std::vector<std::pair<int, int>> sizes) {
  * \fn ~JPEGImage()
  * \brief The destructor for the Image, deallocate all of the data.
  */
-JPEGImage::~JPEGImage() {
-  for (int* object : this->image_components_) {
-    delete[] object;
-  }
-  this->image_components_.clear();
-}
+JPEGImage::~JPEGImage() {}
 
 /**
  * \fn GetComponentShape(int component)
@@ -89,7 +84,7 @@ int& JPEGImage::at(int row, int col, int component) {
  * \return int* The pointer to the data. The pointer should not be deleted
  * outside the class.
  */
-int* JPEGImage::GetData(int component) {
+std::vector<int> JPEGImage::GetData(int component) {
   return this->image_components_.at(component);
 }
 
@@ -100,25 +95,24 @@ int* JPEGImage::GetData(int component) {
  */
 void JPEGImage::RescaleToRealSize() {
   int col_factor, row_factor;
-  int *temp, *new_data;
+
   int rows = this->components_shape[0].first,
       cols = this->components_shape[0].second;
-  for (int i = 1; i < this->real_shape_[2]; i++) {
-    col_factor = cols / this->components_shape[1].second;
-    row_factor = rows / this->components_shape[1].first;
+  std::vector<int> new_data(rows * cols);
+  for (int i = 1; i < 3; i++) {
+    col_factor = cols / this->components_shape[i].second;
+    row_factor = rows / this->components_shape[i].first;
 
-    for (int row = 0; row < this->components_shape[1].first; row++) {
-      for (int col = 0; col < this->components_shape[1].second; col++) {
+    for (int row = 0; row < this->components_shape[i].first; row++) {
+      for (int col = 0; col < this->components_shape[i].second; col++) {
         for (int row_f = 0; row_f < row_factor; row_f++) {
           for (int col_f = 0; col_f < col_factor; col_f++) {
-            new_data[(row + row_f) * cols + col + col_f] =
-                this->image_components_[i][row * cols + col];
+            new_data[(row * row_factor + row_f) * cols + col * col_factor +
+                     col_f] = this->image_components_[i][row * cols + col];
           }
         }
       }
     }
-    temp = this->image_components_[i];
-    delete[] temp;
     this->image_components_[i] = new_data;
   }
 }

@@ -251,12 +251,11 @@ JPEGImage *JPEGDecoder::DecodeFile(std::string filename, int level) {
     throw FileNotFoundException(filename);
   }
 
-  
   if (this->decoding_level_ > 3) {
     this->current_image_->RescaleToRealSize();
     YCbCrToBGR(this->current_image_, this->current_image_->GetRealShape());
   }
-  
+
   delete[] this->current_file_content_;
   return this->current_image_;
 }
@@ -351,21 +350,26 @@ void JPEGDecoder::DecodeFrame(unsigned char encoding_process_type) {
     this->number_of_blocks_per_line =
         (this->frame_header_.number_of_samples_per_line_ + h_max - 1) / h_max;
 
+    std::vector<int> realShape(3);
+
     for (size_t component_number = 1;
          component_number <= this->frame_header_.number_of_component_;
          component_number++) {
-      sizes.at(component_number - 1) = std::pair<int, int>(
+      if (component_number == 1) {
+        realShape[0] = this->number_of_blocks_per_column;
+        realShape[1] = this->number_of_blocks_per_line;
+        realShape[2] = 3;
+      }
+      sizes[component_number - 1].first =
           this->number_of_blocks_per_column / h_max *
-              this->frame_header_.component_parameters_.at(component_number)
-                  .at(0) *
-              8,
+          this->frame_header_.component_parameters_.at(component_number).at(0);
+      sizes[component_number - 1].second =
           this->number_of_blocks_per_line / v_max *
-              this->frame_header_.component_parameters_.at(component_number)
-                  .at(1) *
-              8);
+          this->frame_header_.component_parameters_.at(component_number).at(1);
     }
 
     this->current_image_ = new JPEGImage(sizes);
+    this->current_image_->SetRealShape(realShape);
   }
 
   do {
@@ -536,7 +540,7 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
 
   unsigned char decoded_dc, dc_table_index, ac_table_index, number_of_component;
 
-  int *new_block, line_length;
+  int line_length;
   std::vector<int> AC_Coefficients;
 
   number_of_component = this->frame_header_.number_of_component_;
@@ -545,8 +549,7 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
       (this->frame_header_.number_of_samples_per_line_ + (h_max * 8) - 1) /
       (h_max * 8);
   line_length = mcu_per_line * h_max * 64 * 3;
-  start_line = mcu_number / mcu_per_line * v_max;
-  start_column = mcu_number % mcu_per_line * h_max;
+  
 
   for (unsigned char component_number = 1;
        component_number <= number_of_component; component_number++) {
@@ -558,7 +561,9 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
         this->frame_header_.component_parameters_.at(component_number).at(0);
     vertical_number_of_blocks =
         this->frame_header_.component_parameters_.at(component_number).at(1);
-
+    
+    start_line = mcu_number / mcu_per_line * this->frame_header_.component_parameters_.at(component_number).at(0);
+    start_column = mcu_number % mcu_per_line * this->frame_header_.component_parameters_.at(component_number).at(1);
     // We process all the blocks for the current component.
     for (size_t v_block = 0; v_block < vertical_number_of_blocks; v_block++) {
       for (size_t h_block = 0; h_block < horizontal_number_of_blocks;
@@ -581,14 +586,15 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
         // We save the info in the correct blocks.
 
         // We save the dc coefficient and update the previous value.
-        this->current_image_->at(start_line, start_column, component_number) =
+        this->current_image_->at(start_line, start_column,
+                                 component_number - 1) =
             prev[component_number - 1];
 
         for (size_t row = 0; row < 8; row++) {
           for (size_t col = 0; col < 8; col++) {
             if (!(row == 0 && col == 0)) {
               this->current_image_->at(start_line + row, start_column + col,
-                                       component_number) =
+                                       component_number - 1) =
                   AC_Coefficients.at(ZZ_order[row * 8 + col] - 1);
             }
           }
@@ -596,7 +602,7 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
         // If required, dequantize the coefficient.
         if (this->decoding_level_ > 1) {
           // Perform dequantization
-          this->Dequantize(component_number, start_line, start_column,
+          this->Dequantize(component_number - 1, start_line, start_column,
                            this->quantization_tables_.at(
                                this->frame_header_.component_parameters_
                                    .at((unsigned char)component_number)
