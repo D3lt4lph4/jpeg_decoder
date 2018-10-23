@@ -4,14 +4,13 @@ project(jpeg_decoder VERSION 0.1.0)
 set(CMAKE_CXX_STANDARD 11)
 set(Tutorial_VERSION_MAJOR 0)
 set(Tutorial_VERSION_MINOR 1)
-
+set(CMAKE_CXX_FLAGS_DEBUG "-DDEBUG")
 include(CTest)
 enable_testing()
 
 if(WIN32)
   set(OpenCV_DIR "C:/Program Files (x86)/opencv/build")
 endif()
-  
 
 find_package(OpenCV REQUIRED)
 find_package(Boost COMPONENTS thread system filesystem log REQUIRED) 

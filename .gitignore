@@ -39,6 +39,7 @@ jpeg_coder_decoder
 private*
 *.dat
 
+callgrind.*
+docs/
 
-docs/*
 CMakeFiles/*

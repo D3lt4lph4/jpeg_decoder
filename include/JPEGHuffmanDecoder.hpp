@@ -1,8 +1,6 @@
 #ifndef __JPEG_HUFFMAN_DECODER__
 #define __JPEG_HUFFMAN_DECODER__
 
-#include <opencv2/core.hpp>
-
 #include "JPEGType.hpp"
 
 // Functions to parse the huffman table as found in the stream.
