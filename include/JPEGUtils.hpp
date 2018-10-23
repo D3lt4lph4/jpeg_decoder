@@ -12,6 +12,7 @@ class JPEGImage {
   std::pair<int, int> GetComponentShape(int component);
   std::vector<int> GetRealShape();
   void SetRealShape(std::vector<int> shape);
+  void RescaleToRealSize();
 
   int& at(int row, int col, int component);
   int* GetData(int component);

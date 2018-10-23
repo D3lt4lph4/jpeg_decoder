@@ -57,9 +57,13 @@ JPEGDecoder::~JPEGDecoder() { delete this->current_index_; }
  */
 JPEGImage *JPEGDecoder::DecodeFile(std::string filename, int level) {
   std::ifstream file_to_decode;
-  bool out_condition = false;
   int size, current_index = 0;
   unsigned char *marker, table_key;
+
+  // When to stop the reading of the file
+  bool out_condition = false;
+
+  // The tables
   QuantizationTable quantization_table;
   HuffmanTable huffman_table;
   std::vector<std::pair<unsigned char, HuffmanTable>> huffman_tables;
@@ -247,6 +251,12 @@ JPEGImage *JPEGDecoder::DecodeFile(std::string filename, int level) {
     throw FileNotFoundException(filename);
   }
 
+  
+  if (this->decoding_level_ > 3) {
+    this->current_image_->RescaleToRealSize();
+    YCbCrToBGR(this->current_image_, this->current_image_->GetRealShape());
+  }
+  
   delete[] this->current_file_content_;
   return this->current_image_;
 }
@@ -578,7 +588,7 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
           for (size_t col = 0; col < 8; col++) {
             if (!(row == 0 && col == 0)) {
               this->current_image_->at(start_line + row, start_column + col,
-                                      component_number) =
+                                       component_number) =
                   AC_Coefficients.at(ZZ_order[row * 8 + col] - 1);
             }
           }
@@ -655,7 +665,7 @@ void JPEGDecoder::Dequantize(int component_number, int start_row, int start_col,
   for (size_t row = 0; row < 8; row++) {
     for (size_t col = 0; col < 8; col++) {
       this->current_image_->at(start_row + row, start_col + col,
-                              component_number) *=
+                               component_number) *=
           table.qks_.at(ZZ_order[row * 8 + col]);
     }
   }

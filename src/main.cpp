@@ -26,17 +26,26 @@ void matwrite(const std::string& filename, JPEGImage* mat, int channels) {
   }
 
   // First we write all of the component sizes.
-  fs.write((char*)mat->GetComponentShape(0).first, sizeof(int));
-  fs.write((char*)mat->GetComponentShape(0).second, sizeof(int));
-  fs.write((char*)mat->GetComponentShape(1).first, sizeof(int));
-  fs.write((char*)mat->GetComponentShape(1).second, sizeof(int));
-  fs.write((char*)mat->GetComponentShape(2).first, sizeof(int));
-  fs.write((char*)mat->GetComponentShape(3).second, sizeof(int));
+  int temp = mat->GetComponentShape(0).first;
+  fs.write((char*)&temp, sizeof(int));
+  temp = mat->GetComponentShape(0).second;
+  fs.write((char*)&temp, sizeof(int));
+  temp = mat->GetComponentShape(1).first;
+  fs.write((char*)&temp, sizeof(int));
+  temp = mat->GetComponentShape(1).second;
+  fs.write((char*)&temp, sizeof(int));
+  temp = mat->GetComponentShape(2).first;
+  fs.write((char*)&temp, sizeof(int));
+  temp = mat->GetComponentShape(2).second;
+  fs.write((char*)&temp, sizeof(int));
 
   // We write the real image size, for future resizing if needed.
-  fs.write((char*)mat->GetRealShape().at(0), sizeof(int));  // row
-  fs.write((char*)mat->GetRealShape().at(1), sizeof(int));  // col
-  fs.write((char*)mat->GetRealShape().at(2), sizeof(int));  // chan
+  temp = mat->GetRealShape().at(0), sizeof(int);
+  fs.write((char*)&temp, sizeof(int));  // row
+  temp = mat->GetRealShape().at(1), sizeof(int);
+  fs.write((char*)&temp, sizeof(int));  // col
+  temp = mat->GetRealShape().at(2), sizeof(int);
+  fs.write((char*)&temp, sizeof(int));  // chan
 
   // Then we write all of the data.
   fs.write((char*)mat->GetData(0), sizeof(int) *

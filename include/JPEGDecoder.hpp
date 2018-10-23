@@ -45,6 +45,7 @@ class JPEGDecoder {
   void DecodeScan(unsigned char encoding_process_type);
   void Dequantize(int component_number, int start_row, int start_col,
                   QuantizationTable table);
+  void Upscale();
 
   // Baseline functions
   void ResetDecoderBaseline();

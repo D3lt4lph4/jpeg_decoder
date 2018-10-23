@@ -8,9 +8,11 @@ JPEGImage::JPEGImage() {}
 
 /**
  * \fn JPEGImage(std::vector<std::pair<int, int>> sizes)
- * \brief Constructor of a JPEGImage, allocate the vector with the correct sizes for the data.
- * 
- * \param[in] std::vector<std::pair<int, int>> sizes A vector containing the sizes of each components.
+ * \brief Constructor of a JPEGImage, allocate the vector with the correct sizes
+ * for the data.
+ *
+ * \param[in] std::vector<std::pair<int, int>> sizes A vector containing the
+ * sizes of each components.
  */
 JPEGImage::JPEGImage(std::vector<std::pair<int, int>> sizes) {
   this->image_components_.resize(sizes.size());
@@ -35,10 +37,12 @@ JPEGImage::~JPEGImage() {
 
 /**
  * \fn GetComponentShape(int component)
- * \brief Return the shape of the component specified. This is the shape of the component as seen by the decoder, i.e with the block padding and the subsampling.
- * 
+ * \brief Return the shape of the component specified. This is the shape of the
+ * component as seen by the decoder, i.e with the block padding and the
+ * subsampling.
+ *
  * \param component The position of the component.
- * 
+ *
  * \return std::pair<int, int> The shape of the data at component, (row, col).
  */
 std::pair<int, int> JPEGImage::GetComponentShape(int component) {
@@ -47,8 +51,9 @@ std::pair<int, int> JPEGImage::GetComponentShape(int component) {
 
 /**
  * \fn GetRealShape()
- * \brief Return the real shape of the image as it was before going through the steps of subsampling.
- * 
+ * \brief Return the real shape of the image as it was before going through the
+ * steps of subsampling.
+ *
  * \return std::vector<int> A vector containing the shape of the image.
  */
 std::vector<int> JPEGImage::GetRealShape() { return this->real_shape_; }
@@ -63,13 +68,14 @@ void JPEGImage::SetRealShape(std::vector<int> shape) {
 
 /**
  * \fn at(int row, int col, int component)
- * \brief Return the value at the place indicated. The value is return by reference, i.e alterable.
- * 
+ * \brief Return the value at the place indicated. The value is return by
+ * reference, i.e alterable.
+ *
  * \param[in] row The position of the row
  * \param[in] col The position of the column
  * \param[in] component The position of the component
- * 
- * \return int& The value at (row, col, component) 
+ *
+ * \return int& The value at (row, col, component)
  */
 int& JPEGImage::at(int row, int col, int component) {
   int line_length = this->components_shape.at(component).first;
@@ -79,9 +85,40 @@ int& JPEGImage::at(int row, int col, int component) {
 /**
  * \fn GetData(int component)
  * \brief Return the int* representing the data at component.
- * 
- * \return int* The pointer to the data. The pointer should not be deleted outside the class.
+ *
+ * \return int* The pointer to the data. The pointer should not be deleted
+ * outside the class.
  */
 int* JPEGImage::GetData(int component) {
   return this->image_components_.at(component);
+}
+
+/**
+ * \fn void RescaleToRealSize()
+ * \brief Rescale the image in the Object to the real size. This function is not
+ * to be called if the data stored is in the dct space.
+ */
+void JPEGImage::RescaleToRealSize() {
+  int col_factor, row_factor;
+  int *temp, *new_data;
+  int rows = this->components_shape[0].first,
+      cols = this->components_shape[0].second;
+  for (int i = 1; i < this->real_shape_[2]; i++) {
+    col_factor = cols / this->components_shape[1].second;
+    row_factor = rows / this->components_shape[1].first;
+
+    for (int row = 0; row < this->components_shape[1].first; row++) {
+      for (int col = 0; col < this->components_shape[1].second; col++) {
+        for (int row_f = 0; row_f < row_factor; row_f++) {
+          for (int col_f = 0; col_f < col_factor; col_f++) {
+            new_data[(row + row_f) * cols + col + col_f] =
+                this->image_components_[i][row * cols + col];
+          }
+        }
+      }
+    }
+    temp = this->image_components_[i];
+    delete[] temp;
+    this->image_components_[i] = new_data;
+  }
 }

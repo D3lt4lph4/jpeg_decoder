@@ -13,7 +13,6 @@
   n = k1 * (xa + xb), p = xa, xa = (n + (k2 - k1) * xb) >> sh, \
   xb = (n - (k2 + k1) * p) >> sh  // butterfly-mul equ.(2)
 
-
 /**
  * \fn unsigned char NextBit()
  * \brief Returns the next bit in the stream.
@@ -87,12 +86,9 @@ void IDCT(int *new_block) {
   float result, cu, cv;
   int temp_operation[64];
 
-  
-  for(size_t c = 0; c < 8; c++)
-  {
-    for(size_t r = 0; r < 8; r++)
-    {
-      temp_operation[c*8+r] = new_block[c*8+r];
+  for (size_t c = 0; c < 8; c++) {
+    for (size_t r = 0; r < 8; r++) {
+      temp_operation[c * 8 + r] = new_block[c * 8 + r];
     }
   }
 
@@ -111,19 +107,18 @@ void IDCT(int *new_block) {
           } else {
             cv = 1;
           }
-          result += cu * cv *
-                    temp_operation[v+u*8] *
+          result += cu * cv * temp_operation[v + u * 8] *
                     cos((2 * x + 1) * u * M_PI / 16.0) *
                     cos((2 * y + 1) * v * M_PI / 16.0);
         }
       }
       result = result / 4 + 128;
       if (result > 255) {
-        new_block[y+x*8] = 255;
+        new_block[y + x * 8] = 255;
       } else if (result < 0) {
-        new_block[y+x*8] = 0;
+        new_block[y + x * 8] = 0;
       } else {
-        new_block[y+x*8] = (int)result;
+        new_block[y + x * 8] = (int)result;
       }
     }
   }
@@ -132,14 +127,13 @@ void IDCT(int *new_block) {
 /**
  * \fn void FastIDCT1(int *x, int *y, int ps, int half)
  * \brief Compute the one dimension IDCT.
- * 
+ *
  * \param[in,out] x, no se
  * \param[in,out] y, no se
  * \param[in] ps, no se
  * \param[in] half, no se
  */
-void FastIDCT1(int *x, int *y, int ps, int half)
-{
+void FastIDCT1(int *x, int *y, int ps, int half) {
   int p, n;
   x[0] <<= 9, x[1] <<= 7, x[3] *= 181, x[4] <<= 9, x[5] *= 181, x[7] <<= 7;
   xmul(x[6], x[2], 277, 669, 0);
@@ -192,21 +186,25 @@ void FastIDCT(int *new_block)  // 2D 8x8 IDCT
 
 /**
  * \fn void YCbCrToBGR(int *new_block)
- * \brief This function transform a "block" of size 8*8*3 from YCbCr space to RGB space.
- * 
- * \param[in,out] int *new_block, a pointer to the block of data which will be subject the transformation
- * 
+ * \brief This function transform a "block" of size 8*8*3 from YCbCr space to
+ * RGB space.
+ *
+ * \param[in,out] int *new_block, a pointer to the block of data which will be
+ * subject the transformation
+ *
  */
-void YCbCrToBGR(int *first_component, int *second_component, int *third_component) {
+void YCbCrToBGR(JPEGImage *image, std::vector<int> shape) {
   int R, G, B;
-  for (size_t row = 0; row < 8; row++) {
-    for (size_t col = 0; col < 8; col++) {
-      R = first_component[row*8+col] + 1.402 * (third_component[row*8+col+128] - 128);
-      G = first_component[row*8+col] - 0.34414 * (second_component[row*8+col+64] - 128) - 0.71414 * (third_component[row*8+col+128] - 128);
-      B = first_component[row*8+col] + 1.772 * (second_component[row*8+col+64] - 128);
-      third_component[row*8+col+128] = R;
-      second_component[row*8+col+64] = G;
-      first_component[row*8+col] = B;
+  int rows = shape[0], cols = shape[1];
+  for (size_t row = 0; row < rows; row++) {
+    for (size_t col = 0; col < cols; col++) {
+      R = image->at(row, col, 0) + 1.402 * (image->at(row, col, 2) - 128);
+      G = image->at(row, col, 0) - 0.34414 * (image->at(row, col, 1) - 128) -
+          0.71414 * (image->at(row, col, 2) - 128);
+      B = image->at(row, col, 0) + 1.772 * (image->at(row, col, 1) - 128);
+      image->at(row, col, 2) = R;
+      image->at(row, col, 1) = G;
+      image->at(row, col, 0) = B;
     }
   }
 }
