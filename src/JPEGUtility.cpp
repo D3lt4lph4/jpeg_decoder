@@ -197,16 +197,16 @@ void FastIDCT(int *new_block)  // 2D 8x8 IDCT
  * \param[in,out] int *new_block, a pointer to the block of data which will be subject the transformation
  * 
  */
-void YCbCrToBGR(int *new_block) {
+void YCbCrToBGR(int *first_component, int *second_component, int *third_component) {
   int R, G, B;
   for (size_t row = 0; row < 8; row++) {
     for (size_t col = 0; col < 8; col++) {
-      R = new_block[row*8+col] + 1.402 * (new_block[row*8+col+128] - 128);
-      G = new_block[row*8+col] - 0.34414 * (new_block[row*8+col+64] - 128) - 0.71414 * (new_block[row*8+col+128] - 128);
-      B = new_block[row*8+col] + 1.772 * (new_block[row*8+col+64] - 128);
-      new_block[row*8+col+128] = R;
-      new_block[row*8+col+64] = G;
-      new_block[row*8+col] = B;
+      R = first_component[row*8+col] + 1.402 * (third_component[row*8+col+128] - 128);
+      G = first_component[row*8+col] - 0.34414 * (second_component[row*8+col+64] - 128) - 0.71414 * (third_component[row*8+col+128] - 128);
+      B = first_component[row*8+col] + 1.772 * (second_component[row*8+col+64] - 128);
+      third_component[row*8+col+128] = R;
+      second_component[row*8+col+64] = G;
+      first_component[row*8+col] = B;
     }
   }
 }
