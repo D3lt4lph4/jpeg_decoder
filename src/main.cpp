@@ -103,10 +103,6 @@ int main(int argc, char* argv[]) {
     std::cout << options.help({"", "Group"}) << std::endl;
     exit(0);
   }
-  // JPEGDecoder decoder;
-  // JPEGImage* image;
-
-  // image = decoder.DecodeFile("data/chat_420.jpg", 4);
   // If the directory is specified, we process the files in it.
   if (result.count("directory")) {
     std::string directory = result["directory"].as<std::string>();
@@ -224,7 +220,7 @@ int main(int argc, char* argv[]) {
       cv::Mat image_to_display = cv::Mat(shape.at(0), shape.at(1), CV_32SC3);
 
       for (size_t row = 0; row < shape.at(0); row++) {
-        for (size_t col = 0; col < shape.at(1) ; col++) {
+        for (size_t col = 0; col < shape.at(1); col++) {
           image_to_display.at<cv::Vec3i>(row, col)[0] = image->at(row, col, 0);
           image_to_display.at<cv::Vec3i>(row, col)[1] = image->at(row, col, 1);
           image_to_display.at<cv::Vec3i>(row, col)[2] = image->at(row, col, 2);

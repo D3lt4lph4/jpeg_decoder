@@ -179,13 +179,16 @@ void FastIDCT(std::vector<int> *image, int start_line, int start_column,
     for (size_t col = 0; col < 8; col++) {
       (*image)[(start_line + row) * line_length + start_column + col] =
           (*image)[(start_line + row) * line_length + start_column + col] + 128;
-      if ((*image)[(start_line + row) * line_length + start_column + col] > 255) {
+      if ((*image)[(start_line + row) * line_length + start_column + col] >
+          255) {
         (*image)[(start_line + row) * line_length + start_column + col] = 255;
-      } else if ((*image)[(start_line + row) * line_length + start_column + col] < 0) {
+      } else if ((*image)[(start_line + row) * line_length + start_column +
+                          col] < 0) {
         (*image)[(start_line + row) * line_length + start_column + col] = 0;
       } else {
         (*image)[(start_line + row) * line_length + start_column + col] =
-            (int)(*image)[(start_line + row) * line_length + start_column + col];
+            (int)(*image)[(start_line + row) * line_length + start_column +
+                          col];
       }
     }
   }
@@ -206,8 +209,7 @@ void YCbCrToBGR(JPEGImage *image, std::vector<int> shape) {
   for (size_t row = 0; row < rows; row++) {
     for (size_t col = 0; col < cols; col++) {
       R = image->at(row, col, 0) + 1.402 * (image->at(row, col, 2) - 128);
-      G = image->at(row, col, 0) - 0.34414 * (image->at(row, col, 1) - 128) -
-          0.71414 * (image->at(row, col, 2) - 128);
+      G = image->at(row, col, 0) - 0.34414 * (image->at(row, col, 1) - 128) - 0.71414 * (image->at(row, col, 2) - 128);
       B = image->at(row, col, 0) + 1.772 * (image->at(row, col, 1) - 128);
       image->at(row, col, 2) = R;
       image->at(row, col, 1) = G;
