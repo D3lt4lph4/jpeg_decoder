@@ -352,6 +352,8 @@ void JPEGDecoder::DecodeFrame(unsigned char encoding_process_type) {
 
     std::vector<int> realShape(3);
 
+    int size_factor_h = (this->number_of_blocks_per_column + (8 /  h_max) - 1) / (8 / h_max);
+    int size_factor_v = (this->number_of_blocks_per_line + (8 /  v_max) - 1) / (8 / v_max);
     for (size_t component_number = 1;
          component_number <= this->frame_header_.number_of_component_;
          component_number++) {
@@ -361,11 +363,10 @@ void JPEGDecoder::DecodeFrame(unsigned char encoding_process_type) {
         realShape[2] = 3;
       }
       sizes[component_number - 1].first =
-          this->number_of_blocks_per_column / h_max *
-          this->frame_header_.component_parameters_.at(component_number).at(0);
+          size_factor_h * this->frame_header_.component_parameters_.at(component_number).at(0) * 8;
       sizes[component_number - 1].second =
-          this->number_of_blocks_per_line / v_max *
-          this->frame_header_.component_parameters_.at(component_number).at(1);
+          size_factor_v *
+          this->frame_header_.component_parameters_.at(component_number).at(1) * 8;
     }
 
     this->current_image_ = new JPEGImage(sizes);
