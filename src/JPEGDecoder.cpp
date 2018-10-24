@@ -548,8 +548,7 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
   mcu_per_line =
       (this->frame_header_.number_of_samples_per_line_ + (h_max * 8) - 1) /
       (h_max * 8);
-  line_length = mcu_per_line * h_max * 64 * 3;
-  
+  line_length = mcu_per_line * h_max * 8;
 
   for (unsigned char component_number = 1;
        component_number <= number_of_component; component_number++) {
@@ -561,9 +560,13 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
         this->frame_header_.component_parameters_.at(component_number).at(0);
     vertical_number_of_blocks =
         this->frame_header_.component_parameters_.at(component_number).at(1);
-    
-    start_line = mcu_number / mcu_per_line * this->frame_header_.component_parameters_.at(component_number).at(0);
-    start_column = mcu_number % mcu_per_line * this->frame_header_.component_parameters_.at(component_number).at(1);
+
+    start_line =
+        mcu_number / mcu_per_line *
+        this->frame_header_.component_parameters_.at(component_number).at(0) * 8;
+    start_column =
+        mcu_number % mcu_per_line *
+        this->frame_header_.component_parameters_.at(component_number).at(1) * 8;
     // We process all the blocks for the current component.
     for (size_t v_block = 0; v_block < vertical_number_of_blocks; v_block++) {
       for (size_t h_block = 0; h_block < horizontal_number_of_blocks;
@@ -611,7 +614,7 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
 
         // If required Perform the dct inverse.
         if (this->decoding_level_ > 2) {
-          FastIDCT(new_block);
+          FastIDCT(this->current_image_->GetData(component_number - 1), start_line, start_column, line_length);
         }
       }
     }

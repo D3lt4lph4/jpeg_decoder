@@ -133,7 +133,7 @@ void IDCT(int *new_block) {
  * \param[in] ps, no se
  * \param[in] half, no se
  */
-void FastIDCT1(int *x, int *y, int ps, int half) {
+void FastIDCT1(int *x, int *y, int ps, int half, int y_line_length) {
   int p, n;
   x[0] <<= 9, x[1] <<= 7, x[3] *= 181, x[4] <<= 9, x[5] *= 181, x[7] <<= 7;
   xmul(x[6], x[2], 277, 669, 0);
@@ -141,14 +141,14 @@ void FastIDCT1(int *x, int *y, int ps, int half) {
   xadd3(x[1], x[7], x[3], x[5], 0);
   xmul(x[5], x[3], 251, 50, 6);
   xmul(x[1], x[7], 213, 142, 6);
-  y[0 * 8] = (x[0] + x[1]) >> ps;
-  y[1 * 8] = (x[4] + x[5]) >> ps;
-  y[2 * 8] = (x[2] + x[3]) >> ps;
-  y[3 * 8] = (x[6] + x[7]) >> ps;
-  y[4 * 8] = (x[6] - x[7]) >> ps;
-  y[5 * 8] = (x[2] - x[3]) >> ps;
-  y[6 * 8] = (x[4] - x[5]) >> ps;
-  y[7 * 8] = (x[0] - x[1]) >> ps;
+  y[0 * y_line_length] = (x[0] + x[1]) >> ps;
+  y[1 * y_line_length] = (x[4] + x[5]) >> ps;
+  y[2 * y_line_length] = (x[2] + x[3]) >> ps;
+  y[3 * y_line_length] = (x[6] + x[7]) >> ps;
+  y[4 * y_line_length] = (x[6] - x[7]) >> ps;
+  y[5 * y_line_length] = (x[2] - x[3]) >> ps;
+  y[6 * y_line_length] = (x[4] - x[5]) >> ps;
+  y[7 * y_line_length] = (x[0] - x[1]) >> ps;
 }
 
 /**
@@ -161,25 +161,31 @@ void FastIDCT1(int *x, int *y, int ps, int half) {
  *
  *
  */
-void FastIDCT(std::vector<int> *image, int start_line, int start_column)  // 2D 8x8 IDCT
+void FastIDCT(std::vector<int> *image, int start_line, int start_column,
+              int line_length)  // 2D 8x8 IDCT
 {
-  int i, b[64], b2[64];
-
+  int i, b2[64];
 
   for (i = 0; i < 8; i++)
-    FastIDCT1(new_block + i * 8, b2 + i, 9, 1 << 8);  // row
+    FastIDCT1(image->data() + start_line * line_length + start_column +
+                  i * line_length,
+              b2 + i, 9, 1 << 8, 8);  // row
   for (i = 0; i < 8; i++)
-    FastIDCT1(b2 + i * 8, new_block + i, 12, 1 << 11);  // col
+    FastIDCT1(b2 + i * 8,
+              image->data() + start_line * line_length + start_column + i, 12,
+              1 << 11, line_length);  // col
 
-  for (size_t c = 0; c < 8; c++) {
-    for (size_t r = 0; r < 8; r++) {
-      new_block[c * 8 + r] = new_block[c * 8 + r] + 128;
-      if (new_block[c * 8 + r] > 255) {
-        new_block[c * 8 + r] = 255;
-      } else if (new_block[c * 8 + r] < 0) {
-        new_block[c * 8 + r] = 0;
+  for (size_t row = 0; row < 8; row++) {
+    for (size_t col = 0; col < 8; col++) {
+      (*image)[(start_line + row) * line_length + start_column + col] =
+          (*image)[(start_line + row) * line_length + start_column + col] + 128;
+      if ((*image)[(start_line + row) * line_length + start_column + col] > 255) {
+        (*image)[(start_line + row) * line_length + start_column + col] = 255;
+      } else if ((*image)[(start_line + row) * line_length + start_column + col] < 0) {
+        (*image)[(start_line + row) * line_length + start_column + col] = 0;
       } else {
-        new_block[c * 8 + r] = (int)new_block[c * 8 + r];
+        (*image)[(start_line + row) * line_length + start_column + col] =
+            (int)(*image)[(start_line + row) * line_length + start_column + col];
       }
     }
   }
@@ -196,7 +202,7 @@ void FastIDCT(std::vector<int> *image, int start_line, int start_column)  // 2D 
  */
 void YCbCrToBGR(JPEGImage *image, std::vector<int> shape) {
   int R, G, B;
-  int rows = 32, cols = 32;
+  int rows = 512, cols = 512;
   for (size_t row = 0; row < rows; row++) {
     for (size_t col = 0; col < cols; col++) {
       R = image->at(row, col, 0) + 1.402 * (image->at(row, col, 2) - 128);

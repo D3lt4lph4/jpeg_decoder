@@ -103,10 +103,10 @@ int main(int argc, char* argv[]) {
     std::cout << options.help({"", "Group"}) << std::endl;
     exit(0);
   }
-  JPEGDecoder decoder;
-  JPEGImage* image;
+  // JPEGDecoder decoder;
+  // JPEGImage* image;
 
-  image = decoder.DecodeFile("data/cell_bar.jpg", 4);
+  // image = decoder.DecodeFile("data/cell_bar.jpg", 4);
   // If the directory is specified, we process the files in it.
   if (result.count("directory")) {
     std::string directory = result["directory"].as<std::string>();
