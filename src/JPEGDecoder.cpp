@@ -345,15 +345,16 @@ void JPEGDecoder::DecodeFrame(unsigned char encoding_process_type) {
       this->frame_header_.number_of_component_);
 
   if (this->frame_header_.encoding_process_type_ == FRAME_TYPE_BASELINE_DTC) {
-    this->number_of_blocks_per_column =
-        (this->frame_header_.number_of_lines_ + v_max - 1) / v_max;
+    this->number_of_blocks_per_column = (this->frame_header_.number_of_lines_);
     this->number_of_blocks_per_line =
-        (this->frame_header_.number_of_samples_per_line_ + h_max - 1) / h_max;
+        (this->frame_header_.number_of_samples_per_line_);
 
     std::vector<int> realShape(3);
 
-    int size_factor_h = (this->number_of_blocks_per_column + (8 /  h_max) - 1) / (8 / h_max);
-    int size_factor_v = (this->number_of_blocks_per_line + (8 /  v_max) - 1) / (8 / v_max);
+    int size_factor_h =
+        (((this->number_of_blocks_per_column + 8 - 1) / 8) + h_max - 1) / (h_max);
+    int size_factor_v =
+        (((this->number_of_blocks_per_line + 8 - 1) / 8) + v_max - 1) / (v_max);
     for (size_t component_number = 1;
          component_number <= this->frame_header_.number_of_component_;
          component_number++) {
@@ -363,10 +364,13 @@ void JPEGDecoder::DecodeFrame(unsigned char encoding_process_type) {
         realShape[2] = 3;
       }
       sizes[component_number - 1].first =
-          size_factor_h * this->frame_header_.component_parameters_.at(component_number).at(0) * 8;
+          size_factor_h *
+          this->frame_header_.component_parameters_.at(component_number).at(0) *
+          8;
       sizes[component_number - 1].second =
           size_factor_v *
-          this->frame_header_.component_parameters_.at(component_number).at(1) * 8;
+          this->frame_header_.component_parameters_.at(component_number).at(1) *
+          8;
     }
 
     this->current_image_ = new JPEGImage(sizes);
@@ -549,7 +553,7 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
   mcu_per_line =
       (this->frame_header_.number_of_samples_per_line_ + (h_max * 8) - 1) /
       (h_max * 8);
-  line_length = mcu_per_line * h_max * 8;
+  
 
   for (unsigned char component_number = 1;
        component_number <= number_of_component; component_number++) {
@@ -561,13 +565,16 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
         this->frame_header_.component_parameters_.at(component_number).at(0);
     vertical_number_of_blocks =
         this->frame_header_.component_parameters_.at(component_number).at(1);
-
+    
+    line_length = mcu_per_line * this->frame_header_.component_parameters_.at(component_number).at(1) * 8;
     start_line =
         mcu_number / mcu_per_line *
-        this->frame_header_.component_parameters_.at(component_number).at(0) * 8;
+        this->frame_header_.component_parameters_.at(component_number).at(0) *
+        8;
     start_column =
         mcu_number % mcu_per_line *
-        this->frame_header_.component_parameters_.at(component_number).at(1) * 8;
+        this->frame_header_.component_parameters_.at(component_number).at(1) *
+        8;
     // We process all the blocks for the current component.
     for (size_t v_block = 0; v_block < vertical_number_of_blocks; v_block++) {
       for (size_t h_block = 0; h_block < horizontal_number_of_blocks;
@@ -590,14 +597,14 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
         // We save the info in the correct blocks.
 
         // We save the dc coefficient and update the previous value.
-        this->current_image_->at(start_line, start_column,
+        this->current_image_->at(start_line + 8 * v_block, start_column + 8 * h_block,
                                  component_number - 1) =
             prev[component_number - 1];
 
         for (size_t row = 0; row < 8; row++) {
           for (size_t col = 0; col < 8; col++) {
             if (!(row == 0 && col == 0)) {
-              this->current_image_->at(start_line + row, start_column + col,
+              this->current_image_->at(start_line + 8 * v_block + row, start_column + 8 * h_block + col,
                                        component_number - 1) =
                   AC_Coefficients.at(ZZ_order[row * 8 + col] - 1);
             }
@@ -606,7 +613,7 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
         // If required, dequantize the coefficient.
         if (this->decoding_level_ > 1) {
           // Perform dequantization
-          this->Dequantize(component_number - 1, start_line, start_column,
+          this->Dequantize(component_number - 1, start_line + 8 * v_block, start_column + 8 * h_block,
                            this->quantization_tables_.at(
                                this->frame_header_.component_parameters_
                                    .at((unsigned char)component_number)
@@ -615,7 +622,8 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
 
         // If required Perform the dct inverse.
         if (this->decoding_level_ > 2) {
-          FastIDCT(this->current_image_->GetData(component_number - 1), start_line, start_column, line_length);
+          FastIDCT(this->current_image_->GetData(component_number - 1),
+                   start_line + 8 * v_block, start_column + 8 * h_block, line_length);
         }
       }
     }

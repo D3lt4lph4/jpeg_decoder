@@ -106,7 +106,7 @@ int main(int argc, char* argv[]) {
   // JPEGDecoder decoder;
   // JPEGImage* image;
 
-  // image = decoder.DecodeFile("data/cell_bar.jpg", 4);
+  // image = decoder.DecodeFile("data/chat_420.jpg", 4);
   // If the directory is specified, we process the files in it.
   if (result.count("directory")) {
     std::string directory = result["directory"].as<std::string>();
@@ -233,7 +233,7 @@ int main(int argc, char* argv[]) {
 
       image_to_display.convertTo(image_to_display, CV_8UC3);
       cv::imshow("Decoded image.", image_to_display);
-      cv::waitKey(5000);
+      cv::waitKey(0);
     }
 #endif
     return 0;
