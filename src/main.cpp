@@ -233,7 +233,7 @@ int main(int argc, char* argv[]) {
 
       image_to_display.convertTo(image_to_display, CV_8UC3);
       cv::imshow("Decoded image.", image_to_display);
-      cv::waitKey(0);
+      cv::waitKey(5000);
     }
 #endif
     return 0;
