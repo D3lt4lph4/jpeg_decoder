@@ -202,7 +202,7 @@ void FastIDCT(std::vector<int> *image, int start_line, int start_column,
  */
 void YCbCrToBGR(JPEGImage *image, std::vector<int> shape) {
   int R, G, B;
-  int rows = 512, cols = 512;
+  int rows = shape[0], cols = shape[1];
   for (size_t row = 0; row < rows; row++) {
     for (size_t col = 0; col < cols; col++) {
       R = image->at(row, col, 0) + 1.402 * (image->at(row, col, 2) - 128);
