@@ -21,42 +21,38 @@
 
 void matwrite(const std::string& filename, JPEGImage* mat, int channels) {
   std::ofstream fs(filename, std::fstream::binary);
+  int number_of_component, temp;
   if (fs.fail()) {
     std::cerr << strerror(errno) << std::endl;
   }
 
+  // Writing the number of components
+  number_of_component = mat->GetNumberOfComponent();
+  fs.write((char*)&number_of_component, sizeof(int));
+
   // First we write all of the component sizes.
-  int temp = mat->GetComponentShape(0).first;
-  fs.write((char*)&temp, sizeof(int));
-  temp = mat->GetComponentShape(0).second;
-  fs.write((char*)&temp, sizeof(int));
-  temp = mat->GetComponentShape(1).first;
-  fs.write((char*)&temp, sizeof(int));
-  temp = mat->GetComponentShape(1).second;
-  fs.write((char*)&temp, sizeof(int));
-  temp = mat->GetComponentShape(2).first;
-  fs.write((char*)&temp, sizeof(int));
-  temp = mat->GetComponentShape(2).second;
-  fs.write((char*)&temp, sizeof(int));
+  for (size_t i = 0; i < number_of_component; i++) {
+    temp = mat->GetComponentShape(i).first;
+    std::cout << temp << std::endl;
+    fs.write((char*)&temp, sizeof(int));
+    temp = mat->GetComponentShape(i).second;
+    std::cout << temp << std::endl;
+    fs.write((char*)&temp, sizeof(int));
+  }
 
   // We write the real image size, for future resizing if needed.
-  temp = mat->GetRealShape().at(0), sizeof(int);
-  fs.write((char*)&temp, sizeof(int));  // row
-  temp = mat->GetRealShape().at(1), sizeof(int);
-  fs.write((char*)&temp, sizeof(int));  // col
-  temp = mat->GetRealShape().at(2), sizeof(int);
-  fs.write((char*)&temp, sizeof(int));  // chan
+  for (size_t i = 0; i < number_of_component; i++) {
+    temp = mat->GetRealShape().at(i);
+    fs.write((char*)&temp, sizeof(int));
+  }
 
   // Then we write all of the data.
-  // // fs.write((char*)mat->GetData(0), sizeof(int) *
-  // //                                      mat->GetComponentShape(0).first *
-  // //                                      mat->GetComponentShape(0).second);
-  // // fs.write((char*)mat->GetData(1), sizeof(int) *
-  // //                                      mat->GetComponentShape(1).first *
-  // //                                      mat->GetComponentShape(1).second);
-  // // fs.write((char*)mat->GetData(2), sizeof(int) *
-  // //                                      mat->GetComponentShape(2).first *
-  // //                                      mat->GetComponentShape(2).second);
+
+  for (size_t i = 0; i < number_of_component; i++) {
+    fs.write((char*)mat->GetData(i)->data(),
+             sizeof(int) * mat->GetComponentShape(i).first *
+                 mat->GetComponentShape(i).second);
+  }
   fs.close();
 }
 

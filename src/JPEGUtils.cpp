@@ -44,6 +44,8 @@ std::pair<int, int> JPEGImage::GetComponentShape(int component) {
   return this->components_shape.at(component);
 }
 
+int JPEGImage::GetNumberOfComponent() { return this->image_components_.size(); }
+
 /**
  * \fn GetRealShape()
  * \brief Return the real shape of the image as it was before going through the
@@ -108,7 +110,10 @@ void JPEGImage::RescaleToRealSize() {
         for (int row_f = 0; row_f < row_factor; row_f++) {
           for (int col_f = 0; col_f < col_factor; col_f++) {
             new_data[(row * row_factor + row_f) * cols + col * col_factor +
-                      col_f] = this->image_components_[i][row * this->components_shape[i].second + col];
+                     col_f] =
+                this->image_components_[i]
+                                       [row * this->components_shape[i].second +
+                                        col];
           }
         }
       }
