@@ -209,8 +209,27 @@ void YCbCrToBGR(JPEGImage *image, std::vector<int> shape) {
   for (size_t row = 0; row < rows; row++) {
     for (size_t col = 0; col < cols; col++) {
       R = image->at(row, col, 0) + 1.402 * (image->at(row, col, 2) - 128);
-      G = image->at(row, col, 0) - 0.34414 * (image->at(row, col, 1) - 128) - 0.71414 * (image->at(row, col, 2) - 128);
+      G = image->at(row, col, 0) - 0.34414 * (image->at(row, col, 1) - 128) -
+          0.71414 * (image->at(row, col, 2) - 128);
       B = image->at(row, col, 0) + 1.772 * (image->at(row, col, 1) - 128);
+      if (R > 255) {
+        R = 255;
+      }
+      if (G > 255) {
+        G = 255;
+      }
+      if (B > 255) {
+        B = 255;
+      }
+      if (R < 0) {
+        R = 0;
+      }
+      if (G < 0) {
+        G = 0;
+      }
+      if (B < 0) {
+        B = 0;
+      }
       image->at(row, col, 2) = R;
       image->at(row, col, 1) = G;
       image->at(row, col, 0) = B;
