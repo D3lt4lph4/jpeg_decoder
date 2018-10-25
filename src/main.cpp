@@ -140,17 +140,17 @@ int main(int argc, char* argv[]) {
           } else {
             switch (result["level"].as<int>()) {
               case 2:
-                matwrite(iterator->path().parent_path().string() +
+                matwrite(iterator->path().parent_path().string() + "/" +
                              iterator->path().stem().string() + ".qhjpg",
                          image, channels);
                 break;
               case 3:
-                matwrite(iterator->path().parent_path().string() +
+                matwrite(iterator->path().parent_path().string() + "/" +
                              iterator->path().stem().string() + ".iqhjpg",
                          image, channels);
                 break;
               default:
-                matwrite(iterator->path().parent_path().string() +
+                matwrite(iterator->path().parent_path().string() + "/" +
                              iterator->path().stem().string() + ".riqhjpg",
                          image, channels);
                 break;
@@ -195,15 +195,15 @@ int main(int argc, char* argv[]) {
     } else {
       switch (result["level"].as<int>()) {
         case 2:
-          matwrite(p.parent_path().string() + p.stem().string() + ".qhjpg",
+          matwrite(p.parent_path().string() + "/" + p.stem().string() + ".qhjpg",
                    image, channels);
           break;
         case 3:
-          matwrite(p.parent_path().string() + p.stem().string() + ".iqhjpg",
+          matwrite(p.parent_path().string() + "/" + p.stem().string() + ".iqhjpg",
                    image, channels);
           break;
         default:
-          matwrite(p.parent_path().string() + p.stem().string() + ".riqhjpg",
+          matwrite(p.parent_path().string() + "/" + p.stem().string() + ".riqhjpg",
                    image, channels);
           break;
       }
