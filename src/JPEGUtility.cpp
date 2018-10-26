@@ -1,3 +1,9 @@
+/**
+ * \file JPEGUtility.cpp
+ * \author Deguerre Benjamin
+ * \brief Contains all the utility functions for the JPEGDecoder.
+ */
+
 #include "JPEGUtility.hpp"
 
 #include <math.h>
@@ -14,7 +20,9 @@
   xb = (n - (k2 + k1) * p) >> sh  // butterfly-mul equ.(2)
 
 /**
- * \fn unsigned char NextBit()
+ * \fn unsigned char NextBit(unsigned char *file_content, unsigned int *index,
+ * unsigned char *bit_index)
+ *
  * \brief Returns the next bit in the stream.
  *
  * This function extract the bit at the specified position in the stream. When
@@ -22,16 +30,19 @@
  * incremented by 1. If a value outside of [1 ; 8] is provided for the
  * bit_index, the function will throw an out_of_range error.
  *
- * If a 0xFF byte if found in the stream, if the following byte is 0x00, the bit
- * is extracted, else an error is thrown. If 0xFF00 is encountered, when
- * accessing the lowest bit in the 0xFF, the index will be incremented by 2
- * instead of 1.
+ * If a 0xFF byte if found in the stream, then, if the following byte is not
+ * 0x00, the bit is extracted, else an error is thrown if the DNL byte is not
+ * found. If 0xFF00 is encountered, when accessing the lowest bit in the 0xFF,
+ * the index will be incremented by 2 instead of 1.
  *
- * \param[in] file_content Pointer to the unsigned char to retrieve the bit
- * from. \param[in, out] index Pointer containing the offset for the pointer to
- * the byte to extract the bit from. \param[in, out] bit_index The index of the
- * bit to extract. A value of 8 extract the highest bit in the byte, a value of
- * 1 extract the lowest.
+ * \param[in] file_content Unsigned char pointer pointing to the data of the
+ * JPEG file.
+ *
+ * \param[in, out] index Pointer containing the position of the cursor reading
+ * the file.
+ *
+ * \param[in, out] bit_index The index of the bit to extract. A value of 8
+ * extract the highest bit in the byte, a value of 1 extract the lowest.
  *
  * \return Either 0 or 1, the value of the bit.
  */
@@ -73,14 +84,11 @@ unsigned char NextBit(unsigned char *file_content, unsigned int *index,
 }
 
 /**
- * \fn void IDCT(cv::Mat *new_block, unsigned int component_number)
+ * \fn void IDCT(int *new_block)
  *
- * \brief Calculate the inverse cosinus transform over the block provided. The
- * transform is calculated the channel provided in component_number.
+ * \brief Calculate the inverse cosinus transform over the block provided.
  *
- * \param[in, out] new_block A pointer to the OpenCV data to modify.
- *
- * \param[in] component_number The component on which to perform the IDCT.
+ * \param[in, out] new_block A pointer to the data to modify.
  */
 void IDCT(int *new_block) {
   float result, cu, cv;
@@ -125,13 +133,15 @@ void IDCT(int *new_block) {
 }
 
 /**
- * \fn void FastIDCT1(int *x, int *y, int ps, int half)
+ * \fn void FastIDCT1(int *x, int *y, int ps, int half, int y_line_length)
  * \brief Compute the one dimension IDCT.
  *
  * \param[in,out] x, no se
  * \param[in,out] y, no se
  * \param[in] ps, no se
  * \param[in] half, no se
+ * \param[in] y_line_length, the length of a line of the image. The data is
+ * stored on one array, line after line, to get a 8*8 block, this is required.
  */
 void FastIDCT1(int *x, int *y, int ps, int half, int y_line_length) {
   int p, n;
@@ -152,14 +162,14 @@ void FastIDCT1(int *x, int *y, int ps, int half, int y_line_length) {
 }
 
 /**
- * \fn void FastIDCT(int *new_block, unsigned int component_number)
- * \brief Compute the a faster IDCT in dimension two. The algorithm is based
- * upon the DCT implementation of Loeffler.
+ * \fn void FastIDCT(std::vector<int> *image, int start_line, int start_column,
+ * int line_length)
+ *
+ * \brief Compute the a faster IDCT in dimension two. The
+ * algorithm is based upon the DCT implementation of Loeffler.
  *
  * \param[in] int* new_block, An array of size 8x8 representing the coefficients
  * of the DCT of a block.
- *
- *
  */
 void FastIDCT(std::vector<int> *image, int start_line, int start_column,
               int line_length)  // 2D 8x8 IDCT
@@ -195,7 +205,7 @@ void FastIDCT(std::vector<int> *image, int start_line, int start_column,
 }
 
 /**
- * \fn void YCbCrToBGR(int *new_block)
+ * \fn void YCbCrToBGR(JPEGImage *image, std::vector<int> shape)
  * \brief This function transform a "block" of size 8*8*3 from YCbCr space to
  * RGB space.
  *
