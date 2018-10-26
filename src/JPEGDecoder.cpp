@@ -35,6 +35,7 @@
 JPEGDecoder::JPEGDecoder() : block_index(0), logging_level_(0) {
   this->current_index_ = new (unsigned int);
   this->InitializeLogger();
+  this->current_image_ = NULL;
 }
 
 /**
@@ -43,9 +44,15 @@ JPEGDecoder::JPEGDecoder() : block_index(0), logging_level_(0) {
 JPEGDecoder::JPEGDecoder(unsigned char logging_level) : block_index(0) {
   this->current_index_ = new (unsigned int);
   this->logging_level_ = logging_level;
+  this->current_image_ = NULL;
 }
 
-JPEGDecoder::~JPEGDecoder() { delete this->current_index_; }
+JPEGDecoder::~JPEGDecoder() {
+  if (this->current_image_ != NULL) {
+    delete this->current_image_;
+  }
+  delete this->current_index_;
+}
 
 /**
  * \fn void *JPEGDecoder::DecodeFile(std::string filename, unsigned int
@@ -87,8 +94,9 @@ JPEGImage *JPEGDecoder::DecodeFile(std::string filename, int level) {
     *(this->current_index_) = 0;
     file_to_decode.read(reinterpret_cast<char *>(this->current_file_content_),
                         size);
-
-    if (*(this->GetMarker()) == START_OF_IMAGE) {
+    marker = this->GetMarker();
+    if (*marker == START_OF_IMAGE) {
+      delete marker;
       this->DecoderSetup();
       do {
         marker = this->GetMarker();
@@ -243,6 +251,7 @@ JPEGImage *JPEGDecoder::DecodeFile(std::string filename, int level) {
         delete marker;
       } while (!out_condition);
     } else {
+      delete marker;
       throw std::runtime_error(
           "Expected SOI marker, but sosmething else found, cannot parse the "
           "file.");
@@ -317,7 +326,7 @@ void JPEGDecoder::DecoderSetup() { this->restart_interval = 0; }
  * \param[in] encoding_process_type The type of the frame to decode.
  */
 void JPEGDecoder::DecodeFrame(unsigned char encoding_process_type) {
-  unsigned char *marker, table_key;
+  unsigned char *marker= NULL, table_key;
   QuantizationTable quantization_table;
   HuffmanTable huffman_table;
   std::vector<std::pair<unsigned char, HuffmanTable>> huffman_tables;
@@ -352,7 +361,8 @@ void JPEGDecoder::DecodeFrame(unsigned char encoding_process_type) {
     std::vector<int> realShape(3);
 
     int size_factor_h =
-        (((this->number_of_blocks_per_column + 8 - 1) / 8) + h_max - 1) / (h_max);
+        (((this->number_of_blocks_per_column + 8 - 1) / 8) + h_max - 1) /
+        (h_max);
     int size_factor_v =
         (((this->number_of_blocks_per_line + 8 - 1) / 8) + v_max - 1) / (v_max);
     for (size_t component_number = 1;
@@ -373,11 +383,18 @@ void JPEGDecoder::DecodeFrame(unsigned char encoding_process_type) {
           8;
     }
 
+    if (this->current_image_ != NULL) {
+      delete this->current_image_;
+    }
+
     this->current_image_ = new JPEGImage(sizes);
     this->current_image_->SetRealShape(realShape);
   }
 
   do {
+    if (marker != NULL) {
+      delete marker;
+    }
     marker = this->GetMarker();
     if (*marker == START_OF_SCAN) {
       BOOST_LOG_TRIVIAL(info) << "Getting a scan to decode." << std::endl;
@@ -433,7 +450,9 @@ void JPEGDecoder::DecodeFrame(unsigned char encoding_process_type) {
           break;
       }
     }
+    
   } while (*marker != END_OF_IMAGE);
+  delete marker;
   *(this->current_index_) -= 2;
 }
 
@@ -553,7 +572,6 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
   mcu_per_line =
       (this->frame_header_.number_of_samples_per_line_ + (h_max * 8) - 1) /
       (h_max * 8);
-  
 
   for (unsigned char component_number = 1;
        component_number <= number_of_component; component_number++) {
@@ -565,8 +583,11 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
         this->frame_header_.component_parameters_.at(component_number).at(0);
     vertical_number_of_blocks =
         this->frame_header_.component_parameters_.at(component_number).at(1);
-    
-    line_length = mcu_per_line * this->frame_header_.component_parameters_.at(component_number).at(1) * 8;
+
+    line_length =
+        mcu_per_line *
+        this->frame_header_.component_parameters_.at(component_number).at(1) *
+        8;
     start_line =
         mcu_number / mcu_per_line *
         this->frame_header_.component_parameters_.at(component_number).at(0) *
@@ -597,14 +618,15 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
         // We save the info in the correct blocks.
 
         // We save the dc coefficient and update the previous value.
-        this->current_image_->at(start_line + 8 * v_block, start_column + 8 * h_block,
-                                 component_number - 1) =
-            prev[component_number - 1];
+        this->current_image_->at(
+            start_line + 8 * v_block, start_column + 8 * h_block,
+            component_number - 1) = prev[component_number - 1];
 
         for (size_t row = 0; row < 8; row++) {
           for (size_t col = 0; col < 8; col++) {
             if (!(row == 0 && col == 0)) {
-              this->current_image_->at(start_line + 8 * v_block + row, start_column + 8 * h_block + col,
+              this->current_image_->at(start_line + 8 * v_block + row,
+                                       start_column + 8 * h_block + col,
                                        component_number - 1) =
                   AC_Coefficients.at(ZZ_order[row * 8 + col] - 1);
             }
@@ -613,7 +635,8 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
         // If required, dequantize the coefficient.
         if (this->decoding_level_ > 1) {
           // Perform dequantization
-          this->Dequantize(component_number - 1, start_line + 8 * v_block, start_column + 8 * h_block,
+          this->Dequantize(component_number - 1, start_line + 8 * v_block,
+                           start_column + 8 * h_block,
                            this->quantization_tables_.at(
                                this->frame_header_.component_parameters_
                                    .at((unsigned char)component_number)
@@ -623,7 +646,8 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
         // If required Perform the dct inverse.
         if (this->decoding_level_ > 2) {
           FastIDCT(this->current_image_->GetData(component_number - 1),
-                   start_line + 8 * v_block, start_column + 8 * h_block, line_length);
+                   start_line + 8 * v_block, start_column + 8 * h_block,
+                   line_length);
         }
       }
     }
