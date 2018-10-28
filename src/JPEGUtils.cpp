@@ -86,8 +86,8 @@ int& JPEGImage::at(int row, int col, int component) {
  * \return int* The pointer to the data. The pointer should not be deleted
  * outside the class.
  */
-std::vector<int>* JPEGImage::GetData(int component) {
-  return &(this->image_components_.at(component));
+std::vector<int>& JPEGImage::GetData(int component) {
+  return this->image_components_.at(component);
 }
 
 /**

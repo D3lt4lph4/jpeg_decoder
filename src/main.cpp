@@ -47,7 +47,7 @@ void matwrite(const std::string& filename, JPEGImage* mat, int channels) {
   // Then we write all of the data.
 
   for (size_t i = 0; i < number_of_component; i++) {
-    fs.write((char*)mat->GetData(i)->data(),
+    fs.write((char*)mat->GetData(i).data(),
              sizeof(int) * mat->GetComponentShape(i).first *
                  mat->GetComponentShape(i).second);
   }

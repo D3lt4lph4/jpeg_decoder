@@ -171,34 +171,32 @@ void FastIDCT1(int *x, int *y, int ps, int half, int y_line_length) {
  * \param[in] int* new_block, An array of size 8x8 representing the coefficients
  * of the DCT of a block.
  */
-void FastIDCT(std::vector<int> *image, int start_line, int start_column,
+void FastIDCT(std::vector<int> &image, int start_line, int start_column,
               int line_length)  // 2D 8x8 IDCT
 {
   int i, b2[64];
 
   for (i = 0; i < 8; i++)
-    FastIDCT1(image->data() + start_line * line_length + start_column +
+    FastIDCT1(image.data() + start_line * line_length + start_column +
                   i * line_length,
               b2 + i, 9, 1 << 8, 8);  // row
   for (i = 0; i < 8; i++)
     FastIDCT1(b2 + i * 8,
-              image->data() + start_line * line_length + start_column + i, 12,
+              image.data() + start_line * line_length + start_column + i, 12,
               1 << 11, line_length);  // col
 
   for (size_t row = 0; row < 8; row++) {
     for (size_t col = 0; col < 8; col++) {
-      (*image)[(start_line + row) * line_length + start_column + col] =
-          (*image)[(start_line + row) * line_length + start_column + col] + 128;
-      if ((*image)[(start_line + row) * line_length + start_column + col] >
-          255) {
-        (*image)[(start_line + row) * line_length + start_column + col] = 255;
-      } else if ((*image)[(start_line + row) * line_length + start_column +
-                          col] < 0) {
-        (*image)[(start_line + row) * line_length + start_column + col] = 0;
+      image[(start_line + row) * line_length + start_column + col] =
+          image[(start_line + row) * line_length + start_column + col] + 128;
+      if (image[(start_line + row) * line_length + start_column + col] > 255) {
+        image[(start_line + row) * line_length + start_column + col] = 255;
+      } else if (image[(start_line + row) * line_length + start_column + col] <
+                 0) {
+        image[(start_line + row) * line_length + start_column + col] = 0;
       } else {
-        (*image)[(start_line + row) * line_length + start_column + col] =
-            (int)(*image)[(start_line + row) * line_length + start_column +
-                          col];
+        image[(start_line + row) * line_length + start_column + col] =
+            (int)image[(start_line + row) * line_length + start_column + col];
       }
     }
   }
