@@ -43,3 +43,9 @@ callgrind.*
 docs/
 
 CMakeFiles/*
+
+*.riqhjpg
+*.iqhjpg
+*.qhjpg
+*.hjpg
+*.jpg
