@@ -1,8 +1,18 @@
 #ifndef __JPEG_IMAGE__
 #define __JPEG_IMAGE__
 
+/**
+ * \file JPEGUtils.hpp
+ * \author Benjamin Deguerre
+ * \brief File containing all the classes usefull for the decoder.
+ */
 #include <vector>
 
+/**
+ * \class JPEGImage
+ * \brief A class representing an image decoded by a decoder. Depending on the
+ * level of decoding, the components of an image may vary in size.
+ */
 class JPEGImage {
  public:
   JPEGImage();

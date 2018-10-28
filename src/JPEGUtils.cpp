@@ -1,13 +1,14 @@
 #include "JPEGUtils.hpp"
 
 /**
- * \fn JPEGImage()
+ * \fn JPEGImage::JPEGImage()
  * \brief Dummy constructor for a JPEGImage
  */
 JPEGImage::JPEGImage() {}
 
 /**
- * \fn JPEGImage(std::vector<std::pair<int, int>> sizes)
+ * \fn JPEGImage::JPEGImage(std::vector<std::pair<int, int>> sizes)
+ *
  * \brief Constructor of a JPEGImage, allocate the vector with the correct sizes
  * for the data.
  *
@@ -32,13 +33,14 @@ JPEGImage::~JPEGImage() {}
 
 /**
  * \fn GetComponentShape(int component)
+ *
  * \brief Return the shape of the component specified. This is the shape of the
  * component as seen by the decoder, i.e with the block padding and the
  * subsampling.
  *
  * \param component The position of the component.
  *
- * \return std::pair<int, int> The shape of the data at component, (row, col).
+ * \return The shape of the data at component, in the order (row, col).
  */
 std::pair<int, int> JPEGImage::GetComponentShape(int component) {
   return this->components_shape.at(component);
@@ -51,13 +53,14 @@ int JPEGImage::GetNumberOfComponent() { return this->image_components_.size(); }
  * \brief Return the real shape of the image as it was before going through the
  * steps of subsampling.
  *
- * \return std::vector<int> A vector containing the shape of the image.
+ * \return A vector containing the shape of the image. In the order, (row, col,
+ * component).
  */
 std::vector<int> JPEGImage::GetRealShape() { return this->real_shape_; }
 
 /**
  * \fn SetRealShape(std::vector<int> shape)
- * \brief Setter for the shape of the image.
+ * \brief Setter for the real shape of the image.
  */
 void JPEGImage::SetRealShape(std::vector<int> shape) {
   this->real_shape_ = shape;
@@ -81,9 +84,10 @@ int& JPEGImage::at(int row, int col, int component) {
 
 /**
  * \fn GetData(int component)
- * \brief Return the int* representing the data at component.
+ * \brief Return the vector<int> representing the data at component. The data is
+ * stored line by line in the vector.
  *
- * \return int* The pointer to the data. The pointer should not be deleted
+ * \return A reference to the data.
  * outside the class.
  */
 std::vector<int>& JPEGImage::GetData(int component) {
@@ -92,8 +96,9 @@ std::vector<int>& JPEGImage::GetData(int component) {
 
 /**
  * \fn void RescaleToRealSize()
- * \brief Rescale the image in the Object to the real size. This function is not
- * to be called if the data stored is in the dct space.
+ * \brief Rescale the image in the Object to the real size. This function will
+ * resize each component if required. For now only the upsizing rezise to the
+ * first components.
  */
 void JPEGImage::RescaleToRealSize() {
   int col_factor, row_factor;
