@@ -271,8 +271,8 @@ void FastIDCT1D(std::vector<int> &x, std::vector<int> &y, const int x_offset,
  * \param[in] line_length The length of a line in the image.
  *
  */
-void FastIDCT2D(std::vector<int> &image, int start_line, int start_column,
-                int line_length) {
+void FastIDCT2D(std::vector<int> &image, const int start_line, const int start_column,
+                const int line_length) {
   int i;
   std::vector<int> b2(64);
 
