@@ -262,7 +262,7 @@ JPEGImage *JPEGDecoder::DecodeFile(std::string filename, int level) {
 
   if (this->decoding_level_ > 3) {
     this->current_image_->RescaleToRealSize();
-    YCbCrToBGR(this->current_image_, this->current_image_->GetRealShape());
+    YCbCrToBGR(*(this->current_image_), this->current_image_->GetRealShape());
   }
 
   delete[] this->current_file_content_;
@@ -326,7 +326,7 @@ void JPEGDecoder::DecoderSetup() { this->restart_interval = 0; }
  * \param[in] encoding_process_type The type of the frame to decode.
  */
 void JPEGDecoder::DecodeFrame(unsigned char encoding_process_type) {
-  unsigned char *marker= NULL, table_key;
+  unsigned char *marker = NULL, table_key;
   QuantizationTable quantization_table;
   HuffmanTable huffman_table;
   std::vector<std::pair<unsigned char, HuffmanTable>> huffman_tables;
@@ -450,7 +450,7 @@ void JPEGDecoder::DecodeFrame(unsigned char encoding_process_type) {
           break;
       }
     }
-    
+
   } while (*marker != END_OF_IMAGE);
   delete marker;
   *(this->current_index_) -= 2;
@@ -645,9 +645,9 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
 
         // If required Perform the dct inverse.
         if (this->decoding_level_ > 2) {
-          FastIDCT(this->current_image_->GetData(component_number - 1),
-                   start_line + 8 * v_block, start_column + 8 * h_block,
-                   line_length);
+          FastIDCT2D(this->current_image_->GetData(component_number - 1),
+                     start_line + 8 * v_block, start_column + 8 * h_block,
+                     line_length);
         }
       }
     }
