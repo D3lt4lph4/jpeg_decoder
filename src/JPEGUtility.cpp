@@ -184,7 +184,7 @@ void IDCT(int *new_block) {
 
 /**
  * \fn FastIDCT1D(std::vector<int> &x, std::vector<int> &y, const int x_offset,
-                const int y_offset, int ps, int half, int y_line_length)
+                const int y_offset, const int ps, const int half, const int y_line_length)
  *
  * \brief Compute the Fast one dimension IDCT. This implementation was taken
  * from <a href="http://halicery.com/Image/idct.html">here</a> and is the
@@ -219,7 +219,7 @@ void IDCT(int *new_block) {
  * stored on one array, line after line, to get a 8*8 block, this is required.
  */
 void FastIDCT1D(std::vector<int> &x, std::vector<int> &y, const int x_offset,
-                const int y_offset, int ps, int half, int y_line_length) {
+                const int y_offset, const int ps, const int half, const int y_line_length) {
   int p, n;
   x[x_offset + 0] <<= 9, x[x_offset + 1] <<= 7, x[x_offset + 3] *= 181,
       x[x_offset + 4] <<= 9, x[x_offset + 5] *= 181, x[x_offset + 7] <<= 7;
@@ -249,8 +249,8 @@ void FastIDCT1D(std::vector<int> &x, std::vector<int> &y, const int x_offset,
 }
 
 /**
- * \fn void FastIDCT2D(std::vector<int> &image, int start_line, int
- * start_column, int line_length)
+ * \fn void FastIDCT2D(std::vector<int> &image, const int start_line, const int
+ * start_column, const int line_length)
  *
  * \brief Compute the a fast IDCT in dimension two. The algorithm is based upon
  * the DCT implementation of Loeffler. And was taken from <a
