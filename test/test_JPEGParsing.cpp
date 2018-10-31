@@ -7,7 +7,7 @@ TEST(ParsingTest, test_JFIF) {
                                   0x00, 0x01, 0x01, 0x01, 0x00, 0x48,
                                   0x00, 0x48, 0x00, 0x00};
   unsigned int index = 0;
-  JFIFHeader header = ParseJFIFSegment(file_content, &index);
+  JFIFHeader header = ParseJFIFSegment(file_content, index);
 
   ASSERT_EQ(header.current_version_, 257);
   ASSERT_EQ(header.current_unit_, 1);
@@ -24,7 +24,7 @@ TEST(ParsingTest, test_Comment) {
                                   0x65, 0x64, 0x20, 0x77, 0x69, 0x74, 0x68,
                                   0x20, 0x47, 0x49, 0x4D, 0x50};
   unsigned int index = 0;
-  std::string comment = ParseComment(file_content, &index),
+  std::string comment = ParseComment(file_content, index),
               expected("Created with GIMP");
   std::cout << comment.c_str();
   ASSERT_STREQ(comment.c_str(), expected.c_str());
@@ -40,7 +40,7 @@ TEST(ParsingTest, test_FrameHeader) {
                              expected_results_2 = {1, 1, 1},
                              expected_results_3 = {1, 1, 1};
   FrameHeader header =
-      ParseFrameHeader(file_content, &index, FRAME_TYPE_BASELINE_DTC);
+      ParseFrameHeader(file_content, index, FRAME_TYPE_BASELINE_DTC);
 
   std::cout << int(header.encoding_process_type_) << std::endl;
   ASSERT_EQ(header.encoding_process_type_, FRAME_TYPE_BASELINE_DTC);
@@ -63,7 +63,7 @@ TEST(ParsingTest, test_ScanHeader) {
 
   unsigned int index = 0;
 
-  ScanHeader header = ParseScanHeader(file_content, &index);
+  ScanHeader header = ParseScanHeader(file_content, index);
 
   ASSERT_EQ(header.number_of_component_s_, 3);
   ASSERT_EQ(header.start_of_spectral_selection_, 0);
@@ -103,7 +103,7 @@ TEST(ParsingTest, test_QuantizationTable) {
       0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14};
 
   QuantizationTable table;
-  std::tie(tq, table) = ParseQuantizationTable(file_content, &index);
+  std::tie(tq, table) = ParseQuantizationTable(file_content, index);
 
   ASSERT_EQ(tq, 1);
   ASSERT_EQ(table.pq_, 0);
@@ -125,7 +125,7 @@ TEST(ParsingTest, test_HuffmanTable) {
   HuffmanTable table;
 
   std::vector<std::pair<unsigned char, HuffmanTable>> results =
-      ParseHuffmanTableSpecification(file_content, &index);
+      ParseHuffmanTableSpecification(file_content, index);
 
   std::tie(table_index, table) = results.at(0);
 

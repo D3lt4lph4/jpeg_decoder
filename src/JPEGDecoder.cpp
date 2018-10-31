@@ -103,88 +103,88 @@ JPEGImage *JPEGDecoder::DecodeFile(std::string filename, int level) {
         switch (*marker) {
           case APPO:
             this->current_jfif_header = ParseJFIFSegment(
-                this->current_file_content_, this->current_index_);
+                this->current_file_content_, *(this->current_index_));
             BOOST_LOG_TRIVIAL(info) << "JFIF segment parsed.";
             break;
           case APP1:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                  this->current_index_);
+                                  *(this->current_index_));
             break;
           case APP2:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                  this->current_index_);
+                                  *(this->current_index_));
             break;
           case APP3:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                  this->current_index_);
+                                  *(this->current_index_));
             break;
           case APP4:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                  this->current_index_);
+                                  *(this->current_index_));
             break;
           case APP5:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                  this->current_index_);
+                                  *(this->current_index_));
             break;
           case APP6:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                  this->current_index_);
+                                  *(this->current_index_));
             break;
           case APP7:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                  this->current_index_);
+                                  *(this->current_index_));
             break;
           case APP8:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                  this->current_index_);
+                                  *(this->current_index_));
             break;
           case APP9:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                  this->current_index_);
+                                  *(this->current_index_));
             break;
           case APP10:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                  this->current_index_);
+                                  *(this->current_index_));
             break;
           case APP11:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                  this->current_index_);
+                                  *(this->current_index_));
             break;
           case APP12:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                  this->current_index_);
+                                  *(this->current_index_));
             break;
           case APP13:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                  this->current_index_);
+                                  *(this->current_index_));
             break;
           case APP14:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                  this->current_index_);
+                                  *(this->current_index_));
             break;
           case APP15:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                  this->current_index_);
+                                  *(this->current_index_));
             break;
           case COMMENT: {
             std::string comment;
             comment =
-                ParseComment(this->current_file_content_, this->current_index_);
+                ParseComment(this->current_file_content_, *(this->current_index_));
             BOOST_LOG_TRIVIAL(info) << "Comment in the file : " << comment;
           } break;
           case DEFINE_RESTART_INTERVAL:
@@ -192,7 +192,7 @@ JPEGImage *JPEGDecoder::DecodeFile(std::string filename, int level) {
             break;
           case DEFINE_QUANTIZATION_TABLE:
             std::tie(table_key, quantization_table) = ParseQuantizationTable(
-                this->current_file_content_, this->current_index_);
+                this->current_file_content_, *(this->current_index_));
 
             if (!(this->quantization_tables_
                       .insert(std::make_pair(table_key, quantization_table))
@@ -213,7 +213,7 @@ JPEGImage *JPEGDecoder::DecodeFile(std::string filename, int level) {
             break;
           case DEFINE_HUFFMAN_TABLE:
             huffman_tables = ParseHuffmanTableSpecification(
-                this->current_file_content_, this->current_index_);
+                this->current_file_content_, *(this->current_index_));
 
             for (size_t i = 0; i < huffman_tables.size(); i++) {
               std::tie(table_key, huffman_table) = huffman_tables.at(i);
@@ -334,7 +334,7 @@ void JPEGDecoder::DecodeFrame(unsigned char encoding_process_type) {
   unsigned int h_max = 0, v_max = 0;
 
   this->frame_header_ = ParseFrameHeader(
-      this->current_file_content_, this->current_index_, encoding_process_type);
+      this->current_file_content_, *(this->current_index_), encoding_process_type);
 
   for (size_t component_number = 1;
        component_number <= this->frame_header_.number_of_component_;
@@ -404,19 +404,19 @@ void JPEGDecoder::DecodeFrame(unsigned char encoding_process_type) {
         case COMMENT:
           BOOST_LOG_TRIVIAL(info) << "Comment in the current scan : "
                                   << ParseComment(this->current_file_content_,
-                                                  this->current_index_);
+                                                  *(this->current_index_));
           break;
         case DEFINE_RESTART_INTERVAL:
           // TODO
           break;
         case DEFINE_QUANTIZATION_TABLE:
           ParseQuantizationTable(this->current_file_content_,
-                                 this->current_index_);
+                                 *(this->current_index_));
           BOOST_LOG_TRIVIAL(info) << "Quantization table parsed." << std::endl;
           break;
         case DEFINE_HUFFMAN_TABLE:
           huffman_tables = ParseHuffmanTableSpecification(
-              this->current_file_content_, this->current_index_);
+              this->current_file_content_, *(this->current_index_));
           for (size_t i = 0; i < huffman_tables.size(); i++) {
             std::tie(table_key, huffman_table) = huffman_tables.at(i);
 
@@ -465,7 +465,7 @@ void JPEGDecoder::DecodeFrame(unsigned char encoding_process_type) {
  */
 void JPEGDecoder::DecodeScan(unsigned char encoding_process_type) {
   this->scan_header_ =
-      ParseScanHeader(this->current_file_content_, this->current_index_);
+      ParseScanHeader(this->current_file_content_, *(this->current_index_));
   unsigned int m = 0;
 
   do {
