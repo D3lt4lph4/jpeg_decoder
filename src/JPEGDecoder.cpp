@@ -183,8 +183,8 @@ JPEGImage *JPEGDecoder::DecodeFile(std::string filename, int level) {
             break;
           case COMMENT: {
             std::string comment;
-            comment =
-                ParseComment(this->current_file_content_, *(this->current_index_));
+            comment = ParseComment(this->current_file_content_,
+                                   *(this->current_index_));
             BOOST_LOG_TRIVIAL(info) << "Comment in the file : " << comment;
           } break;
           case DEFINE_RESTART_INTERVAL:
@@ -333,8 +333,9 @@ void JPEGDecoder::DecodeFrame(unsigned char encoding_process_type) {
   ;
   unsigned int h_max = 0, v_max = 0;
 
-  this->frame_header_ = ParseFrameHeader(
-      this->current_file_content_, *(this->current_index_), encoding_process_type);
+  this->frame_header_ =
+      ParseFrameHeader(this->current_file_content_, *(this->current_index_),
+                       encoding_process_type);
 
   for (size_t component_number = 1;
        component_number <= this->frame_header_.number_of_component_;
@@ -602,17 +603,17 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
            h_block++) {
         // Getting the dc coefficient.
         decoded_dc =
-            Decode(this->current_file_content_, this->current_index_, bit_index,
-                   this->dc_huffman_tables_.at(dc_table_index));
+            Decode(this->current_file_content_, *(this->current_index_),
+                   *bit_index, this->dc_huffman_tables_.at(dc_table_index));
         diff = Receive(decoded_dc, this->current_file_content_,
-                       this->current_index_, bit_index);
+                       *(this->current_index_), *bit_index);
 
         diff = Extended(diff, decoded_dc);
         prev[component_number - 1] = diff + prev[component_number - 1];
 
         // Getting the AC coefficients.
         AC_Coefficients = DecodeACCoefficients(
-            this->current_file_content_, this->current_index_, bit_index,
+            this->current_file_content_, *(this->current_index_), *bit_index,
             this->ac_huffman_tables_.at(ac_table_index));
 
         // We save the info in the correct blocks.

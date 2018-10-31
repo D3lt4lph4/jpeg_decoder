@@ -24,7 +24,7 @@
  * element is the array of length, the length of the array is sum(bits) + 1
  */
 std::pair<unsigned char, std::vector<unsigned char>> GenerateSizeTable(
-    std::vector<unsigned char> bits) {
+    const std::vector<unsigned char> &bits) {
   unsigned char k = 0, i = 1, j = 1;
   std::vector<unsigned char> huffsize;
 
@@ -60,7 +60,7 @@ std::pair<unsigned char, std::vector<unsigned char>> GenerateSizeTable(
  * \return A vector of shorts containing sum(huffsize) codes.
  */
 std::vector<unsigned short> GenerateCodeTable(
-    std::vector<unsigned char> huffsize) {
+    const std::vector<unsigned char> &huffsize) {
   int k = 0;
   unsigned char si = huffsize.at(0);
   unsigned short code = 0;
@@ -99,8 +99,8 @@ std::vector<unsigned short> GenerateCodeTable(
  * \return A tuple containing in that order, max_code, min_code, val_ptr;
  */
 std::tuple<std::vector<int>, std::vector<int>, std::vector<unsigned char>>
-DecoderTables(std::vector<unsigned char> bits,
-              std::vector<unsigned short> huffcode) {
+DecoderTables(const std::vector<unsigned char> &bits,
+              const std::vector<unsigned short> &huffcode) {
   int i = 0, j = 0;
   std::vector<int> max_code(17, 0), min_code(17, 0);
   std::vector<unsigned char> val_ptr(17, 0);
@@ -133,16 +133,16 @@ DecoderTables(std::vector<unsigned char> bits,
  *
  * \return The value associated with the huffman code.
  */
-unsigned char Decode(unsigned char *stream, unsigned int *index,
-                     unsigned char *bit_index, HuffmanTable used_table) {
+unsigned char Decode(unsigned char *stream, unsigned int &index,
+                     unsigned char &bit_index, const HuffmanTable &used_table) {
   int i = 1;
   unsigned short j;
   unsigned short code;
 
-  code = NextBit(stream, *index, *bit_index);
+  code = NextBit(stream, index, bit_index);
   while (code > used_table.max_code.at(i)) {
     i += 1;
-    code = (code << 1) + NextBit(stream, *index, *bit_index);
+    code = (code << 1) + NextBit(stream, index, bit_index);
   }
 
   j = used_table.val_pointer.at(i);
@@ -157,15 +157,15 @@ unsigned char Decode(unsigned char *stream, unsigned int *index,
  *
  * \param[in] numebr_of_bits The number of bits to retrieve from the stream.
  */
-int Receive(unsigned char number_of_bits, unsigned char *stream,
-            unsigned int *index, unsigned char *bit_index) {
+int Receive(const unsigned char number_of_bits, unsigned char *stream,
+            unsigned int &index, unsigned char &bit_index) {
   int value = 0;
   unsigned char i = 0;
   unsigned char temp;
 
   while (i != number_of_bits) {
     i += 1;
-    value = (value << 1) + NextBit(stream, *index, *bit_index);
+    value = (value << 1) + NextBit(stream, index, bit_index);
   }
 
   return value;
@@ -180,7 +180,7 @@ int Receive(unsigned char number_of_bits, unsigned char *stream,
  * \param[in] difference The semi-encoded difference (depending on its sign).
  * \param[in] number_of_bits The range of the encoded difference;
  */
-int Extended(int diff, unsigned char ssss) {
+int Extended(int diff, const unsigned char ssss) {
   int value = 1;
 
   value = value << (ssss - 1);
@@ -203,9 +203,9 @@ int Extended(int diff, unsigned char ssss) {
  * contain the decoded values.
  */
 std::vector<int> DecodeACCoefficients(unsigned char *stream,
-                                      unsigned int *index,
-                                      unsigned char *bit_index,
-                                      HuffmanTable used_table) {
+                                      unsigned int &index,
+                                      unsigned char &bit_index,
+                                      const HuffmanTable &used_table) {
   unsigned char k = 1, rs = 0, ssss = 0, rrrr = 0, r = 0;
   std::vector<int> ZZ(63, 0);
   bool out_condition = false;
@@ -242,8 +242,8 @@ std::vector<int> DecodeACCoefficients(unsigned char *stream,
  * ssss represent the range of the AC coefficient and the number of bits to
  * follow representing the ac coefficient.
  */
-int DecodeZZ(unsigned char *stream, unsigned int *index,
-             unsigned char *bit_index, unsigned char ssss) {
+int DecodeZZ(unsigned char *stream, unsigned int &index,
+             unsigned char &bit_index, const unsigned char ssss) {
   int return_value;
   return_value = Receive(ssss, stream, index, bit_index);
   return_value = Extended(return_value, ssss);
