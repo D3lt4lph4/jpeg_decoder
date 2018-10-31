@@ -32,8 +32,8 @@
 /**
  * \fn JPEGDecoder::JPEGDecoder() : block_index(0), logging_level_(0)
  */
-JPEGDecoder::JPEGDecoder() : block_index(0), logging_level_(0) {
-  this->current_index_ = new (unsigned int);
+JPEGDecoder::JPEGDecoder()
+    : block_index(0), logging_level_(0), current_index_(0) {
   this->InitializeLogger();
   this->current_image_ = NULL;
 }
@@ -41,8 +41,8 @@ JPEGDecoder::JPEGDecoder() : block_index(0), logging_level_(0) {
 /**
  * \fn JPEGDecoder::JPEGDecoder(unsigned char logging_level) : block_index(0)
  */
-JPEGDecoder::JPEGDecoder(unsigned char logging_level) : block_index(0) {
-  this->current_index_ = new (unsigned int);
+JPEGDecoder::JPEGDecoder(const unsigned char logging_level)
+    : block_index(0), current_index_(0) {
   this->logging_level_ = logging_level;
   this->current_image_ = NULL;
 }
@@ -51,7 +51,6 @@ JPEGDecoder::~JPEGDecoder() {
   if (this->current_image_ != NULL) {
     delete this->current_image_;
   }
-  delete this->current_index_;
 }
 
 /**
@@ -62,10 +61,11 @@ JPEGDecoder::~JPEGDecoder() {
  * \param[in] filename The file to be decoded.
  * \param[in] level The required level of decoding.
  */
-JPEGImage *JPEGDecoder::DecodeFile(std::string filename, int level) {
+JPEGImage *JPEGDecoder::DecodeFile(const std::string filename,const int level) {
   std::ifstream file_to_decode;
   int size, current_index = 0;
-  unsigned char *marker, table_key;
+  unsigned char table_key;
+  std::unique_ptr<unsigned char> marker;
 
   // When to stop the reading of the file
   bool out_condition = false;
@@ -91,100 +91,99 @@ JPEGImage *JPEGDecoder::DecodeFile(std::string filename, int level) {
     size = file_to_decode.tellg();
     file_to_decode.seekg(0, std::ios::beg);
     this->current_file_content_ = new unsigned char[size + 1];
-    *(this->current_index_) = 0;
+    this->current_index_ = 0;
     file_to_decode.read(reinterpret_cast<char *>(this->current_file_content_),
                         size);
     marker = this->GetMarker();
     if (*marker == START_OF_IMAGE) {
-      delete marker;
       this->DecoderSetup();
       do {
         marker = this->GetMarker();
         switch (*marker) {
           case APPO:
             this->current_jfif_header = ParseJFIFSegment(
-                this->current_file_content_, *(this->current_index_));
+                this->current_file_content_, this->current_index_);
             BOOST_LOG_TRIVIAL(info) << "JFIF segment parsed.";
             break;
           case APP1:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                  *(this->current_index_));
+                                  this->current_index_);
             break;
           case APP2:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                  *(this->current_index_));
+                                  this->current_index_);
             break;
           case APP3:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                  *(this->current_index_));
+                                  this->current_index_);
             break;
           case APP4:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                  *(this->current_index_));
+                                  this->current_index_);
             break;
           case APP5:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                  *(this->current_index_));
+                                  this->current_index_);
             break;
           case APP6:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                  *(this->current_index_));
+                                  this->current_index_);
             break;
           case APP7:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                  *(this->current_index_));
+                                  this->current_index_);
             break;
           case APP8:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                  *(this->current_index_));
+                                  this->current_index_);
             break;
           case APP9:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                  *(this->current_index_));
+                                  this->current_index_);
             break;
           case APP10:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                  *(this->current_index_));
+                                  this->current_index_);
             break;
           case APP11:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                  *(this->current_index_));
+                                  this->current_index_);
             break;
           case APP12:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                  *(this->current_index_));
+                                  this->current_index_);
             break;
           case APP13:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                  *(this->current_index_));
+                                  this->current_index_);
             break;
           case APP14:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                  *(this->current_index_));
+                                  this->current_index_);
             break;
           case APP15:
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
             ParseApplicationBlock(this->current_file_content_,
-                                  *(this->current_index_));
+                                  this->current_index_);
             break;
           case COMMENT: {
             std::string comment;
-            comment = ParseComment(this->current_file_content_,
-                                   *(this->current_index_));
+            comment =
+                ParseComment(this->current_file_content_, this->current_index_);
             BOOST_LOG_TRIVIAL(info) << "Comment in the file : " << comment;
           } break;
           case DEFINE_RESTART_INTERVAL:
@@ -192,7 +191,7 @@ JPEGImage *JPEGDecoder::DecodeFile(std::string filename, int level) {
             break;
           case DEFINE_QUANTIZATION_TABLE:
             std::tie(table_key, quantization_table) = ParseQuantizationTable(
-                this->current_file_content_, *(this->current_index_));
+                this->current_file_content_, this->current_index_);
 
             if (!(this->quantization_tables_
                       .insert(std::make_pair(table_key, quantization_table))
@@ -213,7 +212,7 @@ JPEGImage *JPEGDecoder::DecodeFile(std::string filename, int level) {
             break;
           case DEFINE_HUFFMAN_TABLE:
             huffman_tables = ParseHuffmanTableSpecification(
-                this->current_file_content_, *(this->current_index_));
+                this->current_file_content_, this->current_index_);
 
             for (size_t i = 0; i < huffman_tables.size(); i++) {
               std::tie(table_key, huffman_table) = huffman_tables.at(i);
@@ -248,10 +247,8 @@ JPEGImage *JPEGDecoder::DecodeFile(std::string filename, int level) {
             throw std::runtime_error("Error while processing the jpeg file.");
             break;
         }
-        delete marker;
       } while (!out_condition);
     } else {
-      delete marker;
       throw std::runtime_error(
           "Expected SOI marker, but sosmething else found, cannot parse the "
           "file.");
@@ -308,7 +305,7 @@ void JPEGDecoder::InitializeDecoder() {
   this->quantization_tables_.clear();
   this->dc_huffman_tables_.clear();
   this->ac_huffman_tables_.clear();
-  *(this->current_index_) = 0;
+  this->current_index_ = 0;
   this->block_index = 0;
 }
 
@@ -325,17 +322,18 @@ void JPEGDecoder::DecoderSetup() { this->restart_interval = 0; }
  *
  * \param[in] encoding_process_type The type of the frame to decode.
  */
-void JPEGDecoder::DecodeFrame(unsigned char encoding_process_type) {
-  unsigned char *marker = NULL, table_key;
+void JPEGDecoder::DecodeFrame(const unsigned char encoding_process_type) {
+  unsigned char table_key;
+  std::unique_ptr<unsigned char> marker;
+
   QuantizationTable quantization_table;
   HuffmanTable huffman_table;
   std::vector<std::pair<unsigned char, HuffmanTable>> huffman_tables;
   ;
   unsigned int h_max = 0, v_max = 0;
 
-  this->frame_header_ =
-      ParseFrameHeader(this->current_file_content_, *(this->current_index_),
-                       encoding_process_type);
+  this->frame_header_ = ParseFrameHeader(
+      this->current_file_content_, this->current_index_, encoding_process_type);
 
   for (size_t component_number = 1;
        component_number <= this->frame_header_.number_of_component_;
@@ -393,9 +391,6 @@ void JPEGDecoder::DecodeFrame(unsigned char encoding_process_type) {
   }
 
   do {
-    if (marker != NULL) {
-      delete marker;
-    }
     marker = this->GetMarker();
     if (*marker == START_OF_SCAN) {
       BOOST_LOG_TRIVIAL(info) << "Getting a scan to decode." << std::endl;
@@ -405,19 +400,19 @@ void JPEGDecoder::DecodeFrame(unsigned char encoding_process_type) {
         case COMMENT:
           BOOST_LOG_TRIVIAL(info) << "Comment in the current scan : "
                                   << ParseComment(this->current_file_content_,
-                                                  *(this->current_index_));
+                                                  this->current_index_);
           break;
         case DEFINE_RESTART_INTERVAL:
           // TODO
           break;
         case DEFINE_QUANTIZATION_TABLE:
           ParseQuantizationTable(this->current_file_content_,
-                                 *(this->current_index_));
+                                 this->current_index_);
           BOOST_LOG_TRIVIAL(info) << "Quantization table parsed." << std::endl;
           break;
         case DEFINE_HUFFMAN_TABLE:
           huffman_tables = ParseHuffmanTableSpecification(
-              this->current_file_content_, *(this->current_index_));
+              this->current_file_content_, this->current_index_);
           for (size_t i = 0; i < huffman_tables.size(); i++) {
             std::tie(table_key, huffman_table) = huffman_tables.at(i);
 
@@ -453,8 +448,7 @@ void JPEGDecoder::DecodeFrame(unsigned char encoding_process_type) {
     }
 
   } while (*marker != END_OF_IMAGE);
-  delete marker;
-  *(this->current_index_) -= 2;
+  this->current_index_ -= 2;
 }
 
 /**
@@ -464,9 +458,9 @@ void JPEGDecoder::DecodeFrame(unsigned char encoding_process_type) {
  *
  * \param[in] encoding_process_type The type of encoding currently used.
  */
-void JPEGDecoder::DecodeScan(unsigned char encoding_process_type) {
+void JPEGDecoder::DecodeScan(const unsigned char encoding_process_type) {
   this->scan_header_ =
-      ParseScanHeader(this->current_file_content_, *(this->current_index_));
+      ParseScanHeader(this->current_file_content_, this->current_index_);
   unsigned int m = 0;
 
   do {
@@ -504,7 +498,7 @@ void JPEGDecoder::DecodeRestartIntervalBaseline() {
   unsigned char vertical_number_of_blocks, dc_table_index, ac_table_index,
       bit_index = 8;
   unsigned int mcu_number, number_of_mcus, h_max = 0, v_max = 0;
-  int prev[3] = {0, 0, 0};
+  std::vector<int> prev = {0, 0, 0};
   this->ResetDecoderBaseline();
 
   // Calculating the number of mcus to parse.
@@ -530,17 +524,16 @@ void JPEGDecoder::DecodeRestartIntervalBaseline() {
        (h_max * 8));
 
   for (unsigned int mcu_number = 0; mcu_number < number_of_mcus; mcu_number++) {
-    this->DecodeMCUBaseline(mcu_number, h_max, v_max, &bit_index, prev);
+    this->DecodeMCUBaseline(mcu_number, h_max, v_max, bit_index, prev);
   }
   unsigned char *marker;
   marker = new unsigned char[2];
-  std::memcpy(marker, &(this->current_file_content_[*(this->current_index_)]),
-              2);
+  std::memcpy(marker, &(this->current_file_content_[this->current_index_]), 2);
 
   if (marker[0] == 0xFF && marker[1] == 0x00) {
-    *(this->current_index_) += 2;
+    this->current_index_ += 2;
   } else if (bit_index < 8) {
-    *(this->current_index_) += 1;
+    this->current_index_ += 1;
   }
   delete marker;
 }
@@ -554,9 +547,11 @@ void JPEGDecoder::DecodeRestartIntervalBaseline() {
  * starts from the top left mcu and goes line by line to the bottom right one.
  *
  */
-void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
-                                    unsigned int v_max,
-                                    unsigned char *bit_index, int *prev) {
+void JPEGDecoder::DecodeMCUBaseline(const unsigned int mcu_number,
+                                    const unsigned int h_max,
+                                    const unsigned int v_max,
+                                    unsigned char &bit_index,
+                                    std::vector<int> &prev) {
   unsigned int horizontal_number_of_blocks, vertical_number_of_blocks,
       start_line, start_column, number_of_mcu_per_line,
       number_of_mcu_per_column, mcu_per_line;
@@ -603,17 +598,17 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
            h_block++) {
         // Getting the dc coefficient.
         decoded_dc =
-            Decode(this->current_file_content_, *(this->current_index_),
-                   *bit_index, this->dc_huffman_tables_.at(dc_table_index));
+            Decode(this->current_file_content_, this->current_index_, bit_index,
+                   this->dc_huffman_tables_.at(dc_table_index));
         diff = Receive(decoded_dc, this->current_file_content_,
-                       *(this->current_index_), *bit_index);
+                       this->current_index_, bit_index);
 
         diff = Extended(diff, decoded_dc);
         prev[component_number - 1] = diff + prev[component_number - 1];
 
         // Getting the AC coefficients.
         AC_Coefficients = DecodeACCoefficients(
-            this->current_file_content_, *(this->current_index_), *bit_index,
+            this->current_file_content_, this->current_index_, bit_index,
             this->ac_huffman_tables_.at(ac_table_index));
 
         // We save the info in the correct blocks.
@@ -663,8 +658,8 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
  * This function does not increment the index count for the stream processed.
  */
 bool JPEGDecoder::IsMarker() {
-  if (this->current_file_content_[*(this->current_index_)] == 0xFF) {
-    if (this->current_file_content_[*(this->current_index_) + 1] == 0x00) {
+  if (this->current_file_content_[this->current_index_] == 0xFF) {
+    if (this->current_file_content_[this->current_index_ + 1] == 0x00) {
       return false;
     }
     return true;
@@ -684,27 +679,28 @@ bool JPEGDecoder::IsMarker() {
  * This function expect to get a marker, it will throw an error if none found.
  * This function increments the index count for the stream processed.
  */
-unsigned char *JPEGDecoder::GetMarker() {
+std::unique_ptr<unsigned char> JPEGDecoder::GetMarker() {
   std::stringstream error;
   unsigned char *marker;
 
-  if (this->current_file_content_[*(this->current_index_)] == 0xFF) {
+  if (this->current_file_content_[this->current_index_] == 0xFF) {
     marker = new unsigned char[1];
     std::memcpy(marker,
-                &(this->current_file_content_[*(this->current_index_) + 1]), 1);
-    *(this->current_index_) = *(this->current_index_) + 2;
-    return marker;
+                &(this->current_file_content_[this->current_index_ + 1]), 1);
+    this->current_index_ = this->current_index_ + 2;
+    return std::unique_ptr<unsigned char>(marker);
   } else {
     std::cout << this->current_index_ << std::endl;
     error << "Error while reading marker, 0xFF expected, but " << std::hex
-          << (int)this->current_file_content_[*(this->current_index_)]
-          << " found at index: " << *(this->current_index_);
+          << (int)this->current_file_content_[this->current_index_]
+          << " found at index: " << this->current_index_;
     throw std::runtime_error(error.str());
   }
 }
 
-void JPEGDecoder::Dequantize(int component_number, int start_row, int start_col,
-                             QuantizationTable table) {
+void JPEGDecoder::Dequantize(const int component_number, const int start_row,
+                             const int start_col,
+                             const QuantizationTable &table) {
   for (size_t row = 0; row < 8; row++) {
     for (size_t col = 0; col < 8; col++) {
       this->current_image_->at(start_row + row, start_col + col,

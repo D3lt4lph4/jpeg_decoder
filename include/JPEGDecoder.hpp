@@ -6,6 +6,7 @@
 #define __JPEG_DECODER__
 
 #include <map>
+#include <memory>
 
 #include "JPEGHuffmanDecoder.hpp"
 #include "JPEGParser.hpp"
@@ -19,11 +20,11 @@ class JPEGDecoder {
  public:
   // Constructors & Destructor
   JPEGDecoder();
-  JPEGDecoder(unsigned char logging_level_);
+  JPEGDecoder(const unsigned char logging_level_);
   ~JPEGDecoder();
 
   // Class functions
-  JPEGImage *DecodeFile(std::string file_name, int level);
+  JPEGImage *DecodeFile(const std::string file_name, const int level);
   unsigned int getImageSizeX();
   unsigned int getImageSizeY();
   int getBlockPerLine();
@@ -41,22 +42,22 @@ class JPEGDecoder {
 
   // Decoding functions
   void DecodeToLevel();
-  void DecodeFrame(unsigned char encoding_process_type);
-  void DecodeScan(unsigned char encoding_process_type);
-  void Dequantize(int component_number, int start_row, int start_col,
-                  QuantizationTable table);
+  void DecodeFrame(const unsigned char encoding_process_type);
+  void DecodeScan(const unsigned char encoding_process_type);
+  void Dequantize(const int component_number, const int start_row,
+                  const int start_col, const QuantizationTable &table);
   void Upscale();
 
   // Baseline functions
   void ResetDecoderBaseline();
   void DecodeRestartIntervalBaseline();
-  void DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
-                         unsigned int v_max, unsigned char *bit_index,
-                         int *prev);
+  void DecodeMCUBaseline(const unsigned int mcu_number,
+                         const unsigned int h_max, const unsigned int v_max,
+                         unsigned char &bit_index, std::vector<int> &prev);
 
   // Marker related functions
   bool IsMarker();
-  unsigned char *GetMarker();
+  std::unique_ptr<unsigned char> GetMarker();
 
   // Logging functions
   void InitializeLogger();
@@ -76,8 +77,8 @@ class JPEGDecoder {
   JFIFHeader current_jfif_header;
 
   // File crossing variable.
-  unsigned char *current_file_content_, *bit_index, *last_k_;
-  unsigned int *current_index_;
+  unsigned char *current_file_content_, bit_index, last_k_;
+  unsigned int current_index_;
 
   int logging_level_;
 
