@@ -13,13 +13,13 @@
  */
 
 /**
- * \fn JPEGImage::JPEGImage()
+ * \fn JPEGImage()
  * \brief Dummy constructor for a JPEGImage.
  */
 JPEGImage::JPEGImage() {}
 
 /**
- * \fn JPEGImage::JPEGImage(std::vector<std::pair<int, int>> sizes)
+ * \fn JPEGImage(std::vector<std::pair<int, int>> sizes)
  *
  * \brief Constructor of a JPEGImage, resize the vector with the correct sizes
  * for the data.
@@ -69,7 +69,7 @@ std::pair<int, int> JPEGImage::GetComponentShape(int component) {
 std::vector<int> JPEGImage::GetRealShape() { return this->real_shape_; }
 
 /**
- * \fn int JPEGImage::GetNumberOfComponent()
+ * \fn int GetNumberOfComponent()
  *
  * \return The number of components in the image.
  */
