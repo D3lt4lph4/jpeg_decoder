@@ -234,10 +234,10 @@ ScanHeader ParseScanHeader(unsigned char* file_content, unsigned int& index) {
 
 /**
  * \fn std::pair<unsigned char, QuantizationTable>
- * ParseQuantizationTable(unsigned char* file_content, unsigned int &index)
+ * ParseQuantizationTable(unsigned char* file_content, unsigned int& index)
  *
- * \brief Parse the quantization table and store the
- * information at the specified location.
+ * \brief Parse the quantization table and store the information at the
+ * specified location.
  *
  * \param[in] file_content A pointer to the unsigned char* representing the file
  * being processed.
@@ -290,8 +290,8 @@ std::pair<unsigned char, QuantizationTable> ParseQuantizationTable(
 
 /**
  * \fn std::vector<std::pair<unsigned char, HuffmanTable>>
- ParseHuffmanTableSpecification(unsigned char* file_content, unsigned int*
- &index)
+ ParseHuffmanTableSpecification(unsigned char* file_content, unsigned int&
+ index)
  *
  * \brief Parse the huffman table and create the associated tables.
  *
