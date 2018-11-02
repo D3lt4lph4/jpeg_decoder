@@ -1,7 +1,7 @@
 /**
  * \file JPEGHuffmanDecoder.cpp
  * \author Benjamin Deguerre
- * \brief Contains all the functions
+ * \brief Contains all the functions usefull for the decoding of the stream.
  */
 
 #include <iostream>
@@ -227,9 +227,9 @@ int Extended(int diff, const unsigned char ssss) {
  * \param[in, out] index The position of the cursor in the file being parsed.
  *
  * \param[in, out] bit_index The offset of the bit being read in the byte.
- * 
+ *
  * \param[in] used_table The table used to decode the coefficients.
- * 
+ *
  * \return A vector containing all the AC coefficients.
  */
 std::vector<int> DecodeACCoefficients(unsigned char *stream,
@@ -264,20 +264,21 @@ std::vector<int> DecodeACCoefficients(unsigned char *stream,
 }
 
 /**
- * \fn int DecodeZZ(unsigned char *stream, unsigned int &index, unsigned char &bit_index, const unsigned char ssss)
- * 
+ * \fn int DecodeZZ(unsigned char *stream, unsigned int &index, unsigned char
+ &bit_index, const unsigned char ssss)
+ *
  * \brief Decode the coefficient in the zigzag order.
  *
  * \param[in] stream Pointer to the file being parsed.
- * 
+ *
  * \param[in, out] index The position of the cursor in the file being parsed.
- * 
+ *
  * \param bit_index The offset of the bit being read in the byte.
 
  * \param[in] ssss The low bit of the RRRRSSSS encoding for the AC coefficients,
  * ssss represent the range of the AC coefficient and the number of bits to
  * follow representing the ac coefficient.
- * 
+ *
  * \return The decoded value from the stream.
  */
 int DecodeZZ(unsigned char *stream, unsigned int &index,
