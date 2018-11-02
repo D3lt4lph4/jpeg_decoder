@@ -104,26 +104,29 @@ struct JFIFHeader {
  * \brief This structure regroup the informations about the frame header. The
  * frame header is here to specify the informations about the source image.
  *
- * \var encoding_process_type_ The decoding process to use. Only the baseline is
- * supported for now.
+ * \var FrameHeader::encoding_process_type_
+ * The decoding process to use. Only the baseline is supported for now.
  *
- * \var sample_precision_ Specifies the precision in bits for
- * the samples of the components in the frame.
+ * \var FrameHeader::sample_precision_
+ * Specifies the precision in bits for the samples of the components in the
+ * frame.
  *
- * \var number_of_lines_ Specifies
- * the maximum number of lines in the source image. See the norm for more
- * details.
+ * \var FrameHeader::number_of_lines_
+ * Specifies the maximum number of lines in the source image. See the norm for
+ * more details.
  *
- * \var number_of_samples_per_line_ Specifies the maximum number of
- * samples line in the source image. See the norm for more details.
+ * \var FrameHeader::number_of_samples_per_line_
+ * Specifies the maximum number of samples line in the source image. See the
+ * norm for more details.
  *
- * \var number_of_component_ The number of components in the source image.
+ * \var FrameHeader::number_of_component_
+ * The number of components in the source image.
  *
- * \var component_parameters_ A map containing the parameters for each
- * components. The key is the identifier used in the coding process the values
- * are H the horizontal sampling factor, V the vertical sampling factor and Tq
- * the quantization table destination selector (i.e which quantization table
- * use).
+ * \var FrameHeader::component_parameters_
+ * A map containing the parameters for each components. The key is the
+ * identifier used in the coding process the values are H the horizontal
+ * sampling factor, V the vertical sampling factor and Tq the quantization table
+ * destination selector (i.e which quantization table use).
  */
 struct FrameHeader {
   unsigned char encoding_process_type_, sample_precision_;
