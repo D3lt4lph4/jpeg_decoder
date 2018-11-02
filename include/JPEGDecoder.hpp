@@ -1,7 +1,3 @@
-/**
- * \file JPEGDecoder.hpp
- */
-
 #ifndef __JPEG_DECODER__
 #define __JPEG_DECODER__
 
