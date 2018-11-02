@@ -9,15 +9,20 @@
 
 /**
  * \fn JFIFHeader ParseJFIFSegment(unsigned char* file_content,unsigned int
- * &index) \brief Parse the JFIF Segment at the begining of most of the jpeg
+ * &index)
+ *
+ * \brief Parse the JFIF Segment present at the begining of most of the jpeg
  * files.
  *
- * \param[in] file_content A pointer to the char* representing the file being
- * processed. \param[in, out] index The offset of the cursor in the file.
+ * \param[in] file_content A pointer to the unsigned char* representing the file
+ * being processed.
  *
- * \return A JFIFHeader with all the information parsed in it.
+ * \param[in, out] index The offset of the cursor in the file.
+ *
+ * \return A JFIFHeader with all the information parsed in it. The function
+ * moves the cursor of the number of byte read.
  */
-JFIFHeader ParseJFIFSegment(unsigned char* file_content, unsigned int &index) {
+JFIFHeader ParseJFIFSegment(unsigned char* file_content, unsigned int& index) {
   unsigned char* marker;
   JFIFHeader jfif_header = JFIFHeader();
   unsigned int length;
@@ -66,7 +71,7 @@ JFIFHeader ParseJFIFSegment(unsigned char* file_content, unsigned int &index) {
 }
 
 /**
- * std::string ParseComment(unsigned char* file_content, int &index)
+ * std::string ParseComment(unsigned char* file_content, unsigned int& index)
  *
  * \brief Parse the comment in the comment block. A comment can be anything and
  * is not processed by the decoder.
@@ -77,8 +82,9 @@ JFIFHeader ParseJFIFSegment(unsigned char* file_content, unsigned int &index) {
  * \param[in, out] index The offset of the cursor in the file.
  *
  * \return A string containing the comment with the bits interpreted as char.
+ * The function moves the cursor of the number of byte read.
  */
-std::string ParseComment(unsigned char* file_content, unsigned int &index) {
+std::string ParseComment(unsigned char* file_content, unsigned int& index) {
   unsigned int comment_length;
   std::string comment;
 
@@ -98,15 +104,17 @@ std::string ParseComment(unsigned char* file_content, unsigned int &index) {
  *
  * \brief Parse the Frame header and store all the information in it.
  *
- * \param[in] file_content A pointer to the char* representing the file being
- * processed.
+ * \param[in] file_content A pointer to the unsigned char* representing the file
+ * being processed.
  *
  * \param[in, out] index The offset of the cursor in the file.
+ *
  * \param[in] encoding_process_type The type of encoding used.
  *
- * \return Return the FrameHeader parsed.
+ * \return Return the FrameHeader parsed. The function moves the cursor of the
+ * number of byte read.
  */
-FrameHeader ParseFrameHeader(unsigned char* file_content, unsigned int &index,
+FrameHeader ParseFrameHeader(unsigned char* file_content, unsigned int& index,
                              unsigned char encoding_process_type) {
   FrameHeader frame_header = FrameHeader();
 
@@ -161,14 +169,15 @@ FrameHeader ParseFrameHeader(unsigned char* file_content, unsigned int &index,
  *
  * \brief Parse the scan header.
  *
- * \param[in] file_content A pointer to the char* representing the file being
- * processed.
+ * \param[in] file_content A pointer to the unsigned char* representing the file
+ * being processed.
  *
  * \param[in, out] index The offset of the cursor in the file.
  *
- * \return Return the ScanHeader parsed.
+ * \return Return the ScanHeader parsed. The function moves the cursor of the
+ * number of byte read.
  */
-ScanHeader ParseScanHeader(unsigned char* file_content, unsigned int &index) {
+ScanHeader ParseScanHeader(unsigned char* file_content, unsigned int& index) {
   ScanHeader scan = ScanHeader();
 
   // unsigned int scan_header_length;
@@ -224,16 +233,17 @@ ScanHeader ParseScanHeader(unsigned char* file_content, unsigned int &index) {
  * \brief Parse the quantization table and store the
  * information at the specified location.
  *
- * \param[in] file_content A pointer to the char* representing the file being
- * processed.
+ * \param[in] file_content A pointer to the unsigned char* representing the file
+ * being processed.
  *
  * \param[in, out] index The offset of the cursor in the file.
  *
  * \return A QuantizationTable with the information extracted from the
- * file_content pointer.
+ * file_content pointer. The function moves the cursor of the number of byte
+ * read.
  */
 std::pair<unsigned char, QuantizationTable> ParseQuantizationTable(
-    unsigned char* file_content, unsigned int &index) {
+    unsigned char* file_content, unsigned int& index) {
   unsigned int lq, temp;
   unsigned char pq, tq, mask_pq = 240, mask_tq = 15;
   unsigned int qk;
@@ -279,17 +289,18 @@ std::pair<unsigned char, QuantizationTable> ParseQuantizationTable(
  *
  * \brief Parse the huffman table and create the associated tables.
  *
- * \param[in] file_content A pointer to the char* representing the file being
+ * \param[in] file_content A pointer to the unsigned char* representing the file
+ being
  * processed.
  *
  * \param[in, out] index The offset of the cursor in the file.
  *
  * \return A vector of pair, each pair contains the key of the table and the
- * table.
+ * table. The function moves the cursor of the number of byte read.
  */
 std::vector<std::pair<unsigned char, HuffmanTable>>
 ParseHuffmanTableSpecification(unsigned char* file_content,
-                               unsigned int &index) {
+                               unsigned int& index) {
   unsigned int table_definition_length, counter, temp, sum_code_length = 0;
   unsigned char table_destination_identifier, table_class,
       mask_high = 240, mask_low = 15, number_of_huffman_codes;
@@ -341,9 +352,22 @@ ParseHuffmanTableSpecification(unsigned char* file_content,
   return output;
 }
 
-void ParseApplicationBlock(unsigned char* file_content, unsigned int &index) {
+/**
+ * \fn void ParseApplicationBlock(unsigned char* file_content, unsigned int&
+ * index)
+ *
+ * \brief Dummy function to be called if an application block is found. The only
+ * purpose of the function is to move the cursor of the size of the block.
+ *
+ * \param[in] file_content A pointer to the unsigned char* representing the file
+ * being processed.
+ *
+ * \param[in, out] index The offset of the cursor in the file.
+ *
+ */
+void ParseApplicationBlock(unsigned char* file_content, unsigned int& index) {
   unsigned int application_definition_length;
   application_definition_length =
       int(file_content[index] << 8 | file_content[index + 1]);
   index += application_definition_length;
-  }
+}
