@@ -136,8 +136,31 @@ struct FrameHeader {
 };
 
 /**
- * \struct
- * \brief
+ * \struct ScanHeader
+ * \brief Contains the information about a scan.
+ *
+ * \var ScanHeader::number_of_component_s_
+ * The number of image components in the scan.
+ *
+ * \var ScanHeader::start_of_spectral_selection_
+ * Specifies the first DCT coefficient in each block in zig-zag order which
+ * shall be coded in the scan.
+ *
+ * \var ScanHeader::end_of_spectral_selection_
+ * Specifies the last DCT coefficient in each block in zig-zag order which shall
+ * be coded in the scan.
+ *
+ * \var ScanHeader::approximation_high_bit_
+ * Specifies the point transform used in the preceding scan.
+ *
+ * \var ScanHeader::approximation_low_bit_
+ * Specifies the point transform (should be 0 in baseline mode).
+ *
+ * \var ScanHeader::components_parameters_
+ * A map containing the parameters for each components. The key is the
+ * identifier used in the coding process, the values are Td the DC entropy table
+ * to be used for the component and Ta the AC entropy table to be used for the
+ * component.
  */
 struct ScanHeader {
   unsigned char number_of_component_s_, start_of_spectral_selection_,
@@ -148,8 +171,35 @@ struct ScanHeader {
 };
 
 /**
- * \struct
- * \brief
+ * \struct HuffmanTable
+ * \brief Contains the representation of a Huffman table.
+ *
+ * \var HuffmanTable::table_class_
+ * 0 or 1 respectively for DC and AC tables.
+ *
+ * \var HuffmanTable::last_k_
+ * Value used in the generate size table algorithm.
+ *
+ * \var HuffmanTable::bits
+ * A list containing the number of code of each size (from 1 to 16)
+ *
+ * \var HuffmanTable::huffsize
+ * A list containing each code length.
+ *
+ * \var HuffmanTable::val_pointer
+ *  list containing the index of the min_code value in the huffcode list.
+ *
+ * \var HuffmanTable::huffvals
+ * The symbol value associated with each code length.
+ *
+ * \var HuffmanTable::huffcode
+ * A list containing the code for each of the length.
+ *
+ * \var HuffmanTable::min_code
+ * The smallest code for a given size (given 111, 101, 100, min_code[2] == 100 )
+ *
+ * \var HuffmanTable::max_code
+ * The biggest code for a given size (given 111, 101, 100, max_code[2] == 111 )
  */
 struct HuffmanTable {
   unsigned char table_class_, last_k_;
