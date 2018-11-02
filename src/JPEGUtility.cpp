@@ -191,7 +191,7 @@ void IDCT(int *new_block) {
 }
 
 /**
- * \fn FastIDCT1D(std::vector<int> &x, std::vector<int> &y, const int x_offset,
+ * \fn void FastIDCT1D(std::vector<int> &x, std::vector<int> &y, const int x_offset,
  const int y_offset, const int ps, const int half, const int y_line_length)
  *
  * \brief Compute the Fast one dimension IDCT. This implementation was taken
