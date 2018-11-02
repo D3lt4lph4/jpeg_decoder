@@ -208,18 +208,11 @@ void IDCT(int *new_block) {
  *
  * \param[in,out] x A vector containing the input data.
  * \param[in,out] y A vector to hold the output data.
- * \param[in] x_offset The offset for the input, should place the cursor at the
- first component in the input vector.
- * \param[in] y_offset The offset for the input, should place the cursor at the
- first component in the output vector. The results will be stored in the column
- of the output.
- * \param[in] ps This is the precision factor, for 1D IDCT it should be set to
- 9, for a 2D IDCT, should be set to 12 (9 for the precision + 3 for the final
- shift).
- * \param[in] half The position of the "comma" during the IDCT, should be 1 less
- than ps. It will be used for rounding. Set to 0 to have no rounding at all.
- * \param[in] y_line_length the length of a line of the image. The data is
- * stored on one array, line after line, to get a 8*8 block, this is required.
+ * \param[in] x_offset The offset for the input, should place the cursor at the first component in the input vector.
+ * \param[in] y_offset The offset for the input, should place the cursor at the first component in the output vector. The results will be stored in the column of the output.
+ * \param[in] ps This is the precision factor, for 1D IDCT it should be set to 9, for a 2D IDCT, should be set to 12 (9 for the precision + 3 for the final shift).
+ * \param[in] half The position of the "comma" during the IDCT, should be 1 less than ps. It will be used for rounding. Set to 0 to have no rounding at all.
+ * \param[in] y_line_length the length of a line of the image. The data is stored on one array, line after line, to get a 8*8 block, this is required.
  */
 void FastIDCT1D(std::vector<int> &x, std::vector<int> &y, const int x_offset,
                 const int y_offset, const int ps, const int half,
@@ -264,13 +257,13 @@ void FastIDCT1D(std::vector<int> &x, std::vector<int> &y, const int x_offset,
  * required, this is to be moved elsewere.
  *
  * \param[in, out] image A vector containing the coefficients of one component
- * of the image.
+ of the image.
  *
  * \param[in] start_line The poisition (line) of the block being processed in
- * the image.
+ the image.
  *
  * \param[in] start_column The poisition (column) of the block being processed
- * in the image.
+ in the image.
  *
  * \param[in] line_length The length of a line in the image.
  *
