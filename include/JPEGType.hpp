@@ -51,12 +51,12 @@ const unsigned char JFIF[] = {0x4a, 0x46, 0x49, 0x46, 0x00};
  * \struct QuantizationTable
  * \brief The representation of the quantization table defined in the JPEG norm.
  *
- * \var QuantizationTable::pq_ 
+ * \var QuantizationTable::pq_
  * Quantization table element precision. Specifies
  * the precision of the Qk values. Value 0 indicates 8-bit Qk values; value 1
  * indicates 16-bit Qk values. Pq shall be zero for 8 bit sample precision P.
  *
- * \var QuantizationTable::qks_ 
+ * \var QuantizationTable::qks_
  * Vector containing all the values for the
  * quantization table, should be of size 64.
  */
@@ -70,24 +70,27 @@ struct QuantizationTable {
  * \brief The representation of a JFIF Header. Contains all the usefull
  * variables found after the JFIF marker.
  *
- * \var JFIFHeader::current_version_ The version of the revision of the JFIF norm used when
- * encoding the file.
+ * \var JFIFHeader::current_version_
+ * The version of the revision of the JFIF norm used when encoding the file.
  *
- * \var JFIFHeader::current_unit_ The unit to use for the pixel density, a value of 0 means
- * that pixel_density values are  aspect ratio, a value of 1 means dots per inch
- * and a value of 2 means dots per centimeters.
+ * \var JFIFHeader::current_unit_
+ * The unit to use for the pixel density, a value of 0 means that pixel_density
+ * values are  aspect ratio, a value of 1 means dots per inch and a value of 2
+ * means dots per centimeters.
  *
- * \var JFIFHeader::horizontal_pixel_density_ The horizontal pixel density for the image,
- * the unit used is defined by current_unit_.
+ * \var JFIFHeader::horizontal_pixel_density_
+ * The horizontal pixel density for the image, the unit used is defined by
+ * current_unit_.
  *
- * \var JFIFHeader::vertical_pixel_density_ The vertical pixel density for the image, the
- * unit used is defined by current_unit_.
+ * \var JFIFHeader::vertical_pixel_density_
+ * The vertical pixel density for the image, the unit used is defined by
+ * current_unit_.
  *
- * \var JFIFHeader::thumbnail_horizontal_pixel_count_ The horizontal pixel count for the
- * thumbnail if define.
+ * \var JFIFHeader::thumbnail_horizontal_pixel_count_
+ * The horizontal pixel count for the thumbnail if define.
  *
- * \var JFIFHeader::thumbnail_vertical_pixel_count_ The vertical pixel count for the
- * thumbnail if define.
+ * \var JFIFHeader::thumbnail_vertical_pixel_count_
+ * The vertical pixel count for the thumbnail if define.
  */
 struct JFIFHeader {
   unsigned short current_version_;
