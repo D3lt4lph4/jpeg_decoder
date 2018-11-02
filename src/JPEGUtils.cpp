@@ -7,7 +7,7 @@
 #include "JPEGUtils.hpp"
 
 /**
- * \class JPEGImage
+ * \class JPEGImage::JPEGImage
  * \brief A class representing an image decoded by a decoder. Depending on the
  * level of decoding, the components of an image may vary in size.
  */
@@ -19,7 +19,7 @@
 JPEGImage::JPEGImage() {}
 
 /**
- * \fn JPEGImage(std::vector<std::pair<int, int>> sizes)
+ * \fn JPEGImage::JPEGImage(std::vector<std::pair<int, int>> sizes)
  *
  * \brief Constructor of a JPEGImage, resize the vector with the correct sizes
  * for the data.
@@ -38,7 +38,7 @@ JPEGImage::JPEGImage(std::vector<std::pair<int, int>> sizes) {
 }
 
 /**
- * \fn ~JPEGImage()
+ * \fn JPEGImage::~JPEGImage()
  * \brief The destructor for the Image.
  */
 JPEGImage::~JPEGImage() {}
@@ -59,7 +59,7 @@ std::pair<int, int> JPEGImage::GetComponentShape(int component) {
 }
 
 /**
- * \fn GetRealShape()
+ * \fn JPEGImage::GetRealShape()
  * \brief Return the real shape of the image as it was before going through the
  * steps of subsampling.
  *
@@ -69,7 +69,7 @@ std::pair<int, int> JPEGImage::GetComponentShape(int component) {
 std::vector<int> JPEGImage::GetRealShape() { return this->real_shape_; }
 
 /**
- * \fn int GetNumberOfComponent()
+ * \fn int JPEGImage::GetNumberOfComponent()
  *
  * \return The number of components in the image.
  */
