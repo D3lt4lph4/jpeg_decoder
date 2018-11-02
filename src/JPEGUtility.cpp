@@ -31,10 +31,10 @@
  *    <li>xd = xa - xb - xd</li>
  *  </ul>
  *
- * \param[in, out] xa in figure 3 of the link, would be either X0 or X1
- * \param[in, out] xb in figure 3 of the link, would be either X4 or X7
- * \param[in, out] xc in figure 3 of the link, would be either X6 or X3
- * \param[in, out] xd in figure 3 of the link, would be either X2 or X5
+ * \param[in, out] xa In figure 3 of the link, would be either X0 or X1.
+ * \param[in, out] xb In figure 3 of the link, would be either X4 or X7.
+ * \param[in, out] xc In figure 3 of the link, would be either X6 or X3.
+ * \param[in, out] xd In figure 3 of the link, would be either X2 or X5.
  */
 #define xadd3(xa, xb, xc, xd) \
   p = xa + xb, n = xa - xb, xa = p + xc, xb = n + xd, xc = p - xc, xd = n - xd
@@ -55,15 +55,15 @@
  * The parameter sh is a parameter to shift the values back to some results to
  * be able to carry out the additions. It could be moved out of the macro.
  *
- * \param[in, out] xa in figure 3 of the link, would be either X6 or X5 or X1
+ * \param[in, out] xa In figure 3 of the link, would be either X6 or X5 or X1.
  *
- * \param[in, out] xb in figure 3 of the link, would be either X2 or X3 or X7
+ * \param[in, out] xb In figure 3 of the link, would be either X2 or X3 or X7.
  *
- * \param[in, out] k1 in figure 3 of the link, would be either alpha or delta or
- * êta
+ * \param[in, out] k1 In figure 3 of the link, would be either alpha or delta or
+ * êta.
  *
- * \param[in, out] k2 in figure 3 of the link, would be either bêta or
- * epsilon or thêta
+ * \param[in, out] k2 In figure 3 of the link, would be either bêta or
+ * epsilon or thêta.
  *
  * \param[in, out] sh, the shift operator, since this is fixed
  * point arithmetic, the results might need to be shift back to the correct
@@ -223,7 +223,7 @@ void IDCT(int *new_block) {
  * \param[in] half The position of the "comma" during the IDCT, should be 1 less
  than ps. It will be used for rounding. Set to 0 to have no rounding at all.
  *
- * \param[in] y_line_length the length of a line of the image. The data is
+ * \param[in] y_line_length The length of a line of the image. The data is
  stored on one array, line after line, to get a 8*8 block, this is required.
  */
 void FastIDCT1D(std::vector<int> &x, std::vector<int> &y, const int x_offset,
