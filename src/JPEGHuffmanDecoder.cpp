@@ -1,5 +1,7 @@
 /**
  * \file JPEGHuffmanDecoder.cpp
+ * \author Benjamin Deguerre
+ * \brief Contains all the functions
  */
 
 #include <iostream>
@@ -8,8 +10,8 @@
 #include "JPEGUtility.hpp"
 
 /**
- * \fn std::vector<unsigned char>
- * JPEGHuffmanDecoder::GenerateSizeTable(std::vector<unsigned char> bits)
+ * \fn std::pair<unsigned char, std::vector<unsigned char>>
+ * GenerateSizeTable(const std::vector<unsigned char> &bits)
  *
  * \brief Function to get the huffsize table for a huffman tree. The huffsize
  * table contains all the size of the codes in the huffman table, i.e if we have
@@ -44,8 +46,8 @@ std::pair<unsigned char, std::vector<unsigned char>> GenerateSizeTable(
 }
 
 /**
- * \fn std::vector<unsigned short> GenerateCodeTable(std::vector<unsigned char>
- * huffsize)
+ * \fn std::vector<unsigned short> GenerateCodeTable(const std::vector<unsigned
+ * char> &huffsize)
  *
  * \brief Function to generate the code table of the huffman tree. The code are
  * generated using the huffsize table generated from bits.
@@ -84,7 +86,9 @@ std::vector<unsigned short> GenerateCodeTable(
 }
 
 /**
- * \fn void DecoderTables(HuffmanTable *table_processed)
+ * \fn std::tuple<std::vector<int>, std::vector<int>, std::vector<unsigned
+ * char>> DecoderTables(const std::vector<unsigned char> &bits, const
+ * std::vector<unsigned short> &huffcode)
  *
  * \brief For a given huffman table, this function creates the table MAXCODE,
  * MINCODE and VALPTR, which respectively hold the maximum code in value for a
@@ -93,8 +97,9 @@ std::vector<unsigned short> GenerateCodeTable(
  * The three table generated hold 17 values to have the index starting from 1
  * (match the norm representation).
  *
- * \param[in, out] table_processed Pointer to the huffman table being currently
- * processed.
+ * \param[in] bits The array containing the number of code of each length.
+ *
+ * \param[in] huffcode The array containing all the codes.
  *
  * \return A tuple containing in that order, max_code, min_code, val_ptr;
  */
@@ -123,11 +128,18 @@ DecoderTables(const std::vector<unsigned char> &bits,
 }
 
 /**
- * \fn unsigned char Decode(unsigned char, HuffmanTable used_table)
+ * \fn unsigned char Decode(unsigned char *stream, unsigned int &index, unsigned
+ * char &bit_index, const HuffmanTable &used_table)
  *
  * \brief This function reads the huffman code in the datastream and
  * returns the huffval associated with the huffman code, i.e the range of the
  * encoded value.
+ *
+ * \param[in] stream The pointer to the file being parsed.
+ *
+ * \param[in, out] index The offset of the pointer reading the file.
+ *
+ * \param[in, out] bit_index The offset of the bit being read in the byte.
  *
  * \param[in] used_table The table used for the decoding of the huffman code.
  *
@@ -151,11 +163,21 @@ unsigned char Decode(unsigned char *stream, unsigned int &index,
 }
 
 /**
- * \fn int Receive(unsigned char number_of_bits)
+ * \fn int Receive(const unsigned char number_of_bits, unsigned char *stream,
+ * unsigned int &index, unsigned char &bit_index)
+ *
  * \brief This function returns number_of_bits bits from the stream. The
  * information is encoded as signed int.
  *
- * \param[in] numebr_of_bits The number of bits to retrieve from the stream.
+ * \param[in] number_of_bits The number of bits to retrieve from the stream.
+ *
+ * \param[in] stream The pointer to the file being parsed.
+ *
+ * \param[in] index The offset of the pointer reading the file.
+ *
+ * \param[in] bit_index The offset of the bit being read in the byte.
+ *
+ * \return The value read in the stream.
  */
 int Receive(const unsigned char number_of_bits, unsigned char *stream,
             unsigned int &index, unsigned char &bit_index) {
@@ -172,13 +194,15 @@ int Receive(const unsigned char number_of_bits, unsigned char *stream,
 }
 
 /**
- * \fn int Extended(unsigned char diff, unsigned char number_of_bits)
+ * \fn int Extended(int diff, const unsigned char number_of_bits)
  *
  * \brief The extend function returns the value that was encoded
  * taking into account the range of encoding.
  *
  * \param[in] difference The semi-encoded difference (depending on its sign).
  * \param[in] number_of_bits The range of the encoded difference;
+ *
+ * \return The corrected diff value.
  */
 int Extended(int diff, const unsigned char ssss) {
   int value = 1;
@@ -192,15 +216,21 @@ int Extended(int diff, const unsigned char ssss) {
 }
 
 /**
- * \fn void JPEGDecoder::DecodeACCoefficients(unsigned char
- * this->current_file_content_, int this->current_index_, cv::Mat *new_block)
+ * \fn std::vector<int> DecodeACCoefficients(unsigned char *stream, unsigned int
+ * &index, unsigned char &bit_index, const HuffmanTable &used_table)
+ *
  * \brief Decode the AC coefficients for the baseline procedure and store them
  * in the new_block.
  *
- * \param[in] file_content Pointer to the file being parsed.
- * \param[in, out] index, Pointer to the position of the cursor in the file
- * being parsed. \param[in, out] new_block Pointer to the block of data to
- * contain the decoded values.
+ * \param[in] stream Pointer to the file being parsed.
+ *
+ * \param[in, out] index The position of the cursor in the file being parsed.
+ *
+ * \param[in, out] bit_index The offset of the bit being read in the byte.
+ * 
+ * \param[in] used_table The table used to decode the coefficients.
+ * 
+ * \return A vector containing all the AC coefficients.
  */
 std::vector<int> DecodeACCoefficients(unsigned char *stream,
                                       unsigned int &index,
@@ -234,13 +264,21 @@ std::vector<int> DecodeACCoefficients(unsigned char *stream,
 }
 
 /**
- * \fn unsigned char DecodeZZ(unsigned char k, unsigned char ssss)
+ * \fn int DecodeZZ(unsigned char *stream, unsigned int &index, unsigned char &bit_index, const unsigned char ssss)
+ * 
  * \brief Decode the coefficient in the zigzag order.
  *
- * \param[in] k The position of the coefficient.
+ * \param[in] stream Pointer to the file being parsed.
+ * 
+ * \param[in, out] index The position of the cursor in the file being parsed.
+ * 
+ * \param bit_index The offset of the bit being read in the byte.
+
  * \param[in] ssss The low bit of the RRRRSSSS encoding for the AC coefficients,
  * ssss represent the range of the AC coefficient and the number of bits to
  * follow representing the ac coefficient.
+ * 
+ * \return The decoded value from the stream.
  */
 int DecodeZZ(unsigned char *stream, unsigned int &index,
              unsigned char &bit_index, const unsigned char ssss) {
