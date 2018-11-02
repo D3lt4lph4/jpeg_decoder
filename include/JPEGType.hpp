@@ -70,23 +70,23 @@ struct QuantizationTable {
  * \brief The representation of a JFIF Header. Contains all the usefull
  * variables found after the JFIF marker.
  *
- * \var current_version_ The version of the revision of the JFIF norm used when
+ * \var JFIFHeader::current_version_ The version of the revision of the JFIF norm used when
  * encoding the file.
  *
- * \var current_unit_ The unit to use for the pixel density, a value of 0 means
+ * \var JFIFHeader::current_unit_ The unit to use for the pixel density, a value of 0 means
  * that pixel_density values are  aspect ratio, a value of 1 means dots per inch
  * and a value of 2 means dots per centimeters.
  *
- * \var horizontal_pixel_density_ The horizontal pixel density for the image,
+ * \var JFIFHeader::horizontal_pixel_density_ The horizontal pixel density for the image,
  * the unit used is defined by current_unit_.
  *
- * \var vertical_pixel_density_ The vertical pixel density for the image, the
+ * \var JFIFHeader::vertical_pixel_density_ The vertical pixel density for the image, the
  * unit used is defined by current_unit_.
  *
- * \var thumbnail_horizontal_pixel_count_ The horizontal pixel count for the
+ * \var JFIFHeader::thumbnail_horizontal_pixel_count_ The horizontal pixel count for the
  * thumbnail if define.
  *
- * \var thumbnail_vertical_pixel_count_ The vertical pixel count for the
+ * \var JFIFHeader::thumbnail_vertical_pixel_count_ The vertical pixel count for the
  * thumbnail if define.
  */
 struct JFIFHeader {
