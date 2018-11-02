@@ -51,11 +51,13 @@ const unsigned char JFIF[] = {0x4a, 0x46, 0x49, 0x46, 0x00};
  * \struct QuantizationTable
  * \brief The representation of the quantization table defined in the JPEG norm.
  *
- * \var QuantizationTable::pq_ Quantization table element precision. Specifies
+ * \var QuantizationTable::pq_ 
+ * Quantization table element precision. Specifies
  * the precision of the Qk values. Value 0 indicates 8-bit Qk values; value 1
  * indicates 16-bit Qk values. Pq shall be zero for 8 bit sample precision P.
  *
- * \var QuantizationTable::qks_ Vector containing all the values for the
+ * \var QuantizationTable::qks_ 
+ * Vector containing all the values for the
  * quantization table, should be of size 64.
  */
 struct QuantizationTable {
