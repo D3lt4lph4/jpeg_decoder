@@ -7,6 +7,12 @@
 #include "JPEGUtils.hpp"
 
 /**
+ * \class JPEGImage
+ * \brief A class representing an image decoded by a decoder. Depending on the
+ * level of decoding, the components of an image may vary in size.
+ */
+
+/**
  * \fn JPEGImage::JPEGImage()
  * \brief Dummy constructor for a JPEGImage.
  */
