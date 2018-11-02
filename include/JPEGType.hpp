@@ -175,25 +175,25 @@ struct ScanHeader {
  * \brief Contains the representation of a Huffman table.
  *
  * \var HuffmanTable::table_class_
- * 0 or 1 respectively for DC and AC tables.
+ * Either 0 or 1 respectively for DC and AC tables.
  *
  * \var HuffmanTable::last_k_
  * Value used in the generate size table algorithm.
  *
  * \var HuffmanTable::bits
- * A list containing the number of code of each size (from 1 to 16)
+ * A list containing the number of code of each size (from 1 to 16), i.e [0,2,4,0,0,...] would be two code of size 2 and 4 of size 4.
  *
  * \var HuffmanTable::huffsize
- * A list containing each code length.
+ * A list containing each code length i.e if we have three codes of length 3 and to of length 4, the huffsize will be [3,3,3,4,4,0]. The 0 terminates the list.
  *
  * \var HuffmanTable::val_pointer
- *  list containing the index of the min_code value in the huffcode list.
+ * A list containing the index of the min_code value in the huffcode list.
  *
  * \var HuffmanTable::huffvals
- * The symbol value associated with each code length.
+ * The symbol value associated with each code length. This is the number of bits to read in the stream.
  *
  * \var HuffmanTable::huffcode
- * A list containing the code for each of the length.
+ * A list containing the code for each of the length, i.e with huffsize of [3,3,3,4,4,0] we would have something like (not actual values) [100, 101, 111, 1001, 1010].
  *
  * \var HuffmanTable::min_code
  * The smallest code for a given size (given 111, 101, 100, min_code[2] == 100 )
