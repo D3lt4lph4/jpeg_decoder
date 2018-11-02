@@ -1,6 +1,12 @@
 #ifndef __JPEG_IMAGE__
 #define __JPEG_IMAGE__
 
+/**
+ * \file JPEGUtils.hpp
+ * \author Deguerre Benjamin
+ * \brief Contains all the object to be used by the JPEGDecoder.
+ */
+
 #include <vector>
 
 class JPEGImage {
