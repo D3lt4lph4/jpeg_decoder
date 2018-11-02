@@ -207,23 +207,17 @@ void IDCT(int *new_block) {
  *
  *
  * \param[in,out] x A vector containing the input data.
- *
  * \param[in,out] y A vector to hold the output data.
- *
  * \param[in] x_offset The offset for the input, should place the cursor at the
  first component in the input vector.
- *
  * \param[in] y_offset The offset for the input, should place the cursor at the
  first component in the output vector. The results will be stored in the column
- of the output
- *
+ of the output.
  * \param[in] ps This is the precision factor, for 1D IDCT it should be set to
  9, for a 2D IDCT, should be set to 12 (9 for the precision + 3 for the final
  shift).
- *
  * \param[in] half The position of the "comma" during the IDCT, should be 1 less
  than ps. It will be used for rounding. Set to 0 to have no rounding at all.
- *
  * \param[in] y_line_length the length of a line of the image. The data is
  * stored on one array, line after line, to get a 8*8 block, this is required.
  */
