@@ -16,8 +16,8 @@
  * \def xadd3(xa, xb, xc, xd, h)
  *
  * \brief A macro to realise the set of additions as described <a
- * href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.205.9199&rep=rep1&type=pdf">here
- * text</a> (figure 3)
+ * href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.205.9199&rep=rep1&type=pdf">here</a>
+ * (figure 3)
  *
  * The operation is a "triple butterfly addition", it is used twice in the
  * figure 3 in the link above, with two inputs X1 and X2, a simple butterfly
@@ -31,10 +31,10 @@
  *    <li>xd = xa - xb - xd</li>
  *  </ul>
  *
- * \param[in, out] xa, in figure 3 of the link, would be either X0 or X1
- * \param[in, out] xb, in figure 3 of the link, would be either X4 or X7
- * \param[in, out] xc, in figure 3 of the link, would be either X6 or X3
- * \param[in, out] xd, in figure 3 of the link, would be either X2 or X5
+ * \param[in, out] xa in figure 3 of the link, would be either X0 or X1
+ * \param[in, out] xb in figure 3 of the link, would be either X4 or X7
+ * \param[in, out] xc in figure 3 of the link, would be either X6 or X3
+ * \param[in, out] xd in figure 3 of the link, would be either X2 or X5
  */
 #define xadd3(xa, xb, xc, xd) \
   p = xa + xb, n = xa - xb, xa = p + xc, xb = n + xd, xc = p - xc, xd = n - xd
@@ -55,11 +55,19 @@
  * The parameter sh is a parameter to shift the values back to some results to
  * be able to carry out the additions. It could be moved out of the macro.
  *
- * \param[in, out] xa, in figure 3 of the link, would be either X6 or X5 or X1
- * \param[in, out] xb, in figure 3 of the link, would be either X2 or X3 or X7
- * \param[in, out] sh, the shift operator, since this is fixed point arithmetic,
- * the results might need to be shift back to the correct value to continue the
- * calculations.
+ * \param[in, out] xa in figure 3 of the link, would be either X6 or X5 or X1
+ * 
+ * \param[in, out] xb in figure 3 of the link, would be either X2 or X3 or X7
+ * 
+ * \param[in, out] k1 in figure 3 of the link, would be either alpha or delta or
+ * êta
+ *
+ * \param[in, out] k2 in figure 3 of the link, would be either bêta or
+ * epsilon or thêta
+ *
+ * \param[in, out] sh, the shift operator, since this is fixed
+ * point arithmetic, the results might need to be shift back to the correct
+ * value to continue the calculations.
  */
 #define xmul(xa, xb, k1, k2, sh)                               \
   n = k1 * (xa + xb), p = xa, xa = (n + (k2 - k1) * xb) >> sh, \
@@ -184,7 +192,8 @@ void IDCT(int *new_block) {
 
 /**
  * \fn FastIDCT1D(std::vector<int> &x, std::vector<int> &y, const int x_offset,
-                const int y_offset, const int ps, const int half, const int y_line_length)
+                const int y_offset, const int ps, const int half, const int
+ y_line_length)
  *
  * \brief Compute the Fast one dimension IDCT. This implementation was taken
  * from <a href="http://halicery.com/Image/idct.html">here</a> and is the
@@ -199,7 +208,7 @@ void IDCT(int *new_block) {
  *
  * \param[in,out] x A vector containing the input data.
  *
- * \param[in,out] y A pointer to an int, should be able to hold 8 ints.
+ * \param[in,out] y A vector to hold the output data.
  *
  * \param[in] x_offset The offset for the input, should place the cursor at the
  first component in the input vector.
@@ -219,7 +228,8 @@ void IDCT(int *new_block) {
  * stored on one array, line after line, to get a 8*8 block, this is required.
  */
 void FastIDCT1D(std::vector<int> &x, std::vector<int> &y, const int x_offset,
-                const int y_offset, const int ps, const int half, const int y_line_length) {
+                const int y_offset, const int ps, const int half,
+                const int y_line_length) {
   int p, n;
   x[x_offset + 0] <<= 9, x[x_offset + 1] <<= 7, x[x_offset + 3] *= 181,
       x[x_offset + 4] <<= 9, x[x_offset + 5] *= 181, x[x_offset + 7] <<= 7;
@@ -271,8 +281,8 @@ void FastIDCT1D(std::vector<int> &x, std::vector<int> &y, const int x_offset,
  * \param[in] line_length The length of a line in the image.
  *
  */
-void FastIDCT2D(std::vector<int> &image, const int start_line, const int start_column,
-                const int line_length) {
+void FastIDCT2D(std::vector<int> &image, const int start_line,
+                const int start_column, const int line_length) {
   int i;
   std::vector<int> b2(64);
 
@@ -303,12 +313,12 @@ void FastIDCT2D(std::vector<int> &image, const int start_line, const int start_c
 
 /**
  * \fn void YCbCrToBGR(JPEGImage &image, std::vector<int> shape)
- * 
+ *
  * \brief This function converts a JPEGImage from YCbCr To BGR.
  *
  * \param[in,out] image The JPEGImage to have its space changed.
- * 
- * \param[in] shape The shape of the image, to be removed.
+ *
+ * \param[in] shape The shape of the image (argument to be removed).
  *
  */
 void YCbCrToBGR(JPEGImage &image, std::vector<int> shape) {
