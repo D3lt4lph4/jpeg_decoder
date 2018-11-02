@@ -1,3 +1,9 @@
+/**
+ * \file JPEGParser.cpp
+ * \author Benjamin Deguerre
+ * \brief Contains all the functions for parsing the block in the encoded file.
+ */
+
 #include <stdio.h>
 #include <string.h>
 #include <iostream>
