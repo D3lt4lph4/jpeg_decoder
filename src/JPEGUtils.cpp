@@ -1,19 +1,25 @@
+/**
+ * \file JPEGUtils.cpp
+ * \author Deguerre Benjamin
+ * \brief Contains all the object to be used by the JPEGDecoder.
+ */
+
 #include "JPEGUtils.hpp"
 
 /**
  * \fn JPEGImage::JPEGImage()
- * \brief Dummy constructor for a JPEGImage
+ * \brief Dummy constructor for a JPEGImage.
  */
 JPEGImage::JPEGImage() {}
 
 /**
  * \fn JPEGImage::JPEGImage(std::vector<std::pair<int, int>> sizes)
  *
- * \brief Constructor of a JPEGImage, allocate the vector with the correct sizes
+ * \brief Constructor of a JPEGImage, resize the vector with the correct sizes
  * for the data.
  *
  * \param[in] std::vector<std::pair<int, int>> sizes A vector containing the
- * sizes of each components.
+ * sizes of each components, should be as (nb_components, row, col).
  */
 JPEGImage::JPEGImage(std::vector<std::pair<int, int>> sizes) {
   this->image_components_.resize(sizes.size());
@@ -27,16 +33,16 @@ JPEGImage::JPEGImage(std::vector<std::pair<int, int>> sizes) {
 
 /**
  * \fn ~JPEGImage()
- * \brief The destructor for the Image, deallocate all of the data.
+ * \brief The destructor for the Image.
  */
 JPEGImage::~JPEGImage() {}
 
 /**
- * \fn GetComponentShape(int component)
+ * \fn std::pair<int, int> JPEGImage::GetComponentShape(int component)
  *
  * \brief Return the shape of the component specified. This is the shape of the
- * component as seen by the decoder, i.e with the block padding and the
- * subsampling.
+ component as seen by the decoder, i.e with the block padding and the
+ subsampling.
  *
  * \param component The position of the component.
  *
@@ -45,8 +51,6 @@ JPEGImage::~JPEGImage() {}
 std::pair<int, int> JPEGImage::GetComponentShape(int component) {
   return this->components_shape.at(component);
 }
-
-int JPEGImage::GetNumberOfComponent() { return this->image_components_.size(); }
 
 /**
  * \fn GetRealShape()
@@ -59,15 +63,25 @@ int JPEGImage::GetNumberOfComponent() { return this->image_components_.size(); }
 std::vector<int> JPEGImage::GetRealShape() { return this->real_shape_; }
 
 /**
- * \fn SetRealShape(std::vector<int> shape)
+ * \fn int JPEGImage::GetNumberOfComponent()
+ *
+ * \return The number of components in the image.
+ */
+int JPEGImage::GetNumberOfComponent() { return this->image_components_.size(); }
+
+/**
+ * \fn void JPEGImage::SetRealShape(std::vector<int> shape)
  * \brief Setter for the real shape of the image.
+ *
+ * \param[in] shape A vector of int containing the real shape of the image (row,
+ * col, nb_components)
  */
 void JPEGImage::SetRealShape(std::vector<int> shape) {
   this->real_shape_ = shape;
 }
 
 /**
- * \fn at(int row, int col, int component)
+ * \fn int& JPEGImage::at(int row, int col, int component)
  * \brief Return the value at the place indicated. The value is return by
  * reference, i.e alterable.
  *
@@ -75,7 +89,7 @@ void JPEGImage::SetRealShape(std::vector<int> shape) {
  * \param[in] col The position of the column
  * \param[in] component The position of the component
  *
- * \return int& The value at (row, col, component)
+ * \return The value at (row, col, component)
  */
 int& JPEGImage::at(int row, int col, int component) {
   int line_length = this->components_shape.at(component).second;
@@ -83,19 +97,19 @@ int& JPEGImage::at(int row, int col, int component) {
 }
 
 /**
- * \fn GetData(int component)
+ * \fn std::vector<int>& JPEGImage::GetData(int component)
  * \brief Return the vector<int> representing the data at component. The data is
- * stored line by line in the vector.
+ stored line by line in a vector.
  *
- * \return A reference to the data.
- * outside the class.
+ * \return The vector containing the data, if the returned value is modified,
+ the vector in the image will be too.
  */
 std::vector<int>& JPEGImage::GetData(int component) {
   return this->image_components_.at(component);
 }
 
 /**
- * \fn void RescaleToRealSize()
+ * \fn void JPEGImage::RescaleToRealSize()
  * \brief Rescale the image in the Object to the real size. This function will
  * resize each component if required. For now only the upsizing rezise to the
  * first components.
