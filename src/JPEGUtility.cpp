@@ -56,9 +56,9 @@
  * be able to carry out the additions. It could be moved out of the macro.
  *
  * \param[in, out] xa in figure 3 of the link, would be either X6 or X5 or X1
- * 
+ *
  * \param[in, out] xb in figure 3 of the link, would be either X2 or X3 or X7
- * 
+ *
  * \param[in, out] k1 in figure 3 of the link, would be either alpha or delta or
  * êta
  *
@@ -196,8 +196,8 @@ void IDCT(int *new_block) {
  y_line_length)
  *
  * \brief Compute the Fast one dimension IDCT. This implementation was taken
- * from <a href="http://halicery.com/Image/idct.html">here</a> and is the
- * inverse implementation of the algorithm developped by Loeffler et al.
+ from <a href="http://halicery.com/Image/idct.html">here</a> and is the
+ inverse implementation of the algorithm developped by Loeffler et al.
  *
  * Since the function receives a vector containing all the image coefficients as
  input, the function uses offsets to position the cursor at the correct place.
@@ -207,12 +207,25 @@ void IDCT(int *new_block) {
  *
  *
  * \param[in,out] x A vector containing the input data.
+ *
  * \param[in,out] y A vector to hold the output data.
- * \param[in] x_offset The offset for the input, should place the cursor at the first component in the input vector.
- * \param[in] y_offset The offset for the input, should place the cursor at the first component in the output vector. The results will be stored in the column of the output.
- * \param[in] ps This is the precision factor, for 1D IDCT it should be set to 9, for a 2D IDCT, should be set to 12 (9 for the precision + 3 for the final shift).
- * \param[in] half The position of the "comma" during the IDCT, should be 1 less than ps. It will be used for rounding. Set to 0 to have no rounding at all.
- * \param[in] y_line_length the length of a line of the image. The data is stored on one array, line after line, to get a 8*8 block, this is required.
+ *
+ * \param[in] x_offset The offset for the input, should place the cursor at the
+ first component in the input vector.
+ *
+ * \param[in] y_offset The offset for the input, should place the cursor at the
+ first component in the output vector. The results will be stored in the column
+ of the output.
+ *
+ * \param[in] ps This is the precision factor, for 1D IDCT it should be set to
+ 9, for a 2D IDCT, should be set to 12 (9 for the precision + 3 for the final
+ shift).
+ *
+ * \param[in] half The position of the "comma" during the IDCT, should be 1 less
+ than ps. It will be used for rounding. Set to 0 to have no rounding at all.
+ *
+ * \param[in] y_line_length the length of a line of the image. The data is
+ stored on one array, line after line, to get a 8*8 block, this is required.
  */
 void FastIDCT1D(std::vector<int> &x, std::vector<int> &y, const int x_offset,
                 const int y_offset, const int ps, const int half,
