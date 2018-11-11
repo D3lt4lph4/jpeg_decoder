@@ -49,3 +49,6 @@ CMakeFiles/*
 *.qhjpg
 *.hjpg
 *.jpg
+
+*.egg-info/*
+dist/*
