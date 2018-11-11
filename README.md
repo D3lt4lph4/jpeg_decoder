@@ -13,18 +13,25 @@ The workflow of the compression/decompression is the following one (main steps),
 
 ## v1.0.0
 
-Working version of the decoder
+First working version of the decoder:
+
+- The implementation of the IDCT is naive and thus slow
+- The 8x8 DCT blocks are duplicated instead of being correctly upsampled
 
 ## v1.1.0
 
-Adding the FastIDCT to the decoder to improve the calculation speed.
+Features added:
+
+- Implementation of the fast IDCT to improve the decoding speed.
 
 ## v1.2.0
 
 Removing OpenCV from the project if not in DEBUG mode.
 
-# TODO
+## v2.0.0
 
-- Make a prettier method for the extension
-- Remove OpenCV from the code
-- Imperfection in the images to correct
+
+
+## v2.1.0
+
+Removing OpenCV from the project if not in DEBUG mode.
