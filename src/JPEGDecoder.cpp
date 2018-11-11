@@ -660,7 +660,6 @@ void JPEGDecoder::DecodeMCUBaseline(const unsigned int mcu_number,
 
         // If required Perform the dct inverse.
         if (this->decoding_level_ > 2) {
-
           FastIDCT2D(this->current_image_->GetData(component_number - 1),
                      start_line + 8 * v_block, start_column + 8 * h_block,
                      line_length);
