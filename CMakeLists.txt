@@ -4,9 +4,13 @@ project(jpeg_decoder VERSION 0.1.0)
 set(CMAKE_CXX_STANDARD 11)
 set(Tutorial_VERSION_MAJOR 0)
 set(Tutorial_VERSION_MINOR 1)
-set(CMAKE_CXX_FLAGS_DEBUG "-DDEBUG")
 include(CTest)
 enable_testing()
+
+IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
+    message("debug mode")
+ENDIF(CMAKE_BUILD_TYPE MATCHES DEBUG)
+
 
 if(WIN32)
   set(OpenCV_DIR "C:/Program Files (x86)/opencv/build")
@@ -18,65 +22,70 @@ find_package(Boost COMPONENTS thread system filesystem log REQUIRED)
 message(STATUS "Found opencv library : ${OpenCV_LIBS}\n")
 message(STATUS "Found boost library : ${Boost_LIBRARIES}\n")
 
+add_subdirectory(pybind11)
+pybind11_add_module(jpegdecoder src/test.cpp)
+
 #-------------------------------------------------
 #                GOOGLE TEST CONF
 #-------------------------------------------------
+IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
+  # Download and unpack googletest at configure time
+  configure_file(CMakeLists.txt.in googletest-download/CMakeLists.txt)
 
-# Download and unpack googletest at configure time
-configure_file(CMakeLists.txt.in googletest-download/CMakeLists.txt)
+  execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
+    RESULT_VARIABLE result
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/googletest-download )
 
-execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
-  RESULT_VARIABLE result
-  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/googletest-download )
+  if(result)
+    message(FATAL_ERROR "CMake step for googletest failed: ${result}")
+  endif()
 
-if(result)
-  message(FATAL_ERROR "CMake step for googletest failed: ${result}")
-endif()
+  execute_process(COMMAND ${CMAKE_COMMAND} --build .
+    RESULT_VARIABLE result
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/googletest-download )
+  if(result)
+    message(FATAL_ERROR "Build step for googletest failed: ${result}")
+  endif()
 
-execute_process(COMMAND ${CMAKE_COMMAND} --build .
-  RESULT_VARIABLE result
-  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/googletest-download )
-if(result)
-  message(FATAL_ERROR "Build step for googletest failed: ${result}")
-endif()
+  # Prevent overriding the parent project's compiler/linker
+  # settings on Windows
+  set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
-# Prevent overriding the parent project's compiler/linker
-# settings on Windows
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+  # Add googletest directly to our build. This defines
+  # the gtest and gtest_main targets.
+  add_subdirectory(${CMAKE_BINARY_DIR}/googletest-src
+                  ${CMAKE_BINARY_DIR}/googletest-build
+                  EXCLUDE_FROM_ALL)
 
-# Add googletest directly to our build. This defines
-# the gtest and gtest_main targets.
-add_subdirectory(${CMAKE_BINARY_DIR}/googletest-src
-                 ${CMAKE_BINARY_DIR}/googletest-build
-                 EXCLUDE_FROM_ALL)
-
-# The gtest/gtest_main targets carry header search path
-# dependencies automatically when using CMake 2.8.11 or
-# later. Otherwise we have to add them here ourselves.
-if (CMAKE_VERSION VERSION_LESS 2.8.11)
-  include_directories(BEFORE SYSTEM
-    "${gtest_SOURCE_DIR}/include" "${gmock_SOURCE_DIR}/include")
-else()
-  target_include_directories(gmock_main SYSTEM BEFORE INTERFACE
-    "${gtest_SOURCE_DIR}/include" "${gmock_SOURCE_DIR}/include")
-endif()
+  # The gtest/gtest_main targets carry header search path
+  # dependencies automatically when using CMake 2.8.11 or
+  # later. Otherwise we have to add them here ourselves.
+  if (CMAKE_VERSION VERSION_LESS 2.8.11)
+    include_directories(BEFORE SYSTEM
+      "${gtest_SOURCE_DIR}/include" "${gmock_SOURCE_DIR}/include")
+  else()
+    target_include_directories(gmock_main SYSTEM BEFORE INTERFACE
+      "${gtest_SOURCE_DIR}/include" "${gmock_SOURCE_DIR}/include")
+  endif()
 
 #-------------------------------------------------
 #               END GOOGLE TEST CONF
 #-------------------------------------------------
 
-include_directories("include/")
+  include_directories("include/")
 
-add_subdirectory(test)
+  add_subdirectory(test)
 
-# Linking boost library (dynamic)
-add_definitions(-DBOOST_LOG_DYN_LINK)
+  # Linking boost library (dynamic)
+  add_definitions(-DBOOST_LOG_DYN_LINK)
 
-# Creating library for the decoder
-add_library(JPEGDecoder SHARED src/JPEGDecoder.cpp src/JPEGHuffmanDecoder.cpp src/JPEGUtility.cpp src/JPEGParser.cpp src/JPEGUtils.cpp)
-target_link_libraries(JPEGDecoder ${Boost_LIBRARIES})
+  # Creating library for the decoder
+  add_library(JPEGDecoder SHARED src/JPEGDecoder.cpp src/JPEGHuffmanDecoder.cpp src/JPEGUtility.cpp src/JPEGParser.cpp src/JPEGUtils.cpp)
+  target_link_libraries(JPEGDecoder ${Boost_LIBRARIES})
 
-# Adding the main code executable
-add_executable(jpeg_decoder src/main.cpp)
+  # Adding the main code executable
+  add_executable(jpeg_decoder src/main.cpp)
 
-target_link_libraries(jpeg_decoder ${OpenCV_LIBS} ${Boost_LIBRARIES} JPEGDecoder)
+  target_link_libraries(jpeg_decoder ${OpenCV_LIBS} ${Boost_LIBRARIES} JPEGDecoder)
+
+ENDIF(CMAKE_BUILD_TYPE MATCHES DEBUG)
