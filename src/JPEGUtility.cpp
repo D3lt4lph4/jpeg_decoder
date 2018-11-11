@@ -184,21 +184,20 @@ void FastIDCT(std::vector<int> *image, int start_line, int start_column,
     FastIDCT1(b2 + i * 8,
               image->data() + start_line * line_length + start_column + i, 12,
               1 << 11, line_length);  // col
+}
 
-  for (size_t row = 0; row < 8; row++) {
-    for (size_t col = 0; col < 8; col++) {
-      (*image)[(start_line + row) * line_length + start_column + col] =
-          (*image)[(start_line + row) * line_length + start_column + col] + 128;
-      if ((*image)[(start_line + row) * line_length + start_column + col] >
-          255) {
-        (*image)[(start_line + row) * line_length + start_column + col] = 255;
-      } else if ((*image)[(start_line + row) * line_length + start_column +
-                          col] < 0) {
-        (*image)[(start_line + row) * line_length + start_column + col] = 0;
-      } else {
-        (*image)[(start_line + row) * line_length + start_column + col] =
-            (int)(*image)[(start_line + row) * line_length + start_column +
-                          col];
+void DeLevelShift(JPEGImage *image) {
+  for (int component = 0; component < image->GetNumberOfComponent();
+       component++) {
+    std::pair<int, int> size = image->GetComponentShape(component);
+    for (size_t row = 0; row < size.first; row++) {
+      for (size_t col = 0; col < size.second; col++) {
+        image->at(row, col, component) += 128;
+        if (image->at(row, col, component) > 255) {
+          image->at(row, col, component) = 255;
+        } else if (image->at(row, col, component) < 0) {
+          image->at(row, col, component) = 0;
+        }
       }
     }
   }
