@@ -30,35 +30,47 @@
  */
 
 /**
- * \fn JPEGDecoder::JPEGDecoder() : block_index(0), logging_level_(0)
+ * \fn JPEGDecoder::JPEGDecoder()
  */
-JPEGDecoder::JPEGDecoder() : block_index(0), logging_level_(0) {
-  this->current_index_ = new (unsigned int);
+JPEGDecoder::JPEGDecoder()
+    : block_index(0), logging_level_(0), current_index_(0) {
   this->InitializeLogger();
+  this->current_image_ = NULL;
 }
 
 /**
- * \fn JPEGDecoder::JPEGDecoder(unsigned char logging_level) : block_index(0)
+ * \fn JPEGDecoder::JPEGDecoder(unsigned char logging_level)
+ *
+ * \param[in] logging_level The level of logs to display.
  */
-JPEGDecoder::JPEGDecoder(unsigned char logging_level) : block_index(0) {
-  this->current_index_ = new (unsigned int);
+JPEGDecoder::JPEGDecoder(const unsigned char logging_level)
+    : block_index(0), current_index_(0) {
   this->logging_level_ = logging_level;
+  this->current_image_ = NULL;
 }
 
-JPEGDecoder::~JPEGDecoder() { delete this->current_index_; }
+JPEGDecoder::~JPEGDecoder() {
+  if (this->current_image_ != NULL) {
+    delete this->current_image_;
+  }
+}
 
 /**
- * \fn void *JPEGDecoder::DecodeFile(std::string filename, unsigned int
- * *image_size_x, unsigned int *image_size_y, int level) \brief Take a JPEG
- * compress file as entry and output the decoded matrix.
+ * \fn JPEGImage *JPEGDecoder::DecodeFile(const std::string filename, const int
+ * level)
+ *
+ * \brief Take a JPEG compress file as entry and output the decoded image at the
+ * required level.
  *
  * \param[in] filename The file to be decoded.
  * \param[in] level The required level of decoding.
  */
-JPEGImage *JPEGDecoder::DecodeFile(std::string filename, int level) {
+JPEGImage *JPEGDecoder::DecodeFile(const std::string filename,
+                                   const int level) {
   std::ifstream file_to_decode;
   int size, current_index = 0;
-  unsigned char *marker, table_key;
+  unsigned char table_key;
+  std::unique_ptr<unsigned char> marker;
 
   // When to stop the reading of the file
   bool out_condition = false;
@@ -84,11 +96,11 @@ JPEGImage *JPEGDecoder::DecodeFile(std::string filename, int level) {
     size = file_to_decode.tellg();
     file_to_decode.seekg(0, std::ios::beg);
     this->current_file_content_ = new unsigned char[size + 1];
-    *(this->current_index_) = 0;
+    this->current_index_ = 0;
     file_to_decode.read(reinterpret_cast<char *>(this->current_file_content_),
                         size);
-
-    if (*(this->GetMarker()) == START_OF_IMAGE) {
+    marker = this->GetMarker();
+    if (*marker == START_OF_IMAGE) {
       this->DecoderSetup();
       do {
         marker = this->GetMarker();
@@ -240,7 +252,6 @@ JPEGImage *JPEGDecoder::DecodeFile(std::string filename, int level) {
             throw std::runtime_error("Error while processing the jpeg file.");
             break;
         }
-        delete marker;
       } while (!out_condition);
     } else {
       throw std::runtime_error(
@@ -252,9 +263,9 @@ JPEGImage *JPEGDecoder::DecodeFile(std::string filename, int level) {
   }
 
   if (this->decoding_level_ > 3) {
-    DeLevelShift(this->current_image_);
+    DeLevelShift(*(this->current_image_));
     this->current_image_->RescaleToRealSize();
-    YCbCrToBGR(this->current_image_, this->current_image_->GetRealShape());
+    YCbCrToBGR(*(this->current_image_), this->current_image_->GetRealShape());
   }
 
   delete[] this->current_file_content_;
@@ -300,7 +311,7 @@ void JPEGDecoder::InitializeDecoder() {
   this->quantization_tables_.clear();
   this->dc_huffman_tables_.clear();
   this->ac_huffman_tables_.clear();
-  *(this->current_index_) = 0;
+  this->current_index_ = 0;
   this->block_index = 0;
 }
 
@@ -311,14 +322,17 @@ void JPEGDecoder::InitializeDecoder() {
 void JPEGDecoder::DecoderSetup() { this->restart_interval = 0; }
 
 /**
- * \fn void JPEGDecoder::DecodeFrame(unsigned char encoding_process_type)
+ * \fn void JPEGDecoder::DecodeFrame(const unsigned char encoding_process_type)
  * \brief Decode a frame. Is called by the decode function when a frame marker
  * is spotted.
  *
- * \param[in] encoding_process_type The type of the frame to decode.
+ * \param[in] encoding_process_type The type of the frame to decode. Only
+ * baseline is supported for now.
  */
-void JPEGDecoder::DecodeFrame(unsigned char encoding_process_type) {
-  unsigned char *marker, table_key;
+void JPEGDecoder::DecodeFrame(const unsigned char encoding_process_type) {
+  unsigned char table_key;
+  std::unique_ptr<unsigned char> marker;
+
   QuantizationTable quantization_table;
   HuffmanTable huffman_table;
   std::vector<std::pair<unsigned char, HuffmanTable>> huffman_tables;
@@ -373,6 +387,10 @@ void JPEGDecoder::DecodeFrame(unsigned char encoding_process_type) {
           size_factor_v *
           this->frame_header_.component_parameters_.at(component_number).at(1) *
           8;
+    }
+
+    if (this->current_image_ != NULL) {
+      delete this->current_image_;
     }
 
     this->current_image_ = new JPEGImage(sizes);
@@ -435,18 +453,18 @@ void JPEGDecoder::DecodeFrame(unsigned char encoding_process_type) {
           break;
       }
     }
+
   } while (*marker != END_OF_IMAGE);
-  *(this->current_index_) -= 2;
+  this->current_index_ -= 2;
 }
 
 /**
- * \fn void JPEGDecoder::DecodeScan(unsigned char encoding_process_type)
- * \brief Decode a scan. Is called by Decode when a scan marker is
- * spotted.
+ * \fn void JPEGDecoder::DecodeScan(const unsigned char encoding_process_type)
+ * \brief Decode a scan. Is called by Decode when a scan marker is spotted.
  *
  * \param[in] encoding_process_type The type of encoding currently used.
  */
-void JPEGDecoder::DecodeScan(unsigned char encoding_process_type) {
+void JPEGDecoder::DecodeScan(const unsigned char encoding_process_type) {
   this->scan_header_ =
       ParseScanHeader(this->current_file_content_, this->current_index_);
   unsigned int m = 0;
@@ -486,7 +504,7 @@ void JPEGDecoder::DecodeRestartIntervalBaseline() {
   unsigned char vertical_number_of_blocks, dc_table_index, ac_table_index,
       bit_index = 8;
   unsigned int mcu_number, number_of_mcus, h_max = 0, v_max = 0;
-  int prev[3] = {0, 0, 0};
+  std::vector<int> prev = {0, 0, 0};
   this->ResetDecoderBaseline();
 
   // Calculating the number of mcus to parse.
@@ -512,33 +530,47 @@ void JPEGDecoder::DecodeRestartIntervalBaseline() {
        (h_max * 8));
 
   for (unsigned int mcu_number = 0; mcu_number < number_of_mcus; mcu_number++) {
-    this->DecodeMCUBaseline(mcu_number, h_max, v_max, &bit_index, prev);
+    this->DecodeMCUBaseline(mcu_number, h_max, v_max, bit_index, prev);
   }
   unsigned char *marker;
   marker = new unsigned char[2];
-  std::memcpy(marker, &(this->current_file_content_[*(this->current_index_)]),
-              2);
+  std::memcpy(marker, &(this->current_file_content_[this->current_index_]), 2);
 
   if (marker[0] == 0xFF && marker[1] == 0x00) {
-    *(this->current_index_) += 2;
+    this->current_index_ += 2;
   } else if (bit_index < 8) {
-    *(this->current_index_) += 1;
+    this->current_index_ += 1;
   }
   delete marker;
 }
 
 /**
- * \fn void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number)
- * \brief decode a full mcu for the baseline encoding.
- * The function handles the level processing for each block of data processed.
+ * \fn void JPEGDecoder::DecodeMCUBaseline(const unsigned int mcu_number, const
+ * unsigned int h_max, const unsigned int v_max, unsigned char &bit_index,
+ * std::vector<int> &prev)
+ *
+ * \brief decode a full mcu for the baseline encoding. The function handles the
+ * level processing for each block of data processed.
  *
  * \param[in] mcu_number The index of the mcu being processed. The mcu indexing
  * starts from the top left mcu and goes line by line to the bottom right one.
  *
+ * \param[in] h_max The biggest value for h.
+ *
+ * \param[in] v_max The biggest value for v.
+ *
+ * \param[in, out] bit_index The index of the current bit in the byte being
+ * parsed.
+ *
+ * \param[in, out] prev A vector holding the previous DC values for each
+ * component.
+ *
  */
-void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
-                                    unsigned int v_max,
-                                    unsigned char *bit_index, int *prev) {
+void JPEGDecoder::DecodeMCUBaseline(const unsigned int mcu_number,
+                                    const unsigned int h_max,
+                                    const unsigned int v_max,
+                                    unsigned char &bit_index,
+                                    std::vector<int> &prev) {
   unsigned int horizontal_number_of_blocks, vertical_number_of_blocks,
       start_line, start_column, number_of_mcu_per_line,
       number_of_mcu_per_column, mcu_per_line;
@@ -628,9 +660,10 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
 
         // If required Perform the dct inverse.
         if (this->decoding_level_ > 2) {
-          FastIDCT(this->current_image_->GetData(component_number - 1),
-                   start_line + 8 * v_block, start_column + 8 * h_block,
-                   line_length);
+
+          FastIDCT2D(this->current_image_->GetData(component_number - 1),
+                     start_line + 8 * v_block, start_column + 8 * h_block,
+                     line_length);
         }
       }
     }
@@ -641,12 +674,15 @@ void JPEGDecoder::DecodeMCUBaseline(unsigned int mcu_number, unsigned int h_max,
 
 /**
  * \fn bool JPEGDecoder::IsMarker()
- * \brief Tells whether the next two bits in the stream are of a marker.
+ *
+ * \brief Tells whether the next two bytes in the stream are bytes of a marker.
  * This function does not increment the index count for the stream processed.
+ *
+ * \return True if the next bytes are a marker, else False.
  */
 bool JPEGDecoder::IsMarker() {
-  if (this->current_file_content_[*(this->current_index_)] == 0xFF) {
-    if (this->current_file_content_[*(this->current_index_) + 1] == 0x00) {
+  if (this->current_file_content_[this->current_index_] == 0xFF) {
+    if (this->current_file_content_[this->current_index_ + 1] == 0x00) {
       return false;
     }
     return true;
@@ -656,7 +692,7 @@ bool JPEGDecoder::IsMarker() {
 }
 
 /**
- * \fn unsigned char *JPEGDecoder::GetMarker()
+ * \fn std::unique_ptr<unsigned char> JPEGDecoder::GetMarker()
  * \brief Returns the current marker if any, else throws a runtime error.
  *
  * All of the marker are of the form 0xFF.. with the .. being anything but 00.
@@ -666,27 +702,42 @@ bool JPEGDecoder::IsMarker() {
  * This function expect to get a marker, it will throw an error if none found.
  * This function increments the index count for the stream processed.
  */
-unsigned char *JPEGDecoder::GetMarker() {
+std::unique_ptr<unsigned char> JPEGDecoder::GetMarker() {
   std::stringstream error;
   unsigned char *marker;
 
-  if (this->current_file_content_[*(this->current_index_)] == 0xFF) {
+  if (this->current_file_content_[this->current_index_] == 0xFF) {
     marker = new unsigned char[1];
     std::memcpy(marker,
-                &(this->current_file_content_[*(this->current_index_) + 1]), 1);
-    *(this->current_index_) = *(this->current_index_) + 2;
-    return marker;
+                &(this->current_file_content_[this->current_index_ + 1]), 1);
+    this->current_index_ = this->current_index_ + 2;
+    return std::unique_ptr<unsigned char>(marker);
   } else {
     std::cout << this->current_index_ << std::endl;
     error << "Error while reading marker, 0xFF expected, but " << std::hex
-          << (int)this->current_file_content_[*(this->current_index_)]
-          << " found at index: " << *(this->current_index_);
+          << (int)this->current_file_content_[this->current_index_]
+          << " found at index: " << this->current_index_;
     throw std::runtime_error(error.str());
   }
 }
 
-void JPEGDecoder::Dequantize(int component_number, int start_row, int start_col,
-                             QuantizationTable table) {
+/**
+ * \fn void JPEGDecoder::Dequantize(const int component_number, const int
+ * start_row, const int start_col, const QuantizationTable &table)
+ *
+ * \brief Dequantize a block of data.
+ *
+ * \param[in] component_number The component holding the data to dequantize.
+ *
+ * \param[in] start_row Cursor to the row at the start of the block.
+ *
+ * \param[in] start_col Cursor to the column at the start of the block.
+ *
+ * \param[in, out] table The quantization table to use.
+ */
+void JPEGDecoder::Dequantize(const int component_number, const int start_row,
+                             const int start_col,
+                             const QuantizationTable &table) {
   for (size_t row = 0; row < 8; row++) {
     for (size_t col = 0; col < 8; col++) {
       this->current_image_->at(start_row + row, start_col + col,
@@ -696,6 +747,11 @@ void JPEGDecoder::Dequantize(int component_number, int start_row, int start_col,
   }
 }
 
+/**
+ * \fn void JPEGDecoder::InitializeLogger()
+ *
+ * \brief Function to initialize the logger.
+ */
 void JPEGDecoder::InitializeLogger() {
   switch (this->logging_level_) {
     case 0:
@@ -723,18 +779,51 @@ void JPEGDecoder::InitializeLogger() {
   }
 }
 
+/**
+ * \fn unsigned int JPEGDecoder::getImageSizeX()
+ *
+ * \brief Return the size of the image on the x axis (size of a row).
+ *
+ * \return The size of the image on the x axis (size of a row).
+ */
 unsigned int JPEGDecoder::getImageSizeX() {
   return this->frame_header_.number_of_samples_per_line_;
 }
 
+/**
+ * \fn unsigned int JPEGDecoder::getImageSizeY()
+ *
+ * \brief
+ */
 unsigned int JPEGDecoder::getImageSizeY() {
   return this->frame_header_.number_of_lines_;
 }
 
+/**
+ * \fn void JPEGDecoder::InitializeLogger()
+ *
+ * \brief Return the size of the image on the y axis (size of a col).
+ *
+ * \return The size of the image on the y axis (size of a col).
+ */
 int JPEGDecoder::getChannels() { return 3; }
 
+/**
+ * \fn int JPEGDecoder::getBlockPerLine()
+ *
+ * \brief Return the number of blocks per line.
+ *
+ * \return The number of blocks per line.
+ */
 int JPEGDecoder::getBlockPerLine() { return this->number_of_blocks_per_line; }
 
+/**
+ * \fn int JPEGDecoder::getBlockPerColumn()
+ *
+ * \brief Return the number of blocks per column.
+ *
+ * \return The number of blocks per column.
+ */
 int JPEGDecoder::getBlockPerColumn() {
   return this->number_of_blocks_per_column;
 }

@@ -124,29 +124,29 @@ TEST(TestHuffmanFunctions, testDecode) {
   test_table.max_code = max_code;
   test_table.val_pointer = valptr;
 
-  res = Decode(file_content, &index, &bit_index, test_table);
+  res = Decode(file_content, index, bit_index, test_table);
   ASSERT_EQ(res, 2);
   ASSERT_EQ(bit_index, 5);
   ASSERT_EQ(index, 0);
 
   bit_index = 4;
-  res = Decode(file_content, &index, &bit_index, test_table);
+  res = Decode(file_content, index, bit_index, test_table);
   ASSERT_EQ(res, 6);
   ASSERT_EQ(bit_index, 8);
   ASSERT_EQ(index, 1);
 
-  res = Decode(file_content, &index, &bit_index, test_table);
+  res = Decode(file_content, index, bit_index, test_table);
   ASSERT_EQ(res, 1);
   ASSERT_EQ(bit_index, 5);
   ASSERT_EQ(index, 1);
 
-  res = Decode(file_content, &index, &bit_index, test_table);
+  res = Decode(file_content, index, bit_index, test_table);
   ASSERT_EQ(res, 0);
   ASSERT_EQ(bit_index, 3);
   ASSERT_EQ(index, 1);
 
   bit_index = 2;
-  res = Decode(file_content, &index, &bit_index, test_table);
+  res = Decode(file_content, index, bit_index, test_table);
   ASSERT_EQ(res, 9);
   ASSERT_EQ(bit_index, 3);
   ASSERT_EQ(index, 2);
@@ -157,19 +157,19 @@ TEST(TestHuffmanFunctions, testReceive) {
   int res;
   unsigned int index = 0;
 
-  res = Receive(9, file_content, &index, &bit_index);
+  res = Receive(9, file_content, index, bit_index);
 
   ASSERT_EQ(res, 441);
   ASSERT_EQ(bit_index, 6);
   ASSERT_EQ(index, 1);
 
-  res = Receive(3, file_content, &index, &bit_index);
+  res = Receive(3, file_content, index, bit_index);
 
   ASSERT_EQ(res, 0);
   ASSERT_EQ(bit_index, 3);
   ASSERT_EQ(index, 1);
 
-  res = Receive(3, file_content, &index, &bit_index);
+  res = Receive(3, file_content, index, bit_index);
 
   ASSERT_EQ(res, 3);
   ASSERT_EQ(bit_index, 8);
@@ -253,22 +253,21 @@ TEST(TestHuffmanFunctions, testDecodeACCoefficients) {
            second_table.val_pointer) =
       DecoderTables(bits_2, second_table.huffcode);
   // First let's test the decoding of a full 0's block.
-  results = DecodeACCoefficients(file_content, &index, &bit_index, first_table);
+  results = DecodeACCoefficients(file_content, index, bit_index, first_table);
   ASSERT_THAT(results, ::testing::ElementsAreArray(expected_results));
   ASSERT_EQ(index, 0);
   ASSERT_EQ(bit_index, 6);
   index = 0;
   bit_index = 8;
   std::cout << "-----------------" << std::endl;
-  results =
-      DecodeACCoefficients(file_content, &index, &bit_index, second_table);
+  results = DecodeACCoefficients(file_content, index, bit_index, second_table);
   ASSERT_THAT(results, ::testing::ElementsAreArray(expected_results));
 
   index = 0;
   bit_index = 8;
   std::cout << "-----------------" << std::endl;
   results =
-      DecodeACCoefficients(file_content_2, &index, &bit_index, second_table);
+      DecodeACCoefficients(file_content_2, index, bit_index, second_table);
 
   std::cout << results.at(38) << std::endl;
   ASSERT_THAT(results, ::testing::ElementsAreArray(expected_results_2));
@@ -282,11 +281,11 @@ TEST(TestHuffmanFunctions, testDecodeZZ) {
   int res;
   unsigned int index = 0;
 
-  ASSERT_EQ(DecodeZZ(file_content, &index, &bit_index, 9), 441);
+  ASSERT_EQ(DecodeZZ(file_content, index, bit_index, 9), 441);
   ASSERT_EQ(bit_index, 7);
   ASSERT_EQ(index, 1);
 
-  ASSERT_EQ(DecodeZZ(file_content, &index, &bit_index, 8), 185);
+  ASSERT_EQ(DecodeZZ(file_content, index, bit_index, 8), 185);
   ASSERT_EQ(bit_index, 7);
   ASSERT_EQ(index, 2);
 }
