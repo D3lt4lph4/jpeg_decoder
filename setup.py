@@ -58,7 +58,7 @@ class CMakeBuild(build_ext):
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
 
 setup(
-    name='jpeg_decoder',
+    name='jpegdecoder',
     version='2.0.1',
     author='Deguerre Benjamin',
     author_email='benjamin.deguerre@vinci-energies.net',
