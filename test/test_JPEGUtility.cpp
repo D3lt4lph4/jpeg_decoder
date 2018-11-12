@@ -283,7 +283,7 @@ TEST(UtilityTest, testFastIDCT1_Row) {
                                    8068, -8186, 8118, -8178},
                    results(64);
 
-  IDCT_Row(value_input, 0, 0, 8);
+  IDCTRow(value_input, 0, 0, 8);
 
   ASSERT_THAT(value_input, ::testing::ElementsAreArray(value_result));
 }
