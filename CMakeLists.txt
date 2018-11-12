@@ -16,14 +16,23 @@ if(WIN32)
   set(OpenCV_DIR "C:/Program Files (x86)/opencv/build")
 endif()
 
-find_package(OpenCV REQUIRED)
+#find_package(OpenCV REQUIRED)
 find_package(Boost COMPONENTS thread system filesystem log REQUIRED) 
 
 message(STATUS "Found opencv library : ${OpenCV_LIBS}\n")
 message(STATUS "Found boost library : ${Boost_LIBRARIES}\n")
 
-add_subdirectory(pybind11)
-pybind11_add_module(jpegdecoder src/test.cpp)
+include_directories("include/")
+
+add_subdirectory(pybind11)  
+
+add_definitions(-DBOOST_LOG_DYN_LINK)
+# Creating library for the decoder
+add_library(JPEGDecoder SHARED src/JPEGDecoder.cpp src/JPEGHuffmanDecoder.cpp src/JPEGUtility.cpp src/JPEGParser.cpp src/JPEGUtils.cpp)
+target_link_libraries(JPEGDecoder ${Boost_LIBRARIES})
+
+pybind11_add_module(jpegdecoder src/main_python.cpp src/JPEGUtils_python.cpp src/JPEGUtility_python.cpp)
+target_link_libraries(jpegdecoder PRIVATE ${Boost_LIBRARIES} JPEGDecoder)
 
 #-------------------------------------------------
 #                GOOGLE TEST CONF
@@ -72,7 +81,6 @@ IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
 #               END GOOGLE TEST CONF
 #-------------------------------------------------
 
-  include_directories("include/")
 
   add_subdirectory(test)
 
