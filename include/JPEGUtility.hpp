@@ -23,9 +23,9 @@ void FastIDCT2D(std::vector<int> &image, const int start_line,
                 const int start_column, const int line_length);
 
 // Other implementation of the fast IDCT 2D
-void IDCT_Row(std::vector<int> &x, const int x_offset, const int y_offset,
+void IDCTRow(std::vector<int> &x, const int x_offset, const int y_offset,
               const int line_length);
-void IDCT_Col(std::vector<int> &x, const int x_offset, const int y_offset,
+void IDCTCol(std::vector<int> &x, const int x_offset, const int y_offset,
               const int line_length);
 void FastIDCT2D_Second(std::vector<int> &image, const int start_line,
                        const int start_column, const int line_length);
