@@ -52,3 +52,5 @@ CMakeFiles/*
 
 *.egg-info/*
 dist/*
+release/*
+debug/*
