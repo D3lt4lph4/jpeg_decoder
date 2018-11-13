@@ -1,9 +1,3 @@
-/**
- * \file JPEGUtils.cpp
- * \author Deguerre Benjamin
- * \brief Contains all the object to be used by the JPEGDecoder.
- */
-
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -29,6 +23,6 @@ void initializeJPEGUtils(py::module &module) {
       .def("get_number_of_component", &JPEGImage::GetNumberOfComponent)
       .def("set_real_shape", &JPEGImage::SetRealShape)
       .def("rescale_to_real_size", &JPEGImage::RescaleToRealSize)
-      .def("at", &JPEGImage::at)
-      .def("GetData", &JPEGImage::GetData);
+      .def("at", &JPEGImage::at, py::return_value_policy::reference)
+      .def("GetData", &JPEGImage::GetData, py::return_value_policy::reference);
 }
