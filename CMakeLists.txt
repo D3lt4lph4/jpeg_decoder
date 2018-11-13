@@ -87,5 +87,5 @@ ELSEIF( CMAKE_BUILD_TYPE MATCHES DEBUG )
 
   target_link_libraries(jpeg_decoder ${OpenCV_LIBS} ${Boost_LIBRARIES} JPEGDecoder)
 ELSE( (NOT CMAKE_BUILD_TYPE) OR (CMAKE_BUILD_TYPE MATCHES RELEASE) )
-  message(Error, the build should be either in debug or release mode.)
+  message("Error, the build should be either in debug or release mode.")
 ENDIF( (NOT CMAKE_BUILD_TYPE) OR (CMAKE_BUILD_TYPE MATCHES RELEASE) )
