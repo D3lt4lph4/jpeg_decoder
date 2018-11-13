@@ -113,7 +113,7 @@ TEST(UtilityTest, testThrow) {
   EXPECT_THROW(NextBit(file_content, index, bit_index), std::runtime_error);
 }
 
-TEST(UtilityTest, testIDCT) {
+/* TEST(UtilityTest, testIDCT) {
   int value_input[] = {0, 92, 0, 72, 0, 41, 0, 77, 0, 0, 0, 0, 0, 0, 0, 0,
                        0, 0,  0, 0,  0, 0,  0, 0,  0, 0, 0, 0, 0, 0, 0, 0,
                        0, 0,  0, 0,  0, 0,  0, 0,  0, 0, 0, 0, 0, 0, 0, 0,
@@ -182,7 +182,7 @@ TEST(UtilityTest, testIDCT) {
 
   ASSERT_THAT(value_input, ::testing::ElementsAreArray(value_result));
   ASSERT_THAT(value_input_2, ::testing::ElementsAreArray(value_result_2));
-}
+} */
 
 TEST(UtilityTest, testFastIDCT) {
   std::vector<int> value_input = {0, 92, 0, 72, 0, 41, 0, 77, 0, 0,  0, 0,
