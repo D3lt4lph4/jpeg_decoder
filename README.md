@@ -56,25 +56,52 @@ OpenCV seems to look for cuda while compiling, if you have multiple version of c
 
 ## v1.0.0
 
-First working version of the decoder:
+Features:
 
 - The implementation of the IDCT is naive and thus slow
 - The 8x8 DCT blocks are duplicated instead of being correctly upsampled
 
 ## v1.1.0
 
-Features added:
+Features:
 
 - Implementation of the fast IDCT to improve the decoding speed.
 
 ## v1.2.0
 
+Features:
+
 Removing OpenCV from the project if not in DEBUG mode.
 
 ## v2.0.0
 
-
+Features:
 
 ## v2.1.0
 
+Features:
+
 Removing OpenCV from the project if not in DEBUG mode.
+
+## v2.2.0
+
+Features:
+
+- Adding wrapper for python usage of the library
+    - Numpy array are used as output for the data of the images
+    - Documentation for the Python functions available
+    - Testing of the python side of the library
+
+- Boost is removed from compilation if not in debug mode
+- Improved tests for the library on the c++ side
+- Adding files to calculate the time the decoder takes to decode images at different levels
+
+
+## v3.0.0 (planned)
+
+Features:
+
+- The class JPEGDecoder was removed and replaced by a function
+- Adding tests for all the new functions made available by the new architecture
+- Documentation for each of the tagged version was added on the ReadTheDocs server.
+
