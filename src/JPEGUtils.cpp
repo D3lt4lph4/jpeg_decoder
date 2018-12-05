@@ -99,7 +99,7 @@ void JPEGImage::SetRealShape(std::vector<int> shape) {
  */
 int& JPEGImage::at(int row, int col, int component) {
   int line_length = this->components_shape.at(component).second;
-  return this->image_components_.at(component)[row * line_length + col];
+  return this->image_components_.at(component).at(row * line_length + col);
 }
 
 /**
@@ -125,7 +125,6 @@ void JPEGImage::RescaleToRealSize() {
 
   int rows = this->components_shape[0].first,
       cols = this->components_shape[0].second;
-
   for (int i = 1; i < 3; i++) {
     std::vector<int> new_data(rows * cols);
     col_factor = cols / this->components_shape[i].second;
@@ -134,11 +133,10 @@ void JPEGImage::RescaleToRealSize() {
       for (int col = 0; col < this->components_shape[i].second; col++) {
         for (int row_f = 0; row_f < row_factor; row_f++) {
           for (int col_f = 0; col_f < col_factor; col_f++) {
-            new_data[(row * row_factor + row_f) * cols + col * col_factor +
-                     col_f] =
-                this->image_components_[i]
-                                       [row * this->components_shape[i].second +
-                                        col];
+            new_data.at((row * row_factor + row_f) * cols + col * col_factor +
+                        col_f) =
+                this->image_components_[i].at(
+                    row * this->components_shape[i].second + col);
           }
         }
       }

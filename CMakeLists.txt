@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.1.0)
 project(jpeg_decoder VERSION 0.1.0)
 
 set(CMAKE_CXX_STANDARD 11)
-
+set(CMAKE_CXX_FLAGS "-g")
 include(CTest)
 enable_testing()
 
@@ -32,10 +32,10 @@ ELSEIF( CMAKE_BUILD_TYPE MATCHES DEBUG )
   IF( WIN32 )
     set(OpenCV_DIR "C:/Program Files (x86)/opencv/build")
   ENDIF( WIN32 )
-
+  set(CMAKE_BUILD_TYPE Debug)
   find_package(OpenCV REQUIRED)
   message(STATUS "Found opencv library : ${OpenCV_LIBS}\n")
-
+  
   # Setting the flag for the DEBUG part of the code
   set(CMAKE_CXX_FLAGS_DEBUG "-DDEBUG")
 
