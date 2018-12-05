@@ -166,7 +166,7 @@ int main(int argc, char* argv[]) {
 
   // Process the file if specified.
   if (result.count("file")) {
-    JPEGDecoder decoder;
+    JPEGDecoder decoder(0);
     JPEGImage* image;
     image = decoder.DecodeFile(result["file"].as<std::string>(),
                                result["level"].as<int>());
