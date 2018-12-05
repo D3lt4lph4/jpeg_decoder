@@ -50,5 +50,7 @@ CMakeFiles/*
 *.hjpg
 *.jpg
 
+*.egg-info/*
 dist/*
-*egg-info/*
+release/*
+debug/*

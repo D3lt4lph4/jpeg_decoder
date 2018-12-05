@@ -248,7 +248,7 @@ JPEGImage *JPEGDecoder::DecodeFile(const std::string filename,
           default:
             BOOST_LOG_TRIVIAL(error)
                 << "I did not know how to parse the block : " << std::hex
-                << int(*marker) << std::endl;
+                << int(*marker);
             throw std::runtime_error("Error while processing the jpeg file.");
             break;
         }
@@ -400,7 +400,7 @@ void JPEGDecoder::DecodeFrame(const unsigned char encoding_process_type) {
   do {
     marker = this->GetMarker();
     if (*marker == START_OF_SCAN) {
-      BOOST_LOG_TRIVIAL(info) << "Getting a scan to decode." << std::endl;
+      BOOST_LOG_TRIVIAL(info) << "Getting a scan to decode.";
       this->DecodeScan(encoding_process_type);
     } else {
       switch (*marker) {
@@ -415,7 +415,7 @@ void JPEGDecoder::DecodeFrame(const unsigned char encoding_process_type) {
         case DEFINE_QUANTIZATION_TABLE:
           ParseQuantizationTable(this->current_file_content_,
                                  this->current_index_);
-          BOOST_LOG_TRIVIAL(info) << "Quantization table parsed." << std::endl;
+          BOOST_LOG_TRIVIAL(info) << "Quantization table parsed.";
           break;
         case DEFINE_HUFFMAN_TABLE:
           huffman_tables = ParseHuffmanTableSpecification(
@@ -441,14 +441,14 @@ void JPEGDecoder::DecodeFrame(const unsigned char encoding_process_type) {
               }
             }
           }
-          BOOST_LOG_TRIVIAL(info) << "Huffman table parsed." << std::endl;
+          BOOST_LOG_TRIVIAL(info) << "Huffman table parsed.";
           break;
         case END_OF_IMAGE:
           break;
         default:
           BOOST_LOG_TRIVIAL(error)
               << "I did not know how to parse the block : " << std::hex
-              << int(*marker) << std::endl;
+              << int(*marker);
           throw std::runtime_error("Error while processing the jpeg file.");
           break;
       }

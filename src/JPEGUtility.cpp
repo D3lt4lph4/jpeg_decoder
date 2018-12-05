@@ -148,7 +148,7 @@ unsigned char NextBit(unsigned char *file_content, unsigned int &index,
  *
  * \deprecated
  */
-void IDCT(int *new_block) {
+void IDCT(std::vector<int> new_block) {
   float result, cu, cv;
   int temp_operation[64];
 
@@ -295,7 +295,7 @@ void FastIDCT2D(std::vector<int> &image, const int start_line,
                12, 1 << 11, line_length);  // col
 }
 
-void IDCT_Row(std::vector<int> &x, const int x_offset, const int y_offset,
+void IDCTRow(std::vector<int> &x, const int x_offset, const int y_offset,
               const int line_length) {
   int x0, x1, x2, x3, x4, x5, x6, x7, x8;
 
@@ -350,7 +350,7 @@ void IDCT_Row(std::vector<int> &x, const int x_offset, const int y_offset,
   x[x_offset + 7] = (x7 - x1) >> 8;
 }
 
-void IDCT_Col(std::vector<int> &x, const int x_offset, const int y_offset,
+void IDCTCol(std::vector<int> &x, const int x_offset, const int y_offset,
               const int line_length) {
   int x0, x1, x2, x3, x4, x5, x6, x7, x8;
   int iclip[1024]; /* clipping table */
@@ -419,11 +419,11 @@ void FastIDCT2D_Second(std::vector<int> &image, const int start_line,
                        const int start_column, const int line_length) {
 
   for (int i = 0; i < 8; i++)
-    IDCT_Row(image, start_line * line_length + start_column + i * line_length,
+    IDCTRow(image, start_line * line_length + start_column + i * line_length,
              i, 8);
 
   for (int i = 0; i < 8; i++)
-    IDCT_Col(image, start_line * line_length + start_column + i, 0,
+    IDCTCol(image, start_line * line_length + start_column + i, 0,
              line_length);
 }
 
