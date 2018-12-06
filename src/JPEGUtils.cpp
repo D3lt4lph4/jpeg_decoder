@@ -32,8 +32,13 @@ JPEGImage::JPEGImage(std::vector<std::pair<int, int>> sizes) {
   this->components_shape = sizes;
 
   for (int component = 0; component < sizes.size(); component++) {
+#ifdef DEBUG
     this->image_components_.at(component).resize(sizes.at(component).first *
                                                  sizes.at(component).second);
+#else
+    this->image_components_[component].resize(sizes[component].first *
+                                              sizes[component].second);
+#endif
   }
 }
 
@@ -55,7 +60,11 @@ JPEGImage::~JPEGImage() {}
  * \return The shape of the data at component, in the order (row, col).
  */
 std::pair<int, int> JPEGImage::GetComponentShape(int component) {
+#ifdef DEBUG
   return this->components_shape.at(component);
+#else
+  return this->components_shape[component];
+#endif
 }
 
 /**
@@ -98,8 +107,13 @@ void JPEGImage::SetRealShape(std::vector<int> shape) {
  * \return The value at (row, col, component)
  */
 int& JPEGImage::at(int row, int col, int component) {
+#ifdef DEBUG
   int line_length = this->components_shape.at(component).second;
   return this->image_components_.at(component).at(row * line_length + col);
+#else
+  int line_length = this->components_shape[component].second;
+  return this->image_components_[component][row * line_length + col];
+#endif
 }
 
 /**
@@ -111,7 +125,11 @@ int& JPEGImage::at(int row, int col, int component) {
  the vector in the image will be too.
  */
 std::vector<int>& JPEGImage::GetData(int component) {
+#ifdef DEBUG
   return this->image_components_.at(component);
+#else
+  return this->image_components_[component];
+#endif
 }
 
 /**
@@ -133,16 +151,29 @@ void JPEGImage::RescaleToRealSize() {
       for (int col = 0; col < this->components_shape[i].second; col++) {
         for (int row_f = 0; row_f < row_factor; row_f++) {
           for (int col_f = 0; col_f < col_factor; col_f++) {
+#ifdef DEBUG
             new_data.at((row * row_factor + row_f) * cols + col * col_factor +
                         col_f) =
                 this->image_components_[i].at(
                     row * this->components_shape[i].second + col);
+#else
+            new_data[(row * row_factor + row_f) * cols + col * col_factor +
+                     col_f] =
+                this->image_components_[i]
+                                       [row * this->components_shape[i].second +
+                                        col];
+#endif
           }
         }
       }
     }
     this->image_components_[i] = new_data;
+    #ifdef DEBUG
     this->components_shape.at(i).first = rows;
     this->components_shape.at(i).second = cols;
+    #else
+this->components_shape[i].first = rows;
+    this->components_shape[i].second = cols;
+    #endif
   }
 }

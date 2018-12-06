@@ -640,10 +640,17 @@ void JPEGDecoder::DecodeMCUBaseline(const unsigned int mcu_number,
         for (size_t row = 0; row < 8; row++) {
           for (size_t col = 0; col < 8; col++) {
             if (!(row == 0 && col == 0)) {
+#ifdef DEBUG
               this->current_image_->at(start_line + 8 * v_block + row,
                                        start_column + 8 * h_block + col,
                                        component_number - 1) =
                   AC_Coefficients.at(ZZ_order[row * 8 + col] - 1);
+#else
+              this->current_image_->at(start_line + 8 * v_block + row,
+                                       start_column + 8 * h_block + col,
+                                       component_number - 1) =
+                  AC_Coefficients[ZZ_order[row * 8 + col] - 1];
+#endif
             }
           }
         }
@@ -739,9 +746,15 @@ void JPEGDecoder::Dequantize(const int component_number, const int start_row,
                              const QuantizationTable &table) {
   for (size_t row = 0; row < 8; row++) {
     for (size_t col = 0; col < 8; col++) {
+#ifdef DEBUG
       this->current_image_->at(start_row + row, start_col + col,
                                component_number) *=
           table.qks_.at(ZZ_order[row * 8 + col]);
+#else
+      this->current_image_->at(start_row + row, start_col + col,
+                               component_number) *=
+          table.qks_[ZZ_order[row * 8 + col]];
+#endif
     }
   }
 }

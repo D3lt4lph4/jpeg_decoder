@@ -24,7 +24,7 @@ IF( (NOT CMAKE_BUILD_TYPE) OR (CMAKE_BUILD_TYPE MATCHES RELEASE))
   add_subdirectory(pybind11)
 
   # pybind11 package creation
-  pybind11_add_module(jpegdecoder src/main_python.cpp src/JPEGUtils_python.cpp src/JPEGUtility_python.cpp src/JPEGDecoder_python.cpp)
+  pybind11_add_module(jpegdecoder src/main_python.cpp src/JPEGUtils_python.cpp src/JPEGDecoder_python.cpp)
   target_link_libraries(jpegdecoder PRIVATE ${Boost_LIBRARIES} JPEGDecoder)
 
 ELSEIF( CMAKE_BUILD_TYPE MATCHES DEBUG )

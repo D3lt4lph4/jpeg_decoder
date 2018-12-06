@@ -31,7 +31,11 @@ std::pair<unsigned char, std::vector<unsigned char>> GenerateSizeTable(
   std::vector<unsigned char> huffsize;
 
   while (i <= 16) {
+#ifdef DEBUG
     if (j > bits.at(i - 1)) {
+#else
+    if (j > bits[i - 1]) {
+#endif
       i += 1;
       j = 1;
     } else {
@@ -64,7 +68,11 @@ std::pair<unsigned char, std::vector<unsigned char>> GenerateSizeTable(
 std::vector<unsigned short> GenerateCodeTable(
     const std::vector<unsigned char> &huffsize) {
   int k = 0;
+#ifdef DEBUG
   unsigned char si = huffsize.at(0);
+#else
+  unsigned char si = huffsize[0];
+#endif
   unsigned short code = 0;
   std::vector<unsigned short> huffcode;
 
@@ -73,15 +81,25 @@ std::vector<unsigned short> GenerateCodeTable(
       huffcode.push_back(code);
       code += 1;
       k += 1;
+#ifdef DEBUG
     } while (huffsize.at(k) == si);
 
     if (huffsize.at(k) == 0) {
+#else
+    } while (huffsize[k] == si);
+
+    if (huffsize[k] == 0) {
+#endif
       return huffcode;
     }
     do {
       code = code << 1;
       si = si + 1;
-    } while (huffsize.at(k) != si);
+#ifdef DEBUG
+    } while (huffsize[k] != si);
+#else
+    } while (huffsize[k] != si);
+#endif
   }
 }
 
@@ -116,12 +134,21 @@ DecoderTables(const std::vector<unsigned char> &bits,
       return std::make_tuple(max_code, min_code, val_ptr);
     }
     if (bits[i - 1] == 0) {
+#ifdef DEBUG
       max_code.at(i) = -1;
     } else {
       val_ptr.at(i) = j;
       min_code.at(i) = huffcode.at(j);
       j = j + bits[i - 1] - 1;
       max_code.at(i) = huffcode.at(j);
+#else
+      max_code[i] = -1;
+    } else {
+      val_ptr[i] = j;
+      min_code[i] = huffcode[j];
+      j = j + bits[i - 1] - 1;
+      max_code[i] = huffcode[j];
+#endif
       j += 1;
     }
   }
@@ -152,14 +179,23 @@ unsigned char Decode(unsigned char *stream, unsigned int &index,
   unsigned short code;
 
   code = NextBit(stream, index, bit_index);
+#ifdef DEBUG
   while (code > used_table.max_code.at(i)) {
+#else
+  while (code > used_table.max_code[i]) {
+#endif
     i += 1;
     code = (code << 1) + NextBit(stream, index, bit_index);
   }
-
+#ifdef DEBUG
   j = used_table.val_pointer.at(i);
   j = j + code - used_table.min_code.at(i);
   return used_table.huffvals.at(j);
+#else
+  j = used_table.val_pointer[i];
+  j = j + code - used_table.min_code[i];
+  return used_table.huffvals[j];
+#endif
 }
 
 /**
@@ -253,7 +289,11 @@ std::vector<int> DecodeACCoefficients(unsigned char *stream,
       }
     } else {
       k = k + r;
+#ifdef DEBUG
       ZZ.at(k - 1) = DecodeZZ(stream, index, bit_index, ssss);
+#else
+      ZZ[k - 1] = DecodeZZ(stream, index, bit_index, ssss);
+#endif
       if (k == 63) {
         out_condition = true;
       }
