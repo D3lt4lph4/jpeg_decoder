@@ -28,6 +28,7 @@ IF( (NOT CMAKE_BUILD_TYPE) OR (CMAKE_BUILD_TYPE MATCHES RELEASE))
   target_link_libraries(jpegdecoder PRIVATE ${Boost_LIBRARIES} JPEGDecoder)
 
 ELSEIF( CMAKE_BUILD_TYPE MATCHES DEBUG )
+  set(CMAKE_CXX_FLAGS "-g")
   # We set opencv only if we are in debug
   IF( WIN32 )
     set(OpenCV_DIR "C:/Program Files (x86)/opencv/build")
