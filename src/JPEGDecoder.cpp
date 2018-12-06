@@ -712,10 +712,10 @@ std::unique_ptr<unsigned char> JPEGDecoder::GetMarker() {
     this->current_index_ = this->current_index_ + 2;
     return std::unique_ptr<unsigned char>(marker);
   } else {
-    std::cout << this->current_index_ << std::endl;
-    error << "Error while reading marker, 0xFF expected, but " << std::hex
-          << (int)this->current_file_content_[this->current_index_]
-          << " found at index: " << this->current_index_;
+    BOOST_LOG_TRIVIAL(error)
+        << "Error while reading marker, 0xFF expected, but " << std::hex
+        << (int)this->current_file_content_[this->current_index_]
+        << " found at index: " << this->current_index_;
     throw std::runtime_error(error.str());
   }
 }

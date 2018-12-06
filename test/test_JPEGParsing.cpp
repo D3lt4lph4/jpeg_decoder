@@ -26,7 +26,6 @@ TEST(ParsingTest, test_Comment) {
   unsigned int index = 0;
   std::string comment = ParseComment(file_content, index),
               expected("Created with GIMP");
-  std::cout << comment.c_str();
   ASSERT_STREQ(comment.c_str(), expected.c_str());
   ASSERT_EQ(index, 19);
 }
@@ -42,7 +41,6 @@ TEST(ParsingTest, test_FrameHeader) {
   FrameHeader header =
       ParseFrameHeader(file_content, index, FRAME_TYPE_BASELINE_DTC);
 
-  std::cout << int(header.encoding_process_type_) << std::endl;
   ASSERT_EQ(header.encoding_process_type_, FRAME_TYPE_BASELINE_DTC);
   ASSERT_EQ(header.sample_precision_, 8);
   ASSERT_EQ(header.number_of_lines_, 16);
