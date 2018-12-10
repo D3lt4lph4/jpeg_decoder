@@ -379,11 +379,11 @@ void JPEGDecoder::DecodeFrame(const unsigned char encoding_process_type) {
         realShape[1] = this->number_of_blocks_per_line;
         realShape[2] = 3;
       }
-      sizes[component_number - 1].second =
+      sizes.at(component_number - 1).second =
           size_factor_h *
           this->frame_header_.component_parameters_.at(component_number).at(0) *
           8;
-      sizes[component_number - 1].first =
+      sizes.at(component_number - 1).first =
           size_factor_v *
           this->frame_header_.component_parameters_.at(component_number).at(1) *
           8;
@@ -623,7 +623,7 @@ void JPEGDecoder::DecodeMCUBaseline(const unsigned int mcu_number,
                        this->current_index_, bit_index);
 
         diff = Extended(diff, decoded_dc);
-        prev[component_number - 1] = diff + prev[component_number - 1];
+        prev.at(component_number - 1) = diff + prev.at(component_number - 1);
 
         // Getting the AC coefficients.
         AC_Coefficients = DecodeACCoefficients(
@@ -635,7 +635,7 @@ void JPEGDecoder::DecodeMCUBaseline(const unsigned int mcu_number,
         // We save the dc coefficient and update the previous value.
         this->current_image_->at(
             start_line + 8 * v_block, start_column + 8 * h_block,
-            component_number - 1) = prev[component_number - 1];
+            component_number - 1) = prev.at(component_number - 1);
 
         for (size_t row = 0; row < 8; row++) {
           for (size_t col = 0; col < 8; col++) {

@@ -86,9 +86,9 @@ std::vector<unsigned short> GenerateCodeTable(
 
     if (huffsize.at(k) == 0) {
 #else
-    } while (huffsize[k] == si);
+    } while (huffsize.at(k) == si);
 
-    if (huffsize[k] == 0) {
+    if (huffsize.at(k) == 0) {
 #endif
       return huffcode;
     }
@@ -96,7 +96,7 @@ std::vector<unsigned short> GenerateCodeTable(
       code = code << 1;
       si = si + 1;
 #ifdef DEBUG
-    } while (huffsize[k] != si);
+    } while (huffsize.at(k) != si);
 #else
     } while (huffsize[k] != si);
 #endif
@@ -133,13 +133,13 @@ DecoderTables(const std::vector<unsigned char> &bits,
     if (i > 16) {
       return std::make_tuple(max_code, min_code, val_ptr);
     }
-    if (bits[i - 1] == 0) {
+    if (bits.at(i - 1) == 0) {
 #ifdef DEBUG
       max_code.at(i) = -1;
     } else {
       val_ptr.at(i) = j;
       min_code.at(i) = huffcode.at(j);
-      j = j + bits[i - 1] - 1;
+      j = j + bits.at(i - 1) - 1;
       max_code.at(i) = huffcode.at(j);
 #else
       max_code[i] = -1;
