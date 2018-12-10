@@ -248,7 +248,7 @@ JPEGImage *JPEGDecoder::DecodeFile(const std::string filename,
           default:
             BOOST_LOG_TRIVIAL(error)
                 << "I did not know how to parse the block : " << std::hex
-                << int(*marker) << std::endl;
+                << int(*marker);
             throw std::runtime_error("Error while processing the jpeg file.");
             break;
         }
@@ -366,11 +366,11 @@ void JPEGDecoder::DecodeFrame(const unsigned char encoding_process_type) {
 
     std::vector<int> realShape(3);
 
-    int size_factor_h =
-        (((this->number_of_blocks_per_column + 8 - 1) / 8) + h_max - 1) /
-        (h_max);
     int size_factor_v =
-        (((this->number_of_blocks_per_line + 8 - 1) / 8) + v_max - 1) / (v_max);
+        (((this->number_of_blocks_per_column + 8 - 1) / 8) + v_max - 1) /
+        (v_max);
+    int size_factor_h =
+        (((this->number_of_blocks_per_line + 8 - 1) / 8) + h_max - 1) / (h_max);
     for (size_t component_number = 1;
          component_number <= this->frame_header_.number_of_component_;
          component_number++) {
@@ -379,11 +379,11 @@ void JPEGDecoder::DecodeFrame(const unsigned char encoding_process_type) {
         realShape[1] = this->number_of_blocks_per_line;
         realShape[2] = 3;
       }
-      sizes[component_number - 1].first =
+      sizes.at(component_number - 1).second =
           size_factor_h *
           this->frame_header_.component_parameters_.at(component_number).at(0) *
           8;
-      sizes[component_number - 1].second =
+      sizes.at(component_number - 1).first =
           size_factor_v *
           this->frame_header_.component_parameters_.at(component_number).at(1) *
           8;
@@ -400,7 +400,7 @@ void JPEGDecoder::DecodeFrame(const unsigned char encoding_process_type) {
   do {
     marker = this->GetMarker();
     if (*marker == START_OF_SCAN) {
-      BOOST_LOG_TRIVIAL(info) << "Getting a scan to decode." << std::endl;
+      BOOST_LOG_TRIVIAL(info) << "Getting a scan to decode.";
       this->DecodeScan(encoding_process_type);
     } else {
       switch (*marker) {
@@ -415,7 +415,7 @@ void JPEGDecoder::DecodeFrame(const unsigned char encoding_process_type) {
         case DEFINE_QUANTIZATION_TABLE:
           ParseQuantizationTable(this->current_file_content_,
                                  this->current_index_);
-          BOOST_LOG_TRIVIAL(info) << "Quantization table parsed." << std::endl;
+          BOOST_LOG_TRIVIAL(info) << "Quantization table parsed.";
           break;
         case DEFINE_HUFFMAN_TABLE:
           huffman_tables = ParseHuffmanTableSpecification(
@@ -441,14 +441,14 @@ void JPEGDecoder::DecodeFrame(const unsigned char encoding_process_type) {
               }
             }
           }
-          BOOST_LOG_TRIVIAL(info) << "Huffman table parsed." << std::endl;
+          BOOST_LOG_TRIVIAL(info) << "Huffman table parsed.";
           break;
         case END_OF_IMAGE:
           break;
         default:
           BOOST_LOG_TRIVIAL(error)
               << "I did not know how to parse the block : " << std::hex
-              << int(*marker) << std::endl;
+              << int(*marker);
           throw std::runtime_error("Error while processing the jpeg file.");
           break;
       }
@@ -532,16 +532,16 @@ void JPEGDecoder::DecodeRestartIntervalBaseline() {
   for (unsigned int mcu_number = 0; mcu_number < number_of_mcus; mcu_number++) {
     this->DecodeMCUBaseline(mcu_number, h_max, v_max, bit_index, prev);
   }
-  unsigned char *marker;
-  marker = new unsigned char[2];
-  std::memcpy(marker, &(this->current_file_content_[this->current_index_]), 2);
+  unsigned char marker[2];
+
+  marker[0] = this->current_file_content_[this->current_index_];
+  marker[1] = this->current_file_content_[this->current_index_ + 1];
 
   if (marker[0] == 0xFF && marker[1] == 0x00) {
     this->current_index_ += 2;
   } else if (bit_index < 8) {
     this->current_index_ += 1;
   }
-  delete marker;
 }
 
 /**
@@ -601,15 +601,15 @@ void JPEGDecoder::DecodeMCUBaseline(const unsigned int mcu_number,
 
     line_length =
         mcu_per_line *
-        this->frame_header_.component_parameters_.at(component_number).at(1) *
+        this->frame_header_.component_parameters_.at(component_number).at(0) *
         8;
     start_line =
         mcu_number / mcu_per_line *
-        this->frame_header_.component_parameters_.at(component_number).at(0) *
+        this->frame_header_.component_parameters_.at(component_number).at(1) *
         8;
     start_column =
         mcu_number % mcu_per_line *
-        this->frame_header_.component_parameters_.at(component_number).at(1) *
+        this->frame_header_.component_parameters_.at(component_number).at(0) *
         8;
     // We process all the blocks for the current component.
     for (size_t v_block = 0; v_block < vertical_number_of_blocks; v_block++) {
@@ -623,7 +623,7 @@ void JPEGDecoder::DecodeMCUBaseline(const unsigned int mcu_number,
                        this->current_index_, bit_index);
 
         diff = Extended(diff, decoded_dc);
-        prev[component_number - 1] = diff + prev[component_number - 1];
+        prev.at(component_number - 1) = diff + prev.at(component_number - 1);
 
         // Getting the AC coefficients.
         AC_Coefficients = DecodeACCoefficients(
@@ -635,15 +635,22 @@ void JPEGDecoder::DecodeMCUBaseline(const unsigned int mcu_number,
         // We save the dc coefficient and update the previous value.
         this->current_image_->at(
             start_line + 8 * v_block, start_column + 8 * h_block,
-            component_number - 1) = prev[component_number - 1];
+            component_number - 1) = prev.at(component_number - 1);
 
         for (size_t row = 0; row < 8; row++) {
           for (size_t col = 0; col < 8; col++) {
             if (!(row == 0 && col == 0)) {
+#ifdef DEBUG
               this->current_image_->at(start_line + 8 * v_block + row,
                                        start_column + 8 * h_block + col,
                                        component_number - 1) =
                   AC_Coefficients.at(ZZ_order[row * 8 + col] - 1);
+#else
+              this->current_image_->at(start_line + 8 * v_block + row,
+                                       start_column + 8 * h_block + col,
+                                       component_number - 1) =
+                  AC_Coefficients[ZZ_order[row * 8 + col] - 1];
+#endif
             }
           }
         }
@@ -712,10 +719,10 @@ std::unique_ptr<unsigned char> JPEGDecoder::GetMarker() {
     this->current_index_ = this->current_index_ + 2;
     return std::unique_ptr<unsigned char>(marker);
   } else {
-    std::cout << this->current_index_ << std::endl;
-    error << "Error while reading marker, 0xFF expected, but " << std::hex
-          << (int)this->current_file_content_[this->current_index_]
-          << " found at index: " << this->current_index_;
+    BOOST_LOG_TRIVIAL(error)
+        << "Error while reading marker, 0xFF expected, but " << std::hex
+        << (int)this->current_file_content_[this->current_index_]
+        << " found at index: " << this->current_index_;
     throw std::runtime_error(error.str());
   }
 }
@@ -739,9 +746,15 @@ void JPEGDecoder::Dequantize(const int component_number, const int start_row,
                              const QuantizationTable &table) {
   for (size_t row = 0; row < 8; row++) {
     for (size_t col = 0; col < 8; col++) {
+#ifdef DEBUG
       this->current_image_->at(start_row + row, start_col + col,
                                component_number) *=
           table.qks_.at(ZZ_order[row * 8 + col]);
+#else
+      this->current_image_->at(start_row + row, start_col + col,
+                               component_number) *=
+          table.qks_[ZZ_order[row * 8 + col]];
+#endif
     }
   }
 }

@@ -10,6 +10,10 @@
 #include <stdexcept>
 #include <vector>
 
+#include <boost/log/core.hpp>
+#include <boost/log/expressions.hpp>
+#include <boost/log/trivial.hpp>
+
 #include "JPEGParser.hpp"
 #include "JPEGType.hpp"
 
@@ -71,7 +75,7 @@ JFIFHeader ParseJFIFSegment(unsigned char* file_content, unsigned int& index) {
   // If we have thumbnail count, we get the image.
   if (jfif_header.thumbnail_horizontal_pixel_count_ != 0 &&
       jfif_header.thumbnail_vertical_pixel_count_ != 0) {
-    std::cout << "TODO" << std::endl;
+        BOOST_LOG_TRIVIAL(info) << "Parsing of the thumbnail not done, TO DO." << std::endl;
   }
   return jfif_header;
 }

@@ -89,7 +89,6 @@ TEST(TestHuffmanFunctions, testDecoderTable) {
   std::tie(max_code_2_res, min_code_2_res, valptr_2_res) =
       DecoderTables(bits_2, code_table_2);
 
-  std::cout << "testing for the first set of elements" << std::endl;
   ASSERT_THAT(min_code_res, ::testing::ElementsAreArray(min_code));
   ASSERT_THAT(max_code_res, ::testing::ElementsAreArray(max_code));
   ASSERT_THAT(valptr_res, ::testing::ElementsAreArray(valptr));
@@ -246,7 +245,6 @@ TEST(TestHuffmanFunctions, testDecodeACCoefficients) {
 
   second_table.bits = bits_2;
   std::tie(std::ignore, second_table.huffsize) = GenerateSizeTable(bits_2);
-  std::cout << second_table.huffsize.size() << std::endl;
   second_table.huffvals = huffvals_2;
   second_table.huffcode = GenerateCodeTable(second_table.huffsize);
   std::tie(second_table.max_code, second_table.min_code,
@@ -259,17 +257,14 @@ TEST(TestHuffmanFunctions, testDecodeACCoefficients) {
   ASSERT_EQ(bit_index, 6);
   index = 0;
   bit_index = 8;
-  std::cout << "-----------------" << std::endl;
   results = DecodeACCoefficients(file_content, index, bit_index, second_table);
   ASSERT_THAT(results, ::testing::ElementsAreArray(expected_results));
 
   index = 0;
   bit_index = 8;
-  std::cout << "-----------------" << std::endl;
   results =
       DecodeACCoefficients(file_content_2, index, bit_index, second_table);
 
-  std::cout << results.at(38) << std::endl;
   ASSERT_THAT(results, ::testing::ElementsAreArray(expected_results_2));
 
   // Then we test with a block of 4 black pixels followed by 4 white, 4 black,

@@ -97,6 +97,14 @@ int main(int argc, char* argv[]) {
     std::cout << options.help({"", "Group"}) << std::endl;
     exit(0);
   }
+
+#ifdef DEBUG
+  if (result.count("directory") && show) {
+    std::cout << "Can only display for one image, exiting..." << std::endl;
+    exit(0);
+  }
+#endif
+
   // If the directory is specified, we process the files in it.
   if (result.count("directory")) {
     std::string directory = result["directory"].as<std::string>();
@@ -160,16 +168,25 @@ int main(int argc, char* argv[]) {
       }
     }
     return 0;
-  } else {
-    std::cout << "No directory specified, defaulting to files." << std::endl;
   }
 
   // Process the file if specified.
   if (result.count("file")) {
-    JPEGDecoder decoder;
+    JPEGDecoder decoder(0);
     JPEGImage* image;
+#ifdef DEBUG
+    if (show) {
+      std::cout << "Show is set, processing to level 4, full extraction."
+                << std::endl;
+      image = decoder.DecodeFile(result["file"].as<std::string>(), 4);
+    } else {
+      image = decoder.DecodeFile(result["file"].as<std::string>(),
+                                 result["level"].as<int>());
+    }
+#else
     image = decoder.DecodeFile(result["file"].as<std::string>(),
                                result["level"].as<int>());
+#endif
 
     // Writing the decoded image as .dat file.
     boost::filesystem::path p(result["file"].as<std::string>());
@@ -195,16 +212,19 @@ int main(int argc, char* argv[]) {
     } else {
       switch (result["level"].as<int>()) {
         case 2:
-          matwrite(p.parent_path().string() + "/" + p.stem().string() + ".qhjpg",
-                   image, channels);
+          matwrite(
+              p.parent_path().string() + "/" + p.stem().string() + ".qhjpg",
+              image, channels);
           break;
         case 3:
-          matwrite(p.parent_path().string() + "/" + p.stem().string() + ".iqhjpg",
-                   image, channels);
+          matwrite(
+              p.parent_path().string() + "/" + p.stem().string() + ".iqhjpg",
+              image, channels);
           break;
         default:
-          matwrite(p.parent_path().string() + "/" + p.stem().string() + ".riqhjpg",
-                   image, channels);
+          matwrite(
+              p.parent_path().string() + "/" + p.stem().string() + ".riqhjpg",
+              image, channels);
           break;
       }
     }

@@ -148,7 +148,7 @@ unsigned char NextBit(unsigned char *file_content, unsigned int &index,
  *
  * \deprecated
  */
-void IDCT(int *new_block) {
+void IDCT(std::vector<int> new_block) {
   float result, cu, cv;
   int temp_operation[64];
 
@@ -231,31 +231,31 @@ void FastIDCT1D(std::vector<int> &x, std::vector<int> &y, const int x_offset,
                 const int y_offset, const int ps, const int half,
                 const int y_line_length) {
   int p, n;
-  x[x_offset + 0] <<= 9, x[x_offset + 1] <<= 7, x[x_offset + 3] *= 181,
-      x[x_offset + 4] <<= 9, x[x_offset + 5] *= 181, x[x_offset + 7] <<= 7;
-  xmul(x[x_offset + 6], x[x_offset + 2], 277, 669, 0);
-  xadd3(x[x_offset + 0], x[x_offset + 4], x[x_offset + 6], x[x_offset + 2]);
-  xadd3(x[x_offset + 1], x[x_offset + 7], x[x_offset + 3], x[x_offset + 5]);
-  xmul(x[x_offset + 5], x[x_offset + 3], 251, 50, 6);
-  xmul(x[x_offset + 1], x[x_offset + 7], 213, 142, 6);
+  x.at(x_offset + 0) <<= 9, x.at(x_offset + 1) <<= 7, x.at(x_offset + 3) *= 181,
+      x.at(x_offset + 4) <<= 9, x.at(x_offset + 5) *= 181, x.at(x_offset + 7) <<= 7;
+  xmul(x.at(x_offset + 6), x.at(x_offset + 2), 277, 669, 0);
+  xadd3(x.at(x_offset + 0), x.at(x_offset + 4), x.at(x_offset + 6), x.at(x_offset + 2));
+  xadd3(x.at(x_offset + 1), x.at(x_offset + 7), x.at(x_offset + 3), x.at(x_offset + 5));
+  xmul(x.at(x_offset + 5), x.at(x_offset + 3), 251, 50, 6);
+  xmul(x.at(x_offset + 1), x.at(x_offset + 7), 213, 142, 6);
   // We get the final results, round up if required with the addition of half
   // and shift back to the result.
-  y[y_offset + 0 * y_line_length] =
-      (x[x_offset + 0] + x[x_offset + 1]) + half >> ps;
-  y[y_offset + 1 * y_line_length] =
-      (x[x_offset + 4] + x[x_offset + 5]) + half >> ps;
-  y[y_offset + 2 * y_line_length] =
-      (x[x_offset + 2] + x[x_offset + 3]) + half >> ps;
-  y[y_offset + 3 * y_line_length] =
-      (x[x_offset + 6] + x[x_offset + 7]) + half >> ps;
-  y[y_offset + 4 * y_line_length] =
-      (x[x_offset + 6] - x[x_offset + 7]) + half >> ps;
-  y[y_offset + 5 * y_line_length] =
-      (x[x_offset + 2] - x[x_offset + 3]) + half >> ps;
-  y[y_offset + 6 * y_line_length] =
-      (x[x_offset + 4] - x[x_offset + 5]) + half >> ps;
-  y[y_offset + 7 * y_line_length] =
-      (x[x_offset + 0] - x[x_offset + 1]) + half >> ps;
+  y.at(y_offset + 0 * y_line_length) =
+      (x.at(x_offset + 0) + x.at(x_offset + 1)) + half >> ps;
+  y.at(y_offset + 1 * y_line_length) =
+      (x.at(x_offset + 4) + x.at(x_offset + 5)) + half >> ps;
+  y.at(y_offset + 2 * y_line_length) =
+      (x.at(x_offset + 2) + x.at(x_offset + 3)) + half >> ps;
+  y.at(y_offset + 3 * y_line_length) =
+      (x.at(x_offset + 6) + x.at(x_offset + 7)) + half >> ps;
+  y.at(y_offset + 4 * y_line_length) =
+      (x.at(x_offset + 6) - x.at(x_offset + 7)) + half >> ps;
+  y.at(y_offset + 5 * y_line_length) =
+      (x.at(x_offset + 2) - x.at(x_offset + 3)) + half >> ps;
+  y.at(y_offset + 6 * y_line_length) =
+      (x.at(x_offset + 4) - x.at(x_offset + 5)) + half >> ps;
+  y.at(y_offset + 7 * y_line_length) =
+      (x.at(x_offset + 0) - x.at(x_offset + 1)) + half >> ps;
 }
 
 /**
@@ -295,21 +295,21 @@ void FastIDCT2D(std::vector<int> &image, const int start_line,
                12, 1 << 11, line_length);  // col
 }
 
-void IDCT_Row(std::vector<int> &x, const int x_offset, const int y_offset,
+void IDCTRow(std::vector<int> &x, const int x_offset, const int y_offset,
               const int line_length) {
   int x0, x1, x2, x3, x4, x5, x6, x7, x8;
 
-  if (!((x1 = x[x_offset + 4] << 11) | (x2 = x[x_offset + 6]) |
-        (x3 = x[x_offset + 2]) | (x4 = x[x_offset + 1]) |
-        (x5 = x[x_offset + 7]) | (x6 = x[x_offset + 5]) |
-        (x7 = x[x_offset + 3]))) {
-    x[x_offset + 0] = x[x_offset + 1] = x[x_offset + 2] = x[x_offset + 3] =
-        x[x_offset + 4] = x[x_offset + 5] = x[x_offset + 6] = x[x_offset + 7] =
-            x[x_offset + 0] << 3;
+  if (!((x1 = x.at(x_offset + 4) << 11) | (x2 = x.at(x_offset + 6)) |
+        (x3 = x.at(x_offset + 2)) | (x4 = x.at(x_offset + 1)) |
+        (x5 = x.at(x_offset + 7)) | (x6 = x.at(x_offset + 5)) |
+        (x7 = x.at(x_offset + 3)))) {
+    x.at(x_offset + 0) = x.at(x_offset + 1) = x.at(x_offset + 2) = x.at(x_offset + 3) =
+        x.at(x_offset + 4) = x.at(x_offset + 5) = x.at(x_offset + 6) = x.at(x_offset + 7) =
+            x.at(x_offset + 0) << 3;
     return;
   }
 
-  x0 = (x[x_offset + 0] << 11) +
+  x0 = (x.at(x_offset + 0) << 11) +
        128; /* for proper rounding in the fourth stage */
 
   /* first stage */
@@ -340,17 +340,17 @@ void IDCT_Row(std::vector<int> &x, const int x_offset, const int y_offset,
   x4 = (181 * (x4 - x5) + 128) >> 8;
 
   /* fourth stage */
-  x[x_offset + 0] = (x7 + x1) >> 8;
-  x[x_offset + 1] = (x3 + x2) >> 8;
-  x[x_offset + 2] = (x0 + x4) >> 8;
-  x[x_offset + 3] = (x8 + x6) >> 8;
-  x[x_offset + 4] = (x8 - x6) >> 8;
-  x[x_offset + 5] = (x0 - x4) >> 8;
-  x[x_offset + 6] = (x3 - x2) >> 8;
-  x[x_offset + 7] = (x7 - x1) >> 8;
+  x.at(x_offset + 0) = (x7 + x1) >> 8;
+  x.at(x_offset + 1) = (x3 + x2) >> 8;
+  x.at(x_offset + 2) = (x0 + x4) >> 8;
+  x.at(x_offset + 3) = (x8 + x6) >> 8;
+  x.at(x_offset + 4) = (x8 - x6) >> 8;
+  x.at(x_offset + 5) = (x0 - x4) >> 8;
+  x.at(x_offset + 6) = (x3 - x2) >> 8;
+  x.at(x_offset + 7) = (x7 - x1) >> 8;
 }
 
-void IDCT_Col(std::vector<int> &x, const int x_offset, const int y_offset,
+void IDCTCol(std::vector<int> &x, const int x_offset, const int y_offset,
               const int line_length) {
   int x0, x1, x2, x3, x4, x5, x6, x7, x8;
   int iclip[1024]; /* clipping table */
@@ -359,22 +359,22 @@ void IDCT_Col(std::vector<int> &x, const int x_offset, const int y_offset,
   for (int i = -512; i < 512; i++)
     iclp[i] = (i < -256) ? -256 : ((i > 255) ? 255 : i);
 
-  if (!((x1 = (x[x_offset + line_length * 4] << 8)) |
-        (x2 = x[x_offset + line_length * 6]) |
-        (x3 = x[x_offset + line_length * 2]) |
-        (x4 = x[x_offset + line_length * 1]) |
-        (x5 = x[x_offset + line_length * 7]) |
-        (x6 = x[x_offset + line_length * 5]) |
-        (x7 = x[x_offset + line_length * 3]))) {
-    x[x_offset + line_length * 0] = x[x_offset + line_length * 1] =
-        x[x_offset + line_length * 2] = x[x_offset + line_length * 3] =
-            x[x_offset + line_length * 4] = x[x_offset + line_length * 5] =
-                x[x_offset + line_length * 6] = x[x_offset + line_length * 7] =
-                    iclp[(x[x_offset + line_length * 0] + 32) >> 6];
+  if (!((x1 = (x.at(x_offset + line_length * 4) << 8)) |
+        (x2 = x.at(x_offset + line_length * 6)) |
+        (x3 = x.at(x_offset + line_length * 2)) |
+        (x4 = x.at(x_offset + line_length * 1)) |
+        (x5 = x.at(x_offset + line_length * 7)) |
+        (x6 = x.at(x_offset + line_length * 5)) |
+        (x7 = x.at(x_offset + line_length * 3)))) {
+    x.at(x_offset + line_length * 0) = x.at(x_offset + line_length * 1) =
+        x.at(x_offset + line_length * 2) = x.at(x_offset + line_length * 3) =
+            x.at(x_offset + line_length * 4) = x.at(x_offset + line_length * 5) =
+                x.at(x_offset + line_length * 6) = x.at(x_offset + line_length * 7) =
+                    iclp[(x.at(x_offset + line_length * 0) + 32) >> 6];
     return;
   }
 
-  x0 = (x[x_offset + line_length * 0] << 8) + 8192;
+  x0 = (x.at(x_offset + line_length * 0) << 8) + 8192;
 
   /* first stage */
   x8 = W7 * (x4 + x5) + 4;
@@ -404,14 +404,14 @@ void IDCT_Col(std::vector<int> &x, const int x_offset, const int y_offset,
   x4 = (181 * (x4 - x5) + 128) >> 8;
 
   /* fourth stage */
-  x[x_offset + line_length * 0] = iclp[(x7 + x1) >> 14];
-  x[x_offset + line_length * 1] = iclp[(x3 + x2) >> 14];
-  x[x_offset + line_length * 2] = iclp[(x0 + x4) >> 14];
-  x[x_offset + line_length * 3] = iclp[(x8 + x6) >> 14];
-  x[x_offset + line_length * 4] = iclp[(x8 - x6) >> 14];
-  x[x_offset + line_length * 5] = iclp[(x0 - x4) >> 14];
-  x[x_offset + line_length * 6] = iclp[(x3 - x2) >> 14];
-  x[x_offset + line_length * 7] = iclp[(x7 - x1) >> 14];
+  x.at(x_offset + line_length * 0) = iclp[(x7 + x1) >> 14];
+  x.at(x_offset + line_length * 1) = iclp[(x3 + x2) >> 14];
+  x.at(x_offset + line_length * 2) = iclp[(x0 + x4) >> 14];
+  x.at(x_offset + line_length * 3) = iclp[(x8 + x6) >> 14];
+  x.at(x_offset + line_length * 4) = iclp[(x8 - x6) >> 14];
+  x.at(x_offset + line_length * 5) = iclp[(x0 - x4) >> 14];
+  x.at(x_offset + line_length * 6) = iclp[(x3 - x2) >> 14];
+  x.at(x_offset + line_length * 7) = iclp[(x7 - x1) >> 14];
 }
 
 /* two dimensional inverse discrete cosine transform */
@@ -419,11 +419,11 @@ void FastIDCT2D_Second(std::vector<int> &image, const int start_line,
                        const int start_column, const int line_length) {
 
   for (int i = 0; i < 8; i++)
-    IDCT_Row(image, start_line * line_length + start_column + i * line_length,
+    IDCTRow(image, start_line * line_length + start_column + i * line_length,
              i, 8);
 
   for (int i = 0; i < 8; i++)
-    IDCT_Col(image, start_line * line_length + start_column + i, 0,
+    IDCTCol(image, start_line * line_length + start_column + i, 0,
              line_length);
 }
 
