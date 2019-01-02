@@ -143,7 +143,7 @@ void JPEGImage::RescaleToRealSize() {
 
   int rows = this->components_shape.at(0).first,
       cols = this->components_shape.at(0).second;
-  for (int i = 1; i < 3; i++) {
+  for (int i = 1; i < this->components_shape.size(); i++) {
     std::vector<int> new_data(rows * cols);
     col_factor = cols / this->components_shape.at(i).second;
     row_factor = rows / this->components_shape.at(i).first;
