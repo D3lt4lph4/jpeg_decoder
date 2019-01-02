@@ -511,7 +511,7 @@ void JPEGDecoder::DecodeRestartIntervalBaseline() {
   unsigned char vertical_number_of_blocks, dc_table_index, ac_table_index,
       bit_index = 8;
   unsigned int mcu_number, number_of_mcus, h_max = 0, v_max = 0;
-  std::vector<int> prev = {0, 0, 0};
+  std::vector<int> prev = {0, 0, 0, 0};
   this->ResetDecoderBaseline();
 
   // Calculating the number of mcus to parse.

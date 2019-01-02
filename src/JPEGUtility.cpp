@@ -456,13 +456,20 @@ void DeLevelShift(JPEGImage &image) {
  */
 void YCbCrToBGR(JPEGImage &image, std::vector<int> shape) {
   int R, G, B;
+  double alpha;
   int rows = shape[0], cols = shape[1];
+  int num_component = shape[2];
   for (size_t row = 0; row < rows; row++) {
     for (size_t col = 0; col < cols; col++) {
+      
       R = image.at(row, col, 0) + 1.402 * (image.at(row, col, 2) - 128);
       G = image.at(row, col, 0) - 0.34414 * (image.at(row, col, 1) - 128) -
           0.71414 * (image.at(row, col, 2) - 128);
       B = image.at(row, col, 0) + 1.772 * (image.at(row, col, 1) - 128);
+      if (num_component == 4) {
+        alpha = image.at(row, col, 3) / 255.0;
+      }
+
       if (R > 255) {
         R = 255;
       }
@@ -481,9 +488,17 @@ void YCbCrToBGR(JPEGImage &image, std::vector<int> shape) {
       if (B < 0) {
         B = 0;
       }
-      image.at(row, col, 2) = R;
-      image.at(row, col, 1) = G;
-      image.at(row, col, 0) = B;
+
+      if (num_component == 4) {
+        // Wat ? Yolo, formula not in the norm.
+        image.at(row, col, 2) = alpha * (255 - R);
+        image.at(row, col, 1) = alpha * (255 - G);
+        image.at(row, col, 0) = alpha * (255 - B);
+      } else {
+        image.at(row, col, 2) = R;
+        image.at(row, col, 1) = G;
+        image.at(row, col, 0) = B;
+      }
     }
   }
 }

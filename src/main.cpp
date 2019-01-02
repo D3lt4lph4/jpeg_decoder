@@ -42,7 +42,7 @@ void matwrite(const std::string &filename, JPEGImage *mat, int channels)
   }
 
   // We write the real image size, for future resizing if needed.
-  for (size_t i = 0; i < number_of_component; i++)
+  for (size_t i = 0; i < 3; i++)
   {
     temp = mat->GetRealShape().at(i);
     fs.write((char *)&temp, sizeof(int));
