@@ -30,6 +30,9 @@ res = glob.glob(dataset_path_template, recursive=args.recursive)
 # Trying to decode all the images
 decoder = JPEGDecoder()
 
+# Creating the file
+open(args.output, 'a').close()
+
 for image in tqdm(res):
     try:
         if isfile(image):
