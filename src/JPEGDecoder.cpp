@@ -341,6 +341,11 @@ void JPEGDecoder::DecodeFrame(const unsigned char encoding_process_type) {
 
   this->frame_header_ = ParseFrameHeader(
       this->current_file_content_, this->current_index_, encoding_process_type);
+  if (this->frame_header_.number_of_component_ == 1){
+    BOOST_LOG_TRIVIAL(warning) << "Image with only one component, the decoder works but has not been correctly tested yet.";
+  } else if (this->frame_header_.number_of_component_ == 1) {
+    BOOST_LOG_TRIVIAL(warning) << "Image with four components, the decoder works but has not been correctly tested yet.";
+  }
 
   for (size_t component_number = 1;
        component_number <= this->frame_header_.number_of_component_;
