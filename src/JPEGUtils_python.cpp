@@ -22,6 +22,7 @@ void initializeJPEGUtils(py::module &module) {
       .def(py::init<std::vector<std::pair<int, int>>>())
       .def("get_component_shape", &JPEGImage::GetComponentShape)
       .def("get_real_shape", &JPEGImage::GetRealShape)
+      .def("get_type", &JPEGImage::GetType)
       .def("get_number_of_component", &JPEGImage::GetNumberOfComponent)
       .def("set_real_shape", &JPEGImage::SetRealShape)
       .def("rescale_to_real_size", &JPEGImage::RescaleToRealSize)

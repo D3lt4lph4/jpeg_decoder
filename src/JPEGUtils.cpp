@@ -85,6 +85,18 @@ std::vector<int> JPEGImage::GetRealShape() { return this->real_shape_; }
 int JPEGImage::GetNumberOfComponent() { return this->image_components_.size(); }
 
 /**
+ * \fn ImageType JPEGImage::GetType()
+ * 
+ * \return The type of the image.
+ */
+ImageType JPEGImage::GetType() { return this->type_;}
+
+/**
+ * \fn void JPEGImage::SetType(ImageType type)
+ */
+void JPEGImage::SetType(ImageType type) { this->type_ = type;}
+
+/**
  * \fn void JPEGImage::SetRealShape(std::vector<int> shape)
  * \brief Setter for the real shape of the image.
  *

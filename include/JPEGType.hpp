@@ -47,6 +47,8 @@ const unsigned char APP15 = 0xEF;
 
 const unsigned char JFIF[] = {0x4a, 0x46, 0x49, 0x46, 0x00};
 
+const enum ImageType {blackandwhite, rgb, rgba};
+
 /**
  * \struct QuantizationTable
  * \brief The representation of the quantization table defined in the JPEG norm.

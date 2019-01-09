@@ -2,6 +2,7 @@
 #define __JPEG_IMAGE__
 
 #include <vector>
+#include "JPEGType.hpp"
 
 class JPEGImage {
  public:
@@ -12,6 +13,8 @@ class JPEGImage {
   std::pair<int, int> GetComponentShape(int component);
   std::vector<int> GetRealShape();
   int GetNumberOfComponent();
+  ImageType GetType();
+  void SetType(ImageType type);
   void SetRealShape(std::vector<int> shape);
   void RescaleToRealSize();
 
@@ -22,6 +25,7 @@ class JPEGImage {
   std::vector<std::vector<int>> image_components_;
   std::vector<std::pair<int, int>> components_shape;
   std::vector<int> real_shape_;
+  ImageType type_;
 };
 
 #endif
