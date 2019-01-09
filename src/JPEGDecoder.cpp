@@ -263,9 +263,11 @@ JPEGImage *JPEGDecoder::DecodeFile(const std::string filename,
   }
 
   if (this->decoding_level_ > 3) {
+    BOOST_LOG_TRIVIAL(info) << "Decoder, going to RGB";
     DeLevelShift(*(this->current_image_));
     this->current_image_->RescaleToRealSize();
     YCbCrToBGR(*(this->current_image_), this->current_image_->GetRealShape());
+    BOOST_LOG_TRIVIAL(info) << "RGB Done";
   }
 
   delete[] this->current_file_content_;
@@ -504,7 +506,7 @@ void JPEGDecoder::DecodeRestartIntervalBaseline() {
   unsigned char vertical_number_of_blocks, dc_table_index, ac_table_index,
       bit_index = 8;
   unsigned int mcu_number, number_of_mcus, h_max = 0, v_max = 0;
-  std::vector<int> prev = {0, 0, 0};
+  std::vector<int> prev = {0, 0, 0, 0};
   this->ResetDecoderBaseline();
 
   // Calculating the number of mcus to parse.
