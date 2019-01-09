@@ -266,8 +266,9 @@ JPEGImage *JPEGDecoder::DecodeFile(const std::string filename,
     BOOST_LOG_TRIVIAL(info) << "Decoder, going to RGB";
     DeLevelShift(*(this->current_image_));
     this->current_image_->RescaleToRealSize();
-    YCbCrToBGR(*(this->current_image_), this->current_image_->GetRealShape());
-    BOOST_LOG_TRIVIAL(info) << "RGB Done";
+    if (this->frame_header_.number_of_component_ != 1) {
+      YCbCrToBGR(*(this->current_image_), this->current_image_->GetRealShape());
+    }
   }
 
   delete[] this->current_file_content_;
@@ -343,6 +344,11 @@ void JPEGDecoder::DecodeFrame(const unsigned char encoding_process_type) {
 
   this->frame_header_ = ParseFrameHeader(
       this->current_file_content_, this->current_index_, encoding_process_type);
+  if (this->frame_header_.number_of_component_ == 1){
+    BOOST_LOG_TRIVIAL(warning) << "Image with only one component, the decoder works but has not been correctly tested yet.";
+  } else if (this->frame_header_.number_of_component_ == 1) {
+    BOOST_LOG_TRIVIAL(warning) << "Image with four components, the decoder works but has not been correctly tested yet.";
+  }
 
   for (size_t component_number = 1;
        component_number <= this->frame_header_.number_of_component_;
@@ -379,7 +385,7 @@ void JPEGDecoder::DecodeFrame(const unsigned char encoding_process_type) {
       if (component_number == 1) {
         realShape[0] = this->number_of_blocks_per_column;
         realShape[1] = this->number_of_blocks_per_line;
-        realShape[2] = 3;
+        realShape[2] = this->frame_header_.number_of_component_;
       }
       sizes.at(component_number - 1).second =
           size_factor_h *

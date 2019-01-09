@@ -54,3 +54,4 @@ CMakeFiles/*
 dist/*
 release/*
 debug/*
+*.txt
