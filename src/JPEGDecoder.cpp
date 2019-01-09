@@ -403,6 +403,22 @@ void JPEGDecoder::DecodeFrame(const unsigned char encoding_process_type) {
 
     this->current_image_ = new JPEGImage(sizes);
     this->current_image_->SetRealShape(realShape);
+    
+    switch (this->frame_header_.number_of_component_)
+    {
+      case 1:
+        this->current_image_->SetType(ImageType::blackandwhite);
+        break;
+      case 3:
+        this->current_image_->SetType(ImageType::rgb);
+        break;
+      case 4:
+        this->current_image_->SetType(ImageType::rgba);
+        break;
+
+      default:
+        break;
+    }
   }
 
   do {
