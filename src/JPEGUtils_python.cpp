@@ -5,7 +5,7 @@
 #include <pybind11/numpy.h>
 
 #include "JPEGUtils.hpp"
-
+#include "JPEGType.hpp"
 PYBIND11_MAKE_OPAQUE(std::vector<int>);
 
 namespace py = pybind11;
@@ -31,4 +31,9 @@ void initializeJPEGUtils(py::module &module) {
           auto data = &image.GetData(component);
           return py::array(data->size(), data->data());
       });
+  py::enum_<ImageType>(sub_module, "ImageType")
+      .value("blackandwhite", ImageType::blackandwhite)
+      .value("rgb", ImageType::rgb)
+      .value("rgba", ImageType::rgba)
+      .export_values();
 }
