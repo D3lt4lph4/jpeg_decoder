@@ -15,6 +15,7 @@ void initializeJPEGDecoder(py::module &module) {
       .def(py::init<const unsigned char>())
       .def("decode_file", &JPEGDecoder::DecodeFile,
            py::return_value_policy::reference)
+      .def("get_type", &JPEGDecoder::GetType)
       .def("get_image_size_x", &JPEGDecoder::getImageSizeX)
       .def("get_image_size_y", &JPEGDecoder::getImageSizeY)
       .def("get_block_per_line", &JPEGDecoder::getBlockPerLine)
