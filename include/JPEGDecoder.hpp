@@ -21,6 +21,7 @@ class JPEGDecoder {
 
   // Class functions
   JPEGImage *DecodeFile(const std::string file_name, const int level);
+  ImageType GetType(const std::string file_name);
   unsigned int getImageSizeX();
   unsigned int getImageSizeY();
   int getBlockPerLine();
@@ -39,6 +40,7 @@ class JPEGDecoder {
   // Decoding functions
   void DecodeToLevel();
   void DecodeFrame(const unsigned char encoding_process_type);
+  ImageType DecodeFrameType(const unsigned char encoding_process_type);
   void DecodeScan(const unsigned char encoding_process_type);
   void Dequantize(const int component_number, const int start_row,
                   const int start_col, const QuantizationTable &table);

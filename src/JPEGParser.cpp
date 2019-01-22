@@ -10,9 +10,11 @@
 #include <stdexcept>
 #include <vector>
 
+#ifdef DEBUG
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
 #include <boost/log/trivial.hpp>
+#endif
 
 #include "JPEGParser.hpp"
 #include "JPEGType.hpp"
@@ -75,7 +77,9 @@ JFIFHeader ParseJFIFSegment(unsigned char* file_content, unsigned int& index) {
   // If we have thumbnail count, we get the image.
   if (jfif_header.thumbnail_horizontal_pixel_count_ != 0 &&
       jfif_header.thumbnail_vertical_pixel_count_ != 0) {
+#ifdef DEBUG
         BOOST_LOG_TRIVIAL(info) << "Parsing of the thumbnail not done, TO DO." << std::endl;
+#endif
   }
   return jfif_header;
 }
@@ -167,7 +171,7 @@ FrameHeader ParseFrameHeader(unsigned char* file_content, unsigned int& index,
 
     frame_header.component_parameters_.insert(
         std::pair<unsigned char, std::vector<unsigned char>>(
-            c, components_vector));
+            i + 1, components_vector));
     index += 3;
   }
   return frame_header;
@@ -214,14 +218,14 @@ ScanHeader ParseScanHeader(unsigned char* file_content, unsigned int& index) {
     if (!scan.components_parameters_
              .insert(std::pair<unsigned char,
                                std::pair<unsigned char, unsigned char>>(
-                 scan_component_selector,
+                 i+1,
                  std::pair<unsigned char, unsigned char>(
                      dc_table_destination_selector,
                      ac_table_destination_selector)))
              .second) {
       scan.components_parameters_.insert(
           std::pair<unsigned char, std::pair<unsigned char, unsigned char>>(
-              scan_component_selector, std::pair<unsigned char, unsigned char>(
+              i+1, std::pair<unsigned char, unsigned char>(
                                            dc_table_destination_selector,
                                            ac_table_destination_selector)));
     }

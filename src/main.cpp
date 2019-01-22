@@ -1,4 +1,3 @@
-#include <boost/filesystem.hpp>
 #include <cerrno>
 
 #include <chrono>
@@ -11,17 +10,15 @@
 #include "JPEGDecoder.hpp"
 #include "JPEGUtils.hpp"
 
-// We only use opencv if we are in debug mode to visually check the results of
-// the decoding
-#ifdef DEBUG
+// The main is only to be built in debug mode
 #include <opencv/cv.h>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/opencv.hpp>
-#endif
+#include <boost/filesystem.hpp>
 
 void matwrite(const std::string &filename, JPEGImage *mat, int channels)
 {
-  std::ofstream fs(filename, std::fstream::binary);
+  /* std::ofstream fs(filename, std::fstream::binary);
   int number_of_component, temp;
   if (fs.fail())
   {
@@ -56,14 +53,12 @@ void matwrite(const std::string &filename, JPEGImage *mat, int channels)
              sizeof(int) * mat->GetComponentShape(i).first *
                  mat->GetComponentShape(i).second);
   }
-  fs.close();
+  fs.close(); */
 }
 
 int main(int argc, char *argv[])
 {
-#ifdef DEBUG
   bool show = false;
-#endif
   int channels;
 
   // Creating the parser.
@@ -82,12 +77,10 @@ int main(int argc, char *argv[])
       "The file to parse, if a directory is specified, will be ignored.",
       cxxopts::value<std::string>()->default_value("default"))("help",
                                                                "Print help")
-#ifdef DEBUG
       ("s,show",
        "If the image(s) should be displayed. For now, not handled by the "
        "directory parsing.",
        cxxopts::value<bool>(show))
-#endif
           ("o,output",
            "The output directory, the generated file name will use the name of "
            "the "
@@ -105,13 +98,11 @@ int main(int argc, char *argv[])
     exit(0);
   }
 
-#ifdef DEBUG
   if (result.count("directory") && show)
   {
     std::cout << "Can only display for one image, exiting..." << std::endl;
     exit(0);
   }
-#endif
 
   // If the directory is specified, we process the files in it.
   if (result.count("directory"))
@@ -193,7 +184,6 @@ int main(int argc, char *argv[])
   {
     JPEGDecoder decoder(0);
     JPEGImage *image;
-#ifdef DEBUG
     if (show)
     {
       std::cout << "Show is set, processing to level 4, full extraction."
@@ -205,10 +195,6 @@ int main(int argc, char *argv[])
       image = decoder.DecodeFile(result["file"].as<std::string>(),
                                  result["level"].as<int>());
     }
-#else
-    image = decoder.DecodeFile(result["file"].as<std::string>(),
-                               result["level"].as<int>());
-#endif
 
     // Writing the decoded image as .dat file.
     boost::filesystem::path p(result["file"].as<std::string>());
@@ -255,7 +241,6 @@ int main(int argc, char *argv[])
         break;
       }
     }
-#ifdef DEBUG
     if (show)
     {
       std::vector<int> shape = image->GetRealShape();
@@ -291,7 +276,6 @@ int main(int argc, char *argv[])
       cv::imshow("Decoded image.", *image_to_display);
       cv::waitKey(0);
     }
-#endif
     return 0;
   }
   else

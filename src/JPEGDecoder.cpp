@@ -15,9 +15,11 @@
 #include <stdexcept>
 #include <string>
 
+#ifdef DEBUG
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
 #include <boost/log/trivial.hpp>
+#endif
 
 #include "JPEGDecoder.hpp"
 #include "JPEGException.hpp"
@@ -108,80 +110,112 @@ JPEGImage *JPEGDecoder::DecodeFile(const std::string filename,
           case APPO:
             this->current_jfif_header = ParseJFIFSegment(
                 this->current_file_content_, this->current_index_);
+            #ifdef DEBUG
             BOOST_LOG_TRIVIAL(info) << "JFIF segment parsed.";
+            #endif
             break;
           case APP1:
+            #ifdef DEBUG
             BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
+            #endif
             ParseApplicationBlock(this->current_file_content_,
                                   this->current_index_);
             break;
           case APP2:
-            BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
+            #ifdef DEBUG
+            BOOST_LOG_TRIVIAL(info) << "Application block 2 found, ignoring.";
+            #endif
             ParseApplicationBlock(this->current_file_content_,
                                   this->current_index_);
             break;
           case APP3:
-            BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
+            #ifdef DEBUG
+            BOOST_LOG_TRIVIAL(info) << "Application block 3 found, ignoring.";
+            #endif
             ParseApplicationBlock(this->current_file_content_,
                                   this->current_index_);
             break;
           case APP4:
-            BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
+            #ifdef DEBUG
+            BOOST_LOG_TRIVIAL(info) << "Application block 4 found, ignoring.";
+            #endif
             ParseApplicationBlock(this->current_file_content_,
                                   this->current_index_);
             break;
           case APP5:
-            BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
+            #ifdef DEBUG
+            BOOST_LOG_TRIVIAL(info) << "Application block 5 found, ignoring.";
+            #endif
             ParseApplicationBlock(this->current_file_content_,
                                   this->current_index_);
             break;
           case APP6:
-            BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
+            #ifdef DEBUG
+            BOOST_LOG_TRIVIAL(info) << "Application block 6 found, ignoring.";
+            #endif
             ParseApplicationBlock(this->current_file_content_,
                                   this->current_index_);
             break;
           case APP7:
-            BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
+            #ifdef DEBUG
+            BOOST_LOG_TRIVIAL(info) << "Application block 7 found, ignoring.";
+            #endif
             ParseApplicationBlock(this->current_file_content_,
                                   this->current_index_);
             break;
           case APP8:
-            BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
+            #ifdef DEBUG
+            BOOST_LOG_TRIVIAL(info) << "Application block 8 found, ignoring.";
+            #endif
             ParseApplicationBlock(this->current_file_content_,
                                   this->current_index_);
             break;
           case APP9:
-            BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
+            #ifdef DEBUG
+            BOOST_LOG_TRIVIAL(info) << "Application block 9 found, ignoring.";
+            #endif
             ParseApplicationBlock(this->current_file_content_,
                                   this->current_index_);
             break;
           case APP10:
-            BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
+            #ifdef DEBUG
+            BOOST_LOG_TRIVIAL(info) << "Application block 10 found, ignoring.";
+            #endif
             ParseApplicationBlock(this->current_file_content_,
                                   this->current_index_);
             break;
           case APP11:
-            BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
+            #ifdef DEBUG
+            BOOST_LOG_TRIVIAL(info) << "Application block 11 found, ignoring.";
+            #endif
             ParseApplicationBlock(this->current_file_content_,
                                   this->current_index_);
             break;
           case APP12:
-            BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
+            #ifdef DEBUG
+            BOOST_LOG_TRIVIAL(info) << "Application block 12 found, ignoring.";
+            #endif
             ParseApplicationBlock(this->current_file_content_,
                                   this->current_index_);
             break;
           case APP13:
-            BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
+            #ifdef DEBUG
+            BOOST_LOG_TRIVIAL(info) << "Application block 13 found, ignoring.";
+            #endif
             ParseApplicationBlock(this->current_file_content_,
                                   this->current_index_);
             break;
           case APP14:
-            BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
+            #ifdef DEBUG
+            BOOST_LOG_TRIVIAL(info) << "Application block 14 found, ignoring.";
+            #endif
             ParseApplicationBlock(this->current_file_content_,
                                   this->current_index_);
             break;
           case APP15:
-            BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
+            #ifdef DEBUG
+            BOOST_LOG_TRIVIAL(info) << "Application block 15 found, ignoring.";
+            #endif
             ParseApplicationBlock(this->current_file_content_,
                                   this->current_index_);
             break;
@@ -189,7 +223,9 @@ JPEGImage *JPEGDecoder::DecodeFile(const std::string filename,
             std::string comment;
             comment =
                 ParseComment(this->current_file_content_, this->current_index_);
+            #ifdef DEBUG
             BOOST_LOG_TRIVIAL(info) << "Comment in the file : " << comment;
+            #endif
           } break;
           case DEFINE_RESTART_INTERVAL:
             // TODO
@@ -205,15 +241,21 @@ JPEGImage *JPEGDecoder::DecodeFile(const std::string filename,
               this->quantization_tables_.insert(
                   std::make_pair(table_key, quantization_table));
             }
+            #ifdef DEBUG
             BOOST_LOG_TRIVIAL(info) << "Quantization table parsed.";
+            #endif
             break;
           case START_OF_FRAME_BASELINE:
             this->DecodeFrame(FRAME_TYPE_BASELINE_DTC);
+            #ifdef DEBUG
             BOOST_LOG_TRIVIAL(info) << "Frame decoded.";
+            #endif
             break;
           case START_OF_FRAME_PROGRESSIVE:
             this->DecodeFrame(FRAME_TYPE_PROGRESSIVE);
+            #ifdef DEBUG
             BOOST_LOG_TRIVIAL(info) << "Frame decoded.";
+            #endif
             break;
           case DEFINE_HUFFMAN_TABLE:
             huffman_tables = ParseHuffmanTableSpecification(
@@ -240,15 +282,19 @@ JPEGImage *JPEGDecoder::DecodeFile(const std::string filename,
                 }
               }
             }
+            #ifdef DEBUG
             BOOST_LOG_TRIVIAL(info) << "Huffman table decoded.";
+            #endif
             break;
           case END_OF_IMAGE:
             out_condition = true;
             break;
           default:
+            #ifdef DEBUG
             BOOST_LOG_TRIVIAL(error)
                 << "I did not know how to parse the block : " << std::hex
                 << int(*marker);
+            #endif
             throw std::runtime_error("Error while processing the jpeg file.");
             break;
         }
@@ -263,16 +309,262 @@ JPEGImage *JPEGDecoder::DecodeFile(const std::string filename,
   }
 
   if (this->decoding_level_ > 3) {
+    #ifdef DEBUG
     BOOST_LOG_TRIVIAL(info) << "Decoder, going to RGB";
+    #endif
     DeLevelShift(*(this->current_image_));
     this->current_image_->RescaleToRealSize();
     if (this->frame_header_.number_of_component_ != 1) {
       YCbCrToBGR(*(this->current_image_), this->current_image_->GetRealShape());
+      #ifdef DEBUG
+      BOOST_LOG_TRIVIAL(info) << "Decoder, going to RGB";
+      #endif
     }
   }
 
   delete[] this->current_file_content_;
   return this->current_image_;
+}
+
+ImageType JPEGDecoder::GetType(const std::string filename) {
+  std::ifstream file_to_decode;
+  int size, current_index = 0;
+  unsigned char table_key;
+  std::unique_ptr<unsigned char> marker;
+  ImageType image_type;
+
+  // When to stop the reading of the file
+  bool out_condition = false;
+
+  // The tables
+  QuantizationTable quantization_table;
+  HuffmanTable huffman_table;
+  std::vector<std::pair<unsigned char, HuffmanTable>> huffman_tables;
+
+  this->InitializeDecoder();
+
+  file_to_decode.open(filename, std::ios::binary);
+
+  if (file_to_decode.is_open()) {
+    // Getting the file content to be read.
+    file_to_decode.seekg(0, std::ios::end);
+    size = file_to_decode.tellg();
+    file_to_decode.seekg(0, std::ios::beg);
+    this->current_file_content_ = new unsigned char[size + 1];
+    this->current_index_ = 0;
+    file_to_decode.read(reinterpret_cast<char *>(this->current_file_content_),
+                        size);
+    marker = this->GetMarker();
+    if (*marker == START_OF_IMAGE) {
+      this->DecoderSetup();
+      do {
+        marker = this->GetMarker();
+        switch (*marker) {
+          case APPO:
+            this->current_jfif_header = ParseJFIFSegment(
+                this->current_file_content_, this->current_index_);
+                #ifdef DEBUG
+            BOOST_LOG_TRIVIAL(info) << "JFIF segment parsed.";
+            #endif
+            break;
+          case APP1:
+#ifdef DEBUG
+            BOOST_LOG_TRIVIAL(info) << "Application block 1 found, ignoring.";
+#endif
+            ParseApplicationBlock(this->current_file_content_,
+                                  this->current_index_);
+            break;
+          case APP2:
+          #ifdef DEBUG
+            BOOST_LOG_TRIVIAL(info) << "Application block 2 found, ignoring.";
+            #endif
+            ParseApplicationBlock(this->current_file_content_,
+                                  this->current_index_);
+            break;
+          case APP3:
+          #ifdef DEBUG
+            BOOST_LOG_TRIVIAL(info) << "Application block 3 found, ignoring.";
+            #endif
+            ParseApplicationBlock(this->current_file_content_,
+                                  this->current_index_);
+            break;
+          case APP4:
+          #ifdef DEBUG
+            BOOST_LOG_TRIVIAL(info) << "Application block 4 found, ignoring.";
+            #endif
+            ParseApplicationBlock(this->current_file_content_,
+                                  this->current_index_);
+            break;
+          case APP5:
+          #ifdef DEBUG
+            BOOST_LOG_TRIVIAL(info) << "Application block 5 found, ignoring.";
+            #endif
+            ParseApplicationBlock(this->current_file_content_,
+                                  this->current_index_);
+            break;
+          case APP6:
+          #ifdef DEBUG
+            BOOST_LOG_TRIVIAL(info) << "Application block 6 found, ignoring.";
+            #endif
+            ParseApplicationBlock(this->current_file_content_,
+                                  this->current_index_);
+            break;
+          case APP7:
+          #ifdef DEBUG
+            BOOST_LOG_TRIVIAL(info) << "Application block 7 found, ignoring.";
+            #endif
+            ParseApplicationBlock(this->current_file_content_,
+                                  this->current_index_);
+            break;
+          case APP8:
+          #ifdef DEBUG
+            BOOST_LOG_TRIVIAL(info) << "Application block 8 found, ignoring.";
+            #endif
+            ParseApplicationBlock(this->current_file_content_,
+                                  this->current_index_);
+            break;
+          case APP9:
+          #ifdef DEBUG
+            BOOST_LOG_TRIVIAL(info) << "Application block 9 found, ignoring.";
+            #endif
+            ParseApplicationBlock(this->current_file_content_,
+                                  this->current_index_);
+            break;
+          case APP10:
+          #ifdef DEBUG
+            BOOST_LOG_TRIVIAL(info) << "Application block 10 found, ignoring.";
+            #endif
+            ParseApplicationBlock(this->current_file_content_,
+                                  this->current_index_);
+            break;
+          case APP11:
+          #ifdef DEBUG
+            BOOST_LOG_TRIVIAL(info) << "Application block 11 found, ignoring.";
+            #endif
+            ParseApplicationBlock(this->current_file_content_,
+                                  this->current_index_);
+            break;
+          case APP12:
+          #ifdef DEBUG
+            BOOST_LOG_TRIVIAL(info) << "Application block 12 found, ignoring.";
+            #endif
+            ParseApplicationBlock(this->current_file_content_,
+                                  this->current_index_);
+            break;
+          case APP13:
+          #ifdef DEBUG
+            BOOST_LOG_TRIVIAL(info) << "Application block 13 found, ignoring.";
+            #endif
+            ParseApplicationBlock(this->current_file_content_,
+                                  this->current_index_);
+            break;
+          case APP14:
+          #ifdef DEBUG
+            BOOST_LOG_TRIVIAL(info) << "Application block 14 found, ignoring.";
+            #endif
+            ParseApplicationBlock(this->current_file_content_,
+                                  this->current_index_);
+            break;
+          case APP15:
+          #ifdef DEBUG
+            BOOST_LOG_TRIVIAL(info) << "Application block 15 found, ignoring.";
+            #endif
+            ParseApplicationBlock(this->current_file_content_,
+                                  this->current_index_);
+            break;
+          case COMMENT: {
+            std::string comment;
+            comment =
+                ParseComment(this->current_file_content_, this->current_index_);
+                #ifdef DEBUG
+            BOOST_LOG_TRIVIAL(info) << "Comment in the file : " << comment;
+            #endif
+          } break;
+          case DEFINE_RESTART_INTERVAL:
+            // TODO
+            break;
+          case DEFINE_QUANTIZATION_TABLE:
+            std::tie(table_key, quantization_table) = ParseQuantizationTable(
+                this->current_file_content_, this->current_index_);
+
+            if (!(this->quantization_tables_
+                      .insert(std::make_pair(table_key, quantization_table))
+                      .second)) {
+              this->quantization_tables_.erase(table_key);
+              this->quantization_tables_.insert(
+                  std::make_pair(table_key, quantization_table));
+            }
+            #ifdef DEBUG
+            BOOST_LOG_TRIVIAL(info) << "Quantization table parsed.";
+            #endif
+            break;
+          case START_OF_FRAME_BASELINE:
+            image_type = this->DecodeFrameType(FRAME_TYPE_BASELINE_DTC);
+            out_condition = true;
+            #ifdef DEBUG
+            BOOST_LOG_TRIVIAL(info) << "Frame decoded.";
+            #endif
+            break;
+          case START_OF_FRAME_PROGRESSIVE:
+            image_type = this->DecodeFrameType(FRAME_TYPE_PROGRESSIVE);
+            out_condition = true;
+            #ifdef DEBUG
+            BOOST_LOG_TRIVIAL(info) << "Frame decoded.";
+            #endif
+            break;
+          case DEFINE_HUFFMAN_TABLE:
+            huffman_tables = ParseHuffmanTableSpecification(
+                this->current_file_content_, this->current_index_);
+
+            for (size_t i = 0; i < huffman_tables.size(); i++) {
+              std::tie(table_key, huffman_table) = huffman_tables.at(i);
+
+              if (huffman_table.table_class_ == 0) {
+                if (!(this->dc_huffman_tables_
+                          .insert(std::make_pair(table_key, huffman_table))
+                          .second)) {
+                  this->dc_huffman_tables_.erase(table_key);
+                  this->dc_huffman_tables_.insert(
+                      std::make_pair(table_key, huffman_table));
+                }
+              } else {
+                if (!(this->ac_huffman_tables_
+                          .insert(std::make_pair(table_key, huffman_table))
+                          .second)) {
+                  this->ac_huffman_tables_.erase(table_key);
+                  this->ac_huffman_tables_.insert(
+                      std::make_pair(table_key, huffman_table));
+                }
+              }
+            }
+            #ifdef DEBUG
+            BOOST_LOG_TRIVIAL(info) << "Huffman table decoded.";
+            #endif
+            break;
+          case END_OF_IMAGE:
+            out_condition = true;
+            break;
+          default:
+          #ifdef DEBUG
+            BOOST_LOG_TRIVIAL(error)
+                << "I did not know how to parse the block : " << std::hex
+                << int(*marker);
+                #endif
+            throw std::runtime_error("Error while processing the jpeg file.");
+            break;
+        }
+      } while (!out_condition);
+    } else {
+      throw std::runtime_error(
+          "Expected SOI marker, but sosmething else found, cannot parse the "
+          "file.");
+    }
+  } else {
+    throw FileNotFoundException(filename);
+  }
+
+  delete[] this->current_file_content_;
+  return image_type;
 }
 
 std::ostream &operator<<(std::ostream &out, const JPEGDecoder &decoder) {
@@ -344,10 +636,18 @@ void JPEGDecoder::DecodeFrame(const unsigned char encoding_process_type) {
 
   this->frame_header_ = ParseFrameHeader(
       this->current_file_content_, this->current_index_, encoding_process_type);
-  if (this->frame_header_.number_of_component_ == 1){
-    BOOST_LOG_TRIVIAL(warning) << "Image with only one component, the decoder works but has not been correctly tested yet.";
+  if (this->frame_header_.number_of_component_ == 1) {
+    #ifdef DEBUG
+    BOOST_LOG_TRIVIAL(warning)
+        << "Image with only one component, the decoder works but has not been "
+           "correctly tested yet.";
+           #endif
   } else if (this->frame_header_.number_of_component_ == 1) {
-    BOOST_LOG_TRIVIAL(warning) << "Image with four components, the decoder works but has not been correctly tested yet.";
+    #ifdef DEBUG
+    BOOST_LOG_TRIVIAL(warning)
+        << "Image with four components, the decoder works but has not been "
+           "correctly tested yet.";
+           #endif
   }
 
   for (size_t component_number = 1;
@@ -403,9 +703,8 @@ void JPEGDecoder::DecodeFrame(const unsigned char encoding_process_type) {
 
     this->current_image_ = new JPEGImage(sizes);
     this->current_image_->SetRealShape(realShape);
-    
-    switch (this->frame_header_.number_of_component_)
-    {
+
+    switch (this->frame_header_.number_of_component_) {
       case 1:
         this->current_image_->SetType(ImageType::blackandwhite);
         break;
@@ -424,14 +723,18 @@ void JPEGDecoder::DecodeFrame(const unsigned char encoding_process_type) {
   do {
     marker = this->GetMarker();
     if (*marker == START_OF_SCAN) {
+      #ifdef DEBUG
       BOOST_LOG_TRIVIAL(info) << "Getting a scan to decode.";
+      #endif
       this->DecodeScan(encoding_process_type);
     } else {
       switch (*marker) {
         case COMMENT:
+        #ifdef DEBUG
           BOOST_LOG_TRIVIAL(info) << "Comment in the current scan : "
                                   << ParseComment(this->current_file_content_,
                                                   this->current_index_);
+                                            #endif
           break;
         case DEFINE_RESTART_INTERVAL:
           // TODO
@@ -439,7 +742,9 @@ void JPEGDecoder::DecodeFrame(const unsigned char encoding_process_type) {
         case DEFINE_QUANTIZATION_TABLE:
           ParseQuantizationTable(this->current_file_content_,
                                  this->current_index_);
+                                 #ifdef DEBUG
           BOOST_LOG_TRIVIAL(info) << "Quantization table parsed.";
+          #endif
           break;
         case DEFINE_HUFFMAN_TABLE:
           huffman_tables = ParseHuffmanTableSpecification(
@@ -465,14 +770,18 @@ void JPEGDecoder::DecodeFrame(const unsigned char encoding_process_type) {
               }
             }
           }
+          #ifdef DEBUG
           BOOST_LOG_TRIVIAL(info) << "Huffman table parsed.";
+          #endif
           break;
         case END_OF_IMAGE:
           break;
         default:
+        #ifdef DEBUG
           BOOST_LOG_TRIVIAL(error)
               << "I did not know how to parse the block : " << std::hex
               << int(*marker);
+              #endif
           throw std::runtime_error("Error while processing the jpeg file.");
           break;
       }
@@ -480,6 +789,105 @@ void JPEGDecoder::DecodeFrame(const unsigned char encoding_process_type) {
 
   } while (*marker != END_OF_IMAGE);
   this->current_index_ -= 2;
+}
+
+ImageType JPEGDecoder::DecodeFrameType(
+    const unsigned char encoding_process_type) {
+  unsigned char table_key;
+  std::unique_ptr<unsigned char> marker;
+
+  QuantizationTable quantization_table;
+  HuffmanTable huffman_table;
+  std::vector<std::pair<unsigned char, HuffmanTable>> huffman_tables;
+  ;
+  unsigned int h_max = 0, v_max = 0;
+
+  this->frame_header_ = ParseFrameHeader(
+      this->current_file_content_, this->current_index_, encoding_process_type);
+  if (this->frame_header_.number_of_component_ == 1) {
+    #ifdef DEBUG
+    BOOST_LOG_TRIVIAL(warning)
+        << "Image with only one component, the decoder works but has not been "
+           "correctly tested yet.";
+           #endif
+  } else if (this->frame_header_.number_of_component_ == 1) {
+    #ifdef DEBUG
+    BOOST_LOG_TRIVIAL(warning)
+        << "Image with four components, the decoder works but has not been "
+           "correctly tested yet.";
+           #endif
+  }
+
+  for (size_t component_number = 1;
+       component_number <= this->frame_header_.number_of_component_;
+       component_number++) {
+    if (this->frame_header_.component_parameters_.at(component_number).at(0) >
+        h_max) {
+      h_max =
+          this->frame_header_.component_parameters_.at(component_number).at(0);
+    }
+    if (this->frame_header_.component_parameters_.at(component_number).at(1) >
+        v_max) {
+      v_max =
+          this->frame_header_.component_parameters_.at(component_number).at(1);
+    }
+  }
+  std::vector<std::pair<int, int>> sizes(
+      this->frame_header_.number_of_component_);
+
+  if (this->frame_header_.encoding_process_type_ == FRAME_TYPE_BASELINE_DTC) {
+    this->number_of_blocks_per_column = (this->frame_header_.number_of_lines_);
+    this->number_of_blocks_per_line =
+        (this->frame_header_.number_of_samples_per_line_);
+
+    std::vector<int> realShape(3);
+
+    int size_factor_v =
+        (((this->number_of_blocks_per_column + 8 - 1) / 8) + v_max - 1) /
+        (v_max);
+    int size_factor_h =
+        (((this->number_of_blocks_per_line + 8 - 1) / 8) + h_max - 1) / (h_max);
+    for (size_t component_number = 1;
+         component_number <= this->frame_header_.number_of_component_;
+         component_number++) {
+      if (component_number == 1) {
+        realShape[0] = this->number_of_blocks_per_column;
+        realShape[1] = this->number_of_blocks_per_line;
+        realShape[2] = this->frame_header_.number_of_component_;
+      }
+      sizes.at(component_number - 1).second =
+          size_factor_h *
+          this->frame_header_.component_parameters_.at(component_number).at(0) *
+          8;
+      sizes.at(component_number - 1).first =
+          size_factor_v *
+          this->frame_header_.component_parameters_.at(component_number).at(1) *
+          8;
+    }
+
+    if (this->current_image_ != NULL) {
+      delete this->current_image_;
+    }
+
+    this->current_image_ = new JPEGImage(sizes);
+    this->current_image_->SetRealShape(realShape);
+
+    switch (this->frame_header_.number_of_component_) {
+      case 1:
+        return ImageType::blackandwhite;
+        break;
+      case 3:
+        return ImageType::rgb;
+        break;
+      case 4:
+        return ImageType::rgba;
+        break;
+
+      default:
+        return ImageType::error;
+        break;
+    }
+  }
 }
 
 /**
@@ -742,11 +1150,13 @@ std::unique_ptr<unsigned char> JPEGDecoder::GetMarker() {
                 &(this->current_file_content_[this->current_index_ + 1]), 1);
     this->current_index_ = this->current_index_ + 2;
     return std::unique_ptr<unsigned char>(marker);
-  } else {
+  } else { 
+    #ifdef DEBUG
     BOOST_LOG_TRIVIAL(error)
         << "Error while reading marker, 0xFF expected, but " << std::hex
         << (int)this->current_file_content_[this->current_index_]
         << " found at index: " << this->current_index_;
+      #endif
     throw std::runtime_error(error.str());
   }
 }
@@ -789,6 +1199,7 @@ void JPEGDecoder::Dequantize(const int component_number, const int start_row,
  * \brief Function to initialize the logger.
  */
 void JPEGDecoder::InitializeLogger() {
+#ifdef DEBUG
   switch (this->logging_level_) {
     case 0:
       boost::log::core::get()->set_filter(boost::log::trivial::severity >
@@ -812,7 +1223,9 @@ void JPEGDecoder::InitializeLogger() {
       break;
     default:
       break;
+
   }
+#endif
 }
 
 /**

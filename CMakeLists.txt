@@ -5,20 +5,15 @@ set(CMAKE_CXX_STANDARD 11)
 include(CTest)
 enable_testing()
 
-# We need boost for the logs (might be removed)
-find_package(Boost COMPONENTS thread system filesystem log REQUIRED)
-message(STATUS "Found boost library : ${Boost_LIBRARIES}\n")
-add_definitions(-DBOOST_LOG_DYN_LINK)
-
 # All the hpp files
 include_directories("include/")
 
-# Creating library for the decoder
-add_library(JPEGDecoder SHARED src/JPEGDecoder.cpp src/JPEGHuffmanDecoder.cpp src/JPEGUtility.cpp src/JPEGParser.cpp src/JPEGUtils.cpp)
-target_link_libraries(JPEGDecoder ${Boost_LIBRARIES})
-
 # If we are not in debug mode then compile for deployement
 IF( (NOT CMAKE_BUILD_TYPE) OR (CMAKE_BUILD_TYPE MATCHES RELEASE))
+
+  # Creating library for the decoder
+  add_library(JPEGDecoder SHARED src/JPEGDecoder.cpp src/JPEGHuffmanDecoder.cpp src/JPEGUtility.cpp src/JPEGParser.cpp src/JPEGUtils.cpp)
+
   # Part for the python wrapper
   add_subdirectory(pybind11)
 
@@ -27,6 +22,13 @@ IF( (NOT CMAKE_BUILD_TYPE) OR (CMAKE_BUILD_TYPE MATCHES RELEASE))
   target_link_libraries(jpegdecoder PRIVATE ${Boost_LIBRARIES} JPEGDecoder)
 
 ELSEIF( CMAKE_BUILD_TYPE MATCHES DEBUG )
+  find_package(Boost COMPONENTS thread system filesystem log REQUIRED)
+  message(STATUS "Found boost library : ${Boost_LIBRARIES}\n")
+  add_definitions(-DBOOST_LOG_DYN_LINK)
+  # Creating library for the decoder
+  add_library(JPEGDecoder SHARED src/JPEGDecoder.cpp src/JPEGHuffmanDecoder.cpp src/JPEGUtility.cpp src/JPEGParser.cpp src/JPEGUtils.cpp)
+  target_link_libraries(JPEGDecoder ${Boost_LIBRARIES})
+
   set(CMAKE_CXX_FLAGS "-g")
   # We set opencv only if we are in debug
   IF( WIN32 )
