@@ -67,5 +67,6 @@ setup(
     url="https://github.com/D3lt4lph4/jpeg_encoder_decoder.git",
     ext_modules=[CMakeExtension('jpegdecoder')],
     cmdclass=dict(build_ext=CMakeBuild),
+    include_package_data=True,
     zip_safe=False,
 )

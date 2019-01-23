@@ -3,4 +3,3 @@ global-include CMakeLists.txt *.cmake
 recursive-include src *
 recursive-include include *
 recursive-include pybind11/include *.h
-global-include *.so
