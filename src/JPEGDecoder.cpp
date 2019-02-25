@@ -687,6 +687,8 @@ void JPEGDecoder::DecodeFrame(const unsigned char encoding_process_type) {
         realShape[1] = this->number_of_blocks_per_line;
         realShape[2] = this->frame_header_.number_of_component_;
       }
+
+#ifdef DEBUG
       sizes.at(component_number - 1).second =
           size_factor_h *
           this->frame_header_.component_parameters_.at(component_number).at(0) *
@@ -695,6 +697,16 @@ void JPEGDecoder::DecodeFrame(const unsigned char encoding_process_type) {
           size_factor_v *
           this->frame_header_.component_parameters_.at(component_number).at(1) *
           8;
+#else
+      sizes[component_number - 1].second =
+          size_factor_h *
+          this->frame_header_.component_parameters_.at(component_number).at(0) *
+          8;
+      sizes[component_number - 1].first =
+          size_factor_v *
+          this->frame_header_.component_parameters_.at(component_number).at(1) *
+          8;
+#endif
     }
 
     if (this->current_image_ != NULL) {
@@ -855,6 +867,8 @@ ImageType JPEGDecoder::DecodeFrameType(
         realShape[1] = this->number_of_blocks_per_line;
         realShape[2] = this->frame_header_.number_of_component_;
       }
+
+#ifdef DEBUG
       sizes.at(component_number - 1).second =
           size_factor_h *
           this->frame_header_.component_parameters_.at(component_number).at(0) *
@@ -863,6 +877,16 @@ ImageType JPEGDecoder::DecodeFrameType(
           size_factor_v *
           this->frame_header_.component_parameters_.at(component_number).at(1) *
           8;
+#else
+      sizes[component_number - 1].second =
+          size_factor_h *
+          this->frame_header_.component_parameters_.at(component_number).at(0) *
+          8;
+      sizes[component_number - 1].first =
+          size_factor_v *
+          this->frame_header_.component_parameters_.at(component_number).at(1) *
+          8;
+#endif
     }
 
     if (this->current_image_ != NULL) {

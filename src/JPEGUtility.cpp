@@ -107,6 +107,8 @@ unsigned char NextBit(unsigned char *file_content, unsigned int &index,
         "The index provided for the bit is out of range with a value of " +
         bit_index);
   }
+
+#ifdef DEBUG
   if (bit_index == 8) {
     if (current_byte == 0xFF) {
       if (!(file_content[index + 1] == 0x00)) {
@@ -120,6 +122,7 @@ unsigned char NextBit(unsigned char *file_content, unsigned int &index,
       }
     }
   }
+#endif
 
   bit = current_byte << (8 - bit_index);
   bit = bit >> 7;

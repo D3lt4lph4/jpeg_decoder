@@ -36,8 +36,8 @@ JPEGImage::JPEGImage(std::vector<std::pair<int, int>> sizes) {
     this->image_components_.at(component).resize(sizes.at(component).first *
                                                  sizes.at(component).second);
 #else
-    this->image_components_.at(component).resize(sizes.at(component).first *
-                                                 sizes.at(component).second);
+    this->image_components_[component].resize(sizes[component].first *
+                                                 sizes[component].second);
 #endif
   }
 }
@@ -63,7 +63,7 @@ std::pair<int, int> JPEGImage::GetComponentShape(int component) {
 #ifdef DEBUG
   return this->components_shape.at(component);
 #else
-  return this->components_shape.at(component);
+  return this->components_shape[component];
 #endif
 }
 
@@ -123,8 +123,8 @@ int& JPEGImage::at(int row, int col, int component) {
   int line_length = this->components_shape.at(component).second;
   return this->image_components_.at(component).at(row * line_length + col);
 #else
-  int line_length = this->components_shape.at(component).second;
-  return this->image_components_.at(component).at(row * line_length + col);
+  int line_length = this->components_shape[component].second;
+  return this->image_components_[component][row * line_length + col];
 #endif
 }
 
@@ -140,7 +140,7 @@ std::vector<int>& JPEGImage::GetData(int component) {
 #ifdef DEBUG
   return this->image_components_.at(component);
 #else
-  return this->image_components_.at(component);
+  return this->image_components_[component];
 #endif
 }
 

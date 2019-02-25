@@ -5,6 +5,13 @@ set(CMAKE_CXX_STANDARD 11)
 include(CTest)
 enable_testing()
 
+SET( "${CMAKE_CXX_FLAGS} -pg")
+SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
+SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -pg")
+add_definitions(${CMAKE_CXX_FLAGS} "-Ofast")
+add_definitions(${CMAKE_CXX_FLAGS} "-fno-reorder-functions")
+add_definitions(${CMAKE_CXX_FLAGS} "-fno-inline")
+
 # All the hpp files
 include_directories("include/")
 
@@ -12,11 +19,13 @@ include_directories("include/")
 IF( (NOT CMAKE_BUILD_TYPE) OR (CMAKE_BUILD_TYPE MATCHES RELEASE))
 
   # Creating library for the decoder
-  add_library(JPEGDecoder SHARED src/JPEGDecoder.cpp src/JPEGHuffmanDecoder.cpp src/JPEGUtility.cpp src/JPEGParser.cpp src/JPEGUtils.cpp)
+  add_library(JPEGDecoder src/JPEGDecoder.cpp src/JPEGHuffmanDecoder.cpp src/JPEGUtility.cpp src/JPEGParser.cpp src/JPEGUtils.cpp)
 
   # Part for the python wrapper
   add_subdirectory(pybind11)
 
+  add_executable(jpeg_decoder src/main.cpp)
+  target_link_libraries(jpeg_decoder JPEGDecoder)
   # pybind11 package creation
   pybind11_add_module(jpegdecoder src/main_python.cpp src/JPEGUtils_python.cpp src/JPEGDecoder_python.cpp src/JPEGDecoder.cpp src/JPEGHuffmanDecoder.cpp src/JPEGUtility.cpp src/JPEGParser.cpp src/JPEGUtils.cpp)
 
