@@ -2,6 +2,7 @@ import argparse
 import time
 from os import listdir
 from os.path import isfile, join
+import numpy as np
 
 from tqdm import tqdm
 
@@ -9,7 +10,7 @@ import cv2
 
 import jpegdecoder
 
-parser = argparse.argumentParser()
+parser = argparse.ArgumentParser()
 
 parser.add_argument("directory", help="The directory containing all the images to use for the test.")
 parser.add_argument("-o", "--output", help="The output file for the results of the test, if not specified the results are only printed in the console.")
@@ -22,83 +23,83 @@ images =  [join(image_directory, f) for f in listdir(image_directory) if isfile(
 
 results = {}
 
+print("-------------------------Processing with OpenCV-------------------------")
 print("Processing all the images with OpenCV (not stored in memory).")
 start_time_opencv_not_kept = time.time()
 for image in tqdm(images):
     _ = cv2.imread(image,0)
-results["elapsed_time_opencv_not_kept"] = time.time() - start_time
+results["elapsed_time_opencv_not_kept"] = time.time() - start_time_opencv_not_kept
 
 print("Processing all the images with OpenCV (stored in memory).")
-images = []
-start_time_opencv_not_kept = time.time()
+images_results = []
+start_time_opencv_kept = time.time()
 for image in tqdm(images):
-    images.append(cv2.imread(image,0))
-results["elapsed_time_opencv_kept"] = time.time() - start_time
+    images_results.append(cv2.imread(image,0))
+    print(images_results[-1].shape)
+results["elapsed_time_opencv_kept"] = time.time() - start_time_opencv_kept
 
+
+print("-------------------------Processing with the jpegdecoder-------------------------")
 print("Processing all the images with the JPEGDecoder, RGB (not stored in memory).")
-decoder = jpegdecoder.decoder.JPEGDecoder()
-start_time_opencv_not_kept = time.time()
 
+decoder = jpegdecoder.decoder.JPEGDecoder()
+start_time_jpegdecoder_not_kept = time.time()
 for image in tqdm(images):
     jpg_image = decoder.decode_file(image, 4)
-    img_real_size = jpg_image.get_real_size()
-    image_length, image_height = img_real_size[0], img_real_size[1]
-    img = np.empty((image_length, image_height, channels))
-    img[:,:,0] = np.resize(jpg_image.get_data(0), (image_length, image_height))
-    img[:,:,1] = np.resize(jpg_image.get_data(1), (image_length, image_height))
-    img[:,:,2] = np.resize(jpg_image.get_data(2), (image_length, image_height))
+    img_real_size = jpg_image.get_real_shape()
+    img = np.empty((img_real_size[0], img_real_size[1], img_real_size[2]))
+    img[:,:,0] = np.resize(jpg_image.get_data(0), (img_real_size[0], img_real_size[1]))
+    img[:,:,1] = np.resize(jpg_image.get_data(1), (img_real_size[0], img_real_size[1]))
+    img[:,:,2] = np.resize(jpg_image.get_data(2), (img_real_size[0], img_real_size[1]))
 
-results["elapsed_time_jpeg_rgb_not_kept"] = time.time() - start_time
+results["elapsed_time_jpeg_rgb_not_kept"] = time.time() - start_time_jpegdecoder_not_kept
 
 print("Processing all the images with the JPEGDecoder, RGB (stored in memory).")
 decoder = jpegdecoder.decoder.JPEGDecoder()
-images = []
-start_time_opencv_not_kept = time.time()
+images_results = []
+start_time_jpegdecoder_kept = time.time()
 for image in tqdm(images):
     jpg_image = decoder.decode_file(image, 4)
-    img_real_size = jpg_image.get_real_size()
-    image_length, image_height = img_real_size[0], img_real_size[1]
-    img = np.empty((image_length, image_height, channels))
-    img[:,:,0] = np.resize(jpg_image.get_data(0), (image_length, image_height))
-    img[:,:,1] = np.resize(jpg_image.get_data(1), (image_length, image_height))
-    img[:,:,2] = np.resize(jpg_image.get_data(2), (image_length, image_height))
+    img_real_size = jpg_image.get_real_shape()
+    img = np.empty((img_real_size[0], img_real_size[1], img_real_size[2]))
+    img[:,:,0] = np.resize(jpg_image.get_data(0), (img_real_size[0], img_real_size[1]))
+    img[:,:,1] = np.resize(jpg_image.get_data(1), (img_real_size[0], img_real_size[1]))
+    img[:,:,2] = np.resize(jpg_image.get_data(2), (img_real_size[0], img_real_size[1]))
 
-    images.append(img)
-results["elapsed_time_jpeg_rgb_kept"] = time.time() - start_time
+    images_results.append(img)
+results["elapsed_time_jpeg_rgb_kept"] = time.time() - start_time_jpegdecoder_kept
 
 print("Processing all the images with the JPEGDecoder, DCT (not stored in memory).")
 decoder = jpegdecoder.decoder.JPEGDecoder()
-start_time_opencv_not_kept = time.time()
+start_time_jpegdecoder_not_kept_dct = time.time()
 for image in tqdm(images):
     jpg_image = decoder.decode_file(image, 2)
-    img_real_size = jpg_image.get_real_size()
-    image_length, image_height = img_real_size[0], img_real_size[1]
-    img = np.empty((image_length, image_height, channels))
-    img[:,:,0] = np.resize(jpg_image.get_data(0), (image_length, image_height))
-    img[:,:,1] = np.resize(jpg_image.get_data(1), (image_length, image_height))
-    img[:,:,2] = np.resize(jpg_image.get_data(2), (image_length, image_height))
-results["elapsed_time_jpeg_dct_not_kept"] = time.time() - start_time
+    img_real_size = jpg_image.get_real_shape()
+    img = np.empty((img_real_size[0], img_real_size[1], img_real_size[2]))
+    img[:,:,0] = np.resize(jpg_image.get_data(0), (img_real_size[0], img_real_size[1]))
+    img[:,:,1] = np.resize(jpg_image.get_data(1), (img_real_size[0], img_real_size[1]))
+    img[:,:,2] = np.resize(jpg_image.get_data(2), (img_real_size[0], img_real_size[1]))
+results["elapsed_time_jpeg_dct_not_kept"] = time.time() - start_time_jpegdecoder_not_kept_dct
 
 print("Processing all the images with the JPEGDecoder, DCT (stored in memory).")
 decoder = jpegdecoder.decoder.JPEGDecoder()
-images = []
-start_time_opencv_not_kept = time.time()
+images_results = []
+start_time_jpegdecoder_kept_dct = time.time()
 for image in tqdm(images):
     jpg_image = decoder.decode_file(image, 2)
-    img_real_size = jpg_image.get_real_size()
-    image_length, image_height = img_real_size[0], img_real_size[1]
-    img = np.empty((image_length, image_height, channels))
-    img[:,:,0] = np.resize(jpg_image.get_data(0), (image_length, image_height))
-    img[:,:,1] = np.resize(jpg_image.get_data(1), (image_length, image_height))
-    img[:,:,2] = np.resize(jpg_image.get_data(2), (image_length, image_height))
-    images.append(img)
-results["elapsed_time_jpeg_dct_kept"] = time.time() - start_time
+    img_real_size = jpg_image.get_real_shape()
+    img = np.empty((img_real_size[0], img_real_size[1], img_real_size[2]))
+    img[:,:,0] = np.resize(jpg_image.get_data(0), (img_real_size[0], img_real_size[1]))
+    img[:,:,1] = np.resize(jpg_image.get_data(1), (img_real_size[0], img_real_size[1]))
+    img[:,:,2] = np.resize(jpg_image.get_data(2), (img_real_size[0], img_real_size[1]))
+    images_results.append(img)
+results["elapsed_time_jpeg_dct_kept"] = time.time() - start_time_jpegdecoder_kept_dct
 
-
-print("The results are as follow: ")
-print("\t - OpenCV, RGB, images not stored in memory: {}".format(results["elapsed_time_opencv_not_kept"]))
-print("\t - OpenCV, RGB, images stored in memory: {}".format(results["elapsed_time_opencv_kept"]))
-print("\t - JPEGDecoder, RGB, images not stored in memory: {}".format(results["elapsed_time_jpeg_rgb_not_kept"]))
-print("\t - JPEGDecoder, RGB, images stored in memory: {}".format(results["elapsed_time_jpeg_rgb_kept"]))
-print("\t - JPEGDecoder, DCT, images not stored in memory: {}".format(results["elapsed_time_jpeg_dct_not_kept"]))
-print("\t - JPEGDecoder, DCT, images not stored in memory: {}".format(results["elapsed_time_jpeg_dct_kept"]))
+print(results)
+# print("The results are as follow: ")
+# print("\t - OpenCV, RGB, images not stored in memory: {}".format(results["elapsed_time_opencv_not_kept"]))
+# print("\t - OpenCV, RGB, images stored in memory: {}".format(results["elapsed_time_opencv_kept"]))
+# print("\t - JPEGDecoder, RGB, images not stored in memory: {}".format(results["elapsed_time_jpeg_rgb_not_kept"]))
+# print("\t - JPEGDecoder, RGB, images stored in memory: {}".format(results["elapsed_time_jpeg_rgb_kept"]))
+# print("\t - JPEGDecoder, DCT, images not stored in memory: {}".format(results["elapsed_time_jpeg_dct_not_kept"]))
+# print("\t - JPEGDecoder, DCT, images not stored in memory: {}".format(results["elapsed_time_jpeg_dct_kept"]))
