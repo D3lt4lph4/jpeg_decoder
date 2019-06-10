@@ -1,17 +1,29 @@
 # JPEG Baseline Decoder
 
-This project aims to create a "level" depending decoder that can decode an image and stop at a given point in the decoding.
-The only supported process for decoding is the baseline.
+This project aims to create a "level" depending decoder that can decode an image and stop at a given point in the decoding pipeline.
+The only supported process for decoding is the baseline. Only the versions starting from 2.2.0 should be used, anything below should work but is not documented and incomplete. Starting from 2.2.0 the pipeline to install and use the decoder will remain the same. The project was done in c++ and can be use in python thanks to [pybind11](https://github.com/pybind/pybind11)
 
-## How does the compression works.
+This project was first done as part of my thesis, the aim was to access the DCT coefficient from the JPEG compression pipeline. As of today, this is more like a side project and I recommend using [this decoder](https://github.com/uber-research/jpeg2dct) if someone was to access the coefficient, it is faster, lighter and probably simpler to use.
+
+## How does the compression works ?
 
 The workflow of the compression/decompression is the following one (main steps), the image was taken from wikipedia :
 
 ![compression/decompression workflow](https://raw.githubusercontent.com/D3lt4lph4/jpeg_encoder_decoder/master/images/compression_JPEG.png?token=AXSrihw6StMXldgUNoZ5d55DTkqKOXrGks5bdYj-wA%3D%3D "JPEG workflow")
 
+The first two steps are the YCbCr transform and the sub-sampling, the space transformation is done to be able to sub-sample without loosing too much information (the human eye is less sensitive to variation in the CbCr components). Then the DCT and quantization transformations are performed to further compress the data. The high frequencies are "set to 0" through the quantization to take advantage of the compression RLE/Huffman.
+
+## Simple install in a python
+
+For all the steps below, I will assume you have set up and activated a virtualenv. First let's show the simplest installation:
+
+```bash
+
+```
+
 ## Compile the project
 
-Starting from version 3.0.0 the project has two different mode for compilation DEBUG and RELEASE. Depending on the mode chosen, the feature are not exactly the same.
+This is for compilation of the c++ code. Starting from version X.X.X the project has two different mode for compilation DEBUG and RELEASE. Depending on the mode chosen, the feature are not exactly the same.
 
 Debug:
 
@@ -41,20 +53,15 @@ cmake ..
 make
 ```
 
-There is also the possibility to compiling through the python setup file (the output will be in the dist directory):
-```bash
-python setup.py sdist
-```
-
 ## Known Bugs
 
 ### OpenCV
 
 OpenCV seems to look for cuda while compiling, if you have multiple version of cuda installed on the computer, cmake might stop at the first one encountered and not look further even if this not the right version. To remedy to this problem, rename the wrong cuda-X-X directories in /usr/local to something else (ugly fix but working).
 
-# Version tag description
+## Version description
 
-## v1.0.0
+### v1.0.0
 
 Features:
 
@@ -70,8 +77,7 @@ Limitations:
 - The 8x8 DCT blocks are duplicated instead of being correctly upsampled
 - Usage of OpenCV data structure for the "images"
 
-
-## v1.1.0
+### v1.1.0
 
 Features:
 
@@ -87,7 +93,7 @@ Limitations:
 - The data is not saved under the subsampled form
 - The 8x8 DCT blocks are duplicated instead of being correctly upsampled
 
-## v1.2.0
+### v1.2.0
 
 Features:
 
@@ -100,7 +106,7 @@ Limitations:
 - The data is not saved under the subsampled form
 - The 8x8 DCT blocks are duplicated instead of being correctly upsampled
 
-## v2.0.0
+### v2.0.0
 
 Features:
 
@@ -113,13 +119,13 @@ Warnings:
 
 - The data is no longer saved in the same way, incompatibility between the new and old python decoding functions
 
-## v2.1.0
+### v2.1.0
 
 Features:
 
 - Improving the speed of the decoder through the usage of reference and (smart)pointers
 
-## v2.2.0
+### v2.2.0
 
 Features:
 
@@ -132,8 +138,7 @@ Features:
 - Improved tests for the library on the c++ side
 - Adding files to calculate the time the decoder takes to decode images at different levels
 
-
-## v3.0.0 (planned)
+### v3.0.0 (planned)
 
 Features:
 
