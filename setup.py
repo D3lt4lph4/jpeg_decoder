@@ -59,7 +59,7 @@ class CMakeBuild(build_ext):
 
 setup(
     name='jpegdecoder',
-    version='2.0.1',
+    version='2.2.0',
     author='Deguerre Benjamin',
     author_email='benjamin.deguerre@vinci-energies.net',
     description='The python module for decoding a jpeg file.',

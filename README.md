@@ -7,9 +7,9 @@ This project was first done as part of my thesis, the aim was to access the DCT 
 
 ## How does the compression works ?
 
-The workflow of the compression/decompression is the following one (main steps), the image was taken from wikipedia :
+The workflow of the compression/decompression is the following one (main steps) :
 
-![compression/decompression workflow](https://raw.githubusercontent.com/D3lt4lph4/jpeg_encoder_decoder/master/images/compression_JPEG.png?token=AXSrihw6StMXldgUNoZ5d55DTkqKOXrGks5bdYj-wA%3D%3D "JPEG workflow")
+![compression/decompression workflow](https://raw.githubusercontent.com/D3lt4lph4/jpeg_encoder_decoder/master/images/JPEG_pipeline_full.png?token=AXSrihw6StMXldgUNoZ5d55DTkqKOXrGks5bdYj-wA%3D%3D "JPEG workflow")
 
 The first two steps are the YCbCr transform and the sub-sampling, the space transformation is done to be able to sub-sample without loosing too much information (the human eye is less sensitive to variation in the CbCr components). Then the DCT and quantization transformations are performed to further compress the data. The high frequencies are "set to 0" through the quantization to take advantage of the compression RLE/Huffman.
 
@@ -18,12 +18,37 @@ The first two steps are the YCbCr transform and the sub-sampling, the space tran
 For all the steps below, I will assume you have set up and activated a virtualenv. First let's show the simplest installation:
 
 ```bash
-
+python setup.py install
+pip install numpy
+# or python setup.py sdist
 ```
+
+To test in python
+
+```python
+import jpegdecoder
+import numpy as np
+
+decoder = jpegdecoder.decoder.JPEGDecoder()
+# The 2 is the decoding level
+image = decoder.decode_file("data/chat_420.jpg", 2)
+
+rows, cols = image.get_component_shape(0)[0:2]
+y = np.reshape(image.get_data(0), image.get_component_shape(0))
+Cb = np.reshape(image.get_data(1), image.get_component_shape(1))
+Cr = np.reshape(image.get_data(2), image.get_component_shape(2))
+```
+
+The decode_file function takes the path to the file and the decoding level as input. The decoding level is as follow:
+
+- 1: the dequantization step is not performed
+- 2: the IDCT step is not performed
+- 3: the YCbCr to RGB step is not performed
+- 4: returns the image
 
 ## Compile the project
 
-This is for compilation of the c++ code. Starting from version X.X.X the project has two different mode for compilation DEBUG and RELEASE. Depending on the mode chosen, the feature are not exactly the same.
+This is for compilation of the c++ code. Starting from version 2.2.0 the project has two different mode for compilation DEBUG and RELEASE. Depending on the mode chosen, the feature are not exactly the same.
 
 Debug:
 
@@ -46,12 +71,26 @@ cd debug
 cmake .. -DCMAKE_BUILD_TYPE=DEBUG
 make
 
+# Will fully decode the image and show it
+./jpeg_decoder -f ../data/chat_420.jpg -s
+
+# Running the tests
+./test/test_huffman
+./test/test_parsing
+./test/test_utility
+
 # Compiling in release mode
+git submodule init
+git submodule update
 mkdir release
 cd release
 cmake ..
 make
 ```
+
+## Documentation
+
+The documentation is not yet finished, to have more details for the python available function go check the _python.cpp files in the src folder.
 
 ## Known Bugs
 
@@ -61,7 +100,7 @@ OpenCV seems to look for cuda while compiling, if you have multiple version of c
 
 ## Version description
 
-### v1.0.0
+### v1.0.0
 
 Features:
 
@@ -77,7 +116,7 @@ Limitations:
 - The 8x8 DCT blocks are duplicated instead of being correctly upsampled
 - Usage of OpenCV data structure for the "images"
 
-### v1.1.0
+### v1.1.0
 
 Features:
 
@@ -93,7 +132,7 @@ Limitations:
 - The data is not saved under the subsampled form
 - The 8x8 DCT blocks are duplicated instead of being correctly upsampled
 
-### v1.2.0
+### v1.2.0
 
 Features:
 
@@ -106,7 +145,7 @@ Limitations:
 - The data is not saved under the subsampled form
 - The 8x8 DCT blocks are duplicated instead of being correctly upsampled
 
-### v2.0.0
+### v2.0.0
 
 Features:
 
@@ -119,7 +158,7 @@ Warnings:
 
 - The data is no longer saved in the same way, incompatibility between the new and old python decoding functions
 
-### v2.1.0
+### v2.1.0
 
 Features:
 
@@ -137,10 +176,3 @@ Features:
 - Boost is removed from compilation if not in debug mode
 - Improved tests for the library on the c++ side
 - Adding files to calculate the time the decoder takes to decode images at different levels
-
-### v3.0.0 (planned)
-
-Features:
-
-- The class JPEGDecoder was removed and replaced by a function
-- Adding tests for all the new functions made available by the new architecture
