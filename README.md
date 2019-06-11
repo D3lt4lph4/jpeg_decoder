@@ -9,7 +9,7 @@ This project was first done as part of my thesis, the aim was to access the DCT 
 
 The workflow of the compression/decompression is the following one (main steps) :
 
-![compression/decompression workflow](https://raw.githubusercontent.com/D3lt4lph4/jpeg_encoder_decoder/master/images/JPEG_pipeline_full.png?token=AXSrihw6StMXldgUNoZ5d55DTkqKOXrGks5bdYj-wA%3D%3D "JPEG workflow")
+![compression/decompression workflow](https://github.com/D3lt4lph4/jpeg_decoder/blob/master/images/JPEG_pipeline_full.png "JPEG workflow")
 
 The first two steps are the YCbCr transform and the sub-sampling, the space transformation is done to be able to sub-sample without loosing too much information (the human eye is less sensitive to variation in the CbCr components). Then the DCT and quantization transformations are performed to further compress the data. The high frequencies are "set to 0" through the quantization to take advantage of the compression RLE/Huffman.
 
